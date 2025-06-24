@@ -16,7 +16,7 @@ def index(request: HttpRequest):
     }
     return render(request, 'position/index.html', context= context)
 
-def add(request: HttpRequest):
+def addPosition(request: HttpRequest):
     if request.method == "POST":
         response = HttpResponseRedirect(reverse('indexPosition'))
         try:
@@ -31,6 +31,7 @@ def add(request: HttpRequest):
                 return response
             parent = None if request.POST.get("parent") == "none" else request.POST.get("parent")
             isactive = True if request.POST.get("isactive") == 'on' else False
+            note = request.POST.get("note")
             
             position: Position = Position()
             position.code = code
@@ -39,6 +40,7 @@ def add(request: HttpRequest):
             position.isActive = isactive
             position.isDelete = False
             position.parent = parent
+            position.note = note
             currentUser: User = request.currentUser
             if currentUser:
                 uCreate = UserSnapshot().UserToSnapshot(currentUser)
@@ -58,3 +60,30 @@ def add(request: HttpRequest):
             "pos": pos,
         }
         return render(request, 'position/add.html', context= context)
+    
+def editPosition(request: HttpRequest, id: str):
+    response = HttpResponseRedirect(reverse('indexPosition'))
+    try:
+        if request.method == "POST":
+            posId = request.POST.get("posId")
+            if not posId:
+                messages.error(request, "Not found id !")
+                return response
+        else:
+            position: Position = Position.objects.get(id = id)
+            if not position:
+                messages.error(request, "Position not found")
+                return response
+            findParent = Position.objects.filter(isActive = True, isDelete = False, id__ne= id)
+            pos = list()
+            if findParent:
+                pos = findParent
+            context = {
+                "pos": pos,
+                "position": position,
+                }
+            return render(request, 'position/edit.html', context= context)
+    except Exception as e:
+        print(e)
+        messages.error(request, str(e))
+    return response

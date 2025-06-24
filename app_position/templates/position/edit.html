@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
 {% load static %}
-{% block title %}<title>Position Add</title>{% endblock %}
+{% block title %}<title>Position Edit</title>{% endblock %}
 {% block css %}
 <link href="{% static 'css/sweetalert2.min.css' %}" rel="stylesheet">
 <link href="{% static 'css/datatables.min.css' %}" rel="stylesheet">
@@ -9,34 +9,35 @@
 {% endblock %}
 {% block breadcrumb %}
 <div>
-    <span>Position /</span><span class="fw-bold">Add Position</span>
+    <span>Position /</span><span class="fw-bold">Edit Position</span>
 </div>
 {% endblock %}
 {% block content %}
 <div class="row mb-3">
     <div class="col-sm-12 col-lg-9 m-auto">
         <div class="card">
-            <form method="post" action="{% url 'addPosition' %}" class="card-body mb-3" novalidate>
+            <form method="post" class="card-body mb-3" novalidate>
                 {% csrf_token %}
-                <h3 class="display-6 fw-bold">Add Position</h3>
-                <p class="text-sm">craete new position</p>
+                <input type="hidden" id="posId" name="posId" value="{{ position.id}}" />
+                <h3 class="display-6 fw-bold">Edit Position</h3>
+                <p class="text-sm">Edit data position</p>
                 <div class="row mb-3">
                     <div class="col-12">
                         <label for="code" class="form-label fw-bold text-dark-emphasis">Code</label>
-                        <input type="text" id="code" name="code" class="form-control" required />
+                        <input type="text" id="code" name="code" class="form-control" value="{{ position.code }}" required />
                         <div class="invalid-feedback">Please input data</div>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-12">
                         <label for="nameth" class="form-label fw-bold text-dark-emphasis">Name (TH)</label>
-                        <input type="text" id="nameth" name="nameth" class="form-control" />
+                        <input type="text" id="nameth" name="nameth" class="form-control" value="{{ position.nameTH }}" />
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-12">
                         <label for="nameen" class="form-label fw-bold text-dark-emphasis">Name (EN)</label>
-                        <input type="text" id="nameen" name="nameen" class="form-control" required />
+                        <input type="text" id="nameen" name="nameen" class="form-control" value="{{ position.nameEN }}" required />
                         <div class="invalid-feedback">Please input data</div>
                     </div>
                 </div>
@@ -46,7 +47,11 @@
                         <select id="parent" name="parent" class="form-select">
                             <option value="none">None</option>
                             {% for po in pos %}
-                            <option value="{{ po.id }}">({{ po.code }}) {{ po.nameEN }}</option>
+                                {% if po.id != position.parent.id %}
+                                <option value="{{ po.id }}" selected>({{ po.code }}) {{ po.nameEN }}</option>
+                                {% else %}
+                                <option value="{{ po.id }}">({{ po.code }}) {{ po.nameEN }}</option>
+                                {% endif %}
                             {% endfor %}
                         </select>
                     </div>
@@ -54,12 +59,16 @@
                 <div class="row mb-4">
                     <div class="col-md-8 col-sm-12">
                         <label for="note" class="form-label fw-bold text-dark-emphasis">Note</label>
-                        <textarea id="note" name="note" class="form-control" style="height: 100px;">{{ level.note }}</textarea>
+                        <textarea id="note" name="note" class="form-control" style="height: 100px;">{{ position.note }}</textarea>
                     </div>
                 </div>
                 <div class="row mb-5">
                     <div class="col-12">
+                        {% if position.isActive %}
+                        <input type="checkbox" id="isactive" name="isactive" class="form-check-input" checked />
+                        {% else %}
                         <input type="checkbox" id="isactive" name="isactive" class="form-check-input" />
+                        {% endif %}
                         <label for="isactive" class="form-check-label fw-bold text-dark-emphasis">Is Active</label>
                     </div>
                 </div>
