@@ -66,7 +66,7 @@
                                                 <a href="{% url 'editPosition' pos.id %}" class="btn btn-info">
                                                     <i class="bi bi-pencil-square"></i>
                                                 </a>
-                                                <button type="button" class="btn btn-danger delete">
+                                                <button type="button" class="btn btn-danger delete" data-posid="{{ pos.id }}">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </div>
@@ -107,6 +107,36 @@
                 ]
             });
 
+        });
+        $('.delete').click(function(e){
+            e.preventDefault();
+            Swal.fire({
+                title: "Do you want to delete ?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#f97316",
+                confirmButtonText: "Delete",
+                cancelButtonText: "Cancel"
+            }).then((result)=>{
+                if(result.isConfirmed){
+                    Loading(true);
+                    const settings = {
+                        url: window.location.origin + window.location.pathname + "delete/" + $(e.currentTarget).data('posid'),
+                        method: "GET",
+                    }
+                    $.ajax(settings).done((response)=>{
+                        Loading(false);
+                        if(response.deleted == true){
+                            PopMessage("Delete success", "success", true);
+                        }else{
+                            PopMessage(response.message, "error");
+                        }
+                    }).fail((xhr, status, error)=>{
+                        Loading(false);
+                        PopMessage(error, "error");
+                    });
+                }
+            });
         });
     </script>
 {% endblock %}

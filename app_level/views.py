@@ -94,12 +94,6 @@ def editLevel(request: HttpRequest, id: str):
             isactive = True if request.POST.get("isactive") == 'on' else False
             note = request.POST.get("note")
 
-
-            level = Level.objects(id = ObjectId(lvId)).first()
-            if not level:
-                messages.error(request, "Level not found")
-                return response
-            
             snapShot = LevelSnapShot()
             snapShot.code = level.code
             snapShot.nameTH = level.nameTH

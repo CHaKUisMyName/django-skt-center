@@ -21,7 +21,7 @@ class PositionSnapShot(me.EmbeddedDocument):
 class Position(BaseClass, BaseOrganization):
     id = me.ObjectIdField(primary_key=True, default=lambda: ObjectId())
     parent = me.ReferenceField('Position', null= True, required= False, default = None)
-    snapSots = me.EmbeddedDocumentListField(PositionSnapShot)
+    snapShots = me.EmbeddedDocumentListField(PositionSnapShot)
     
     meta = {
         'collection': 'position'  # 👈 ชื่อ collection ที่กำหนดเอง
