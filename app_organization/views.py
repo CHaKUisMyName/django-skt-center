@@ -38,7 +38,6 @@ def addOrg(request: HttpRequest):
             note = request.POST.get("note")
             isactive = True if request.POST.get("isactive") == 'on' else False
 
-            print(code,nameth,nameen,isactive)
             org = Organization()
             org.code = code
             org.nameTH = nameth

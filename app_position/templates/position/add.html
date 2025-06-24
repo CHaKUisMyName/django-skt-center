@@ -16,14 +16,15 @@
 <div class="row mb-3">
     <div class="col-sm-12 col-lg-9 m-auto">
         <div class="card">
-            <form method="post" class="card-body mb-3" novalidate>
+            <form method="post" action="{% url 'addPosition' %}" class="card-body mb-3" novalidate>
                 {% csrf_token %}
                 <h3 class="display-6 fw-bold">Add Position</h3>
                 <p class="text-sm">craete new position</p>
                 <div class="row mb-3">
                     <div class="col-12">
                         <label for="code" class="form-label fw-bold text-dark-emphasis">Code</label>
-                        <input type="text" id="code" name="code" class="form-control" />
+                        <input type="text" id="code" name="code" class="form-control" required />
+                        <div class="invalid-feedback">Please input data</div>
                     </div>
                 </div>
                 <div class="row mb-3">
@@ -35,16 +36,18 @@
                 <div class="row mb-3">
                     <div class="col-12">
                         <label for="nameen" class="form-label fw-bold text-dark-emphasis">Name (EN)</label>
-                        <input type="text" id="nameen" name="nameen" class="form-control" />
+                        <input type="text" id="nameen" name="nameen" class="form-control" required />
+                        <div class="invalid-feedback">Please input data</div>
                     </div>
                 </div>
                 <div class="row mb-4">
                     <div class="col-md-6 col-sm-12">
                         <label for="parent" class="form-label fw-bold text-dark-emphasis">Parent</label>
                         <select id="parent" name="parent" class="form-select">
-                            <option value="1">None</option>
-                            <option value="2">Staff</option>
-                            <option value="3">Supervisor</option>
+                            <option value="none">None</option>
+                            {% for po in pos %}
+                            <option value="{{ po.id }}">({{ po.code }}) {{ po.nameEN }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                 </div>
@@ -59,7 +62,7 @@
                         <a href="{% url 'indexPosition' %}" class="btn btn-light">
                             <span>Cancel</span>
                         </a>
-                        <button type="button" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary">
                             <span>Save</span>
                         </button>
                     </div>
@@ -76,6 +79,9 @@
 <script type="text/javascript">
     $(document).ready(function(){
         ActiveMenu("pos");
+        $('.form-select').select2({
+            theme: 'bootstrap-5',
+        });
     });
 </script>
 {% endblock %}

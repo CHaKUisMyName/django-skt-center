@@ -48,23 +48,31 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    {% for pos in positions %}
                                     <tr>
-                                        <td>1</td>
-                                        <td>01</td>
-                                        <td>เจ้าหน้าที่</td>
-                                        <td>Staff</td>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ pos.code }}</td>
+                                        <td>{{ pos.nameTH }}</td>
+                                        <td>{{ pos.nameEN }}</td>
                                         <td>
+                                            {% if pos.isActive %}
                                             <span class="badge text-bg-success text-white">Active</span>
+                                            {% else %}
+                                            <span class="badge text-bg-danger text-white">Inactive</span>
+                                            {% endif %}
                                         </td>
                                         <td>
-                                            <button type="button" class="btn btn-info">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-danger">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
+                                            <div>
+                                                <a href="#" class="btn btn-info">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-danger delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>
@@ -79,6 +87,17 @@
     <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
     <script src="{% static 'js/datatables.min.js' %}"></script>
     <script src="{% static 'js/dataTables.bootstrap5.js' %}"></script>
+    {% if messages %}
+        {% for message in messages %}
+        <script type="text/javascript">
+            $(document).ready(function(){
+                const mssTag = "{{message.tags}}";
+                const mssMsg = "{{message}}";
+                PopMessage(mssMsg, mssTag);
+            });
+        </script>
+        {% endfor %}
+    {% endif %}
     <script type="text/javascript">
         $(document).ready(()=>{
             ActiveMenu("pos");
