@@ -30,3 +30,20 @@ class Organization(BaseClass, BaseOrganization):
     meta = {
         'collection': 'organization'  # 👈 ชื่อ collection ที่กำหนดเอง
     }
+    def serialize_organization(self):
+        data = {
+            "id": str(self.id),
+            "code": self.code,
+            "nameTH": self.nameTH,
+            "nameEN": self.nameEN,
+            "shortName": self.shortName,
+            "parentId": str(self.parent.id) if self.parent else None,
+            "parentCode": self.parent.code if self.parent else None,
+            "parentNameTH": self.parent.nameTH if self.parent else None,
+            "parentNameEN": self.parent.nameEN if self.parent else None,
+            "levelId": str(self.level.id) if self.level else None,
+            "levelCode": self.level.code if self.level else None,
+            "levelNameTH": self.level.nameTH if self.level else None,
+            "levelNameEN": self.level.nameEN if self.level else None,
+        }
+        return data

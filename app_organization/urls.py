@@ -7,4 +7,6 @@ urlpatterns =[
     path('add/', view= views.addOrg, name= 'addOrg'),
     path('edit/<str:id>/', view= views.editOrg, name= 'editOrg'),
     path('delete/<str:id>/', view= views.deleteOrg, name= 'deleteOrg'),
+    path('api/list/', view= views.listOrg, name= 'listOrg'),
+
 ]

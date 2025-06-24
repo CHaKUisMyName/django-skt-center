@@ -169,7 +169,10 @@
             console.log(window.location.origin);
             console.log(window.location.pathname);
             Loading(true);
-            console.log("click");
+            ListPosition();
+            ListOrganization();
+        });
+        const ListPosition = ()=>{
             const settings = {
                 url: window.location.origin + "/pos/api/list/?isactive=true&isdelete=false",
                 method: "GET",
@@ -181,6 +184,19 @@
                 Loading(false);
                 console.log(xhr.responseText);
             });
-        });
+        }
+        const ListOrganization = ()=>{
+            const settings = {
+                url: window.location.origin + "/org/api/list/?isactive=true&isdelete=false",
+                method: "GET",
+            }
+            $.ajax(settings).done((data)=>{
+                console.log(data);
+                Loading(false);
+            }).fail((xhr, status, error)=>{
+                Loading(false);
+                console.log(xhr.responseText);
+            });
+        }
     </script>
 {% endblock %}

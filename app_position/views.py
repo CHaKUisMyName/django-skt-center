@@ -186,7 +186,7 @@ def deletePosition(request: HttpRequest, id: str):
         return JsonResponse(returnData)
     
 
-def ListPosition(request: HttpRequest):
+def listPosition(request: HttpRequest):
     try:
         if not request.method == "GET":
             return JsonResponse({'success': False, 'data': [], 'message': 'Method not allowed'})
