@@ -26,3 +26,18 @@ class Position(BaseClass, BaseOrganization):
     meta = {
         'collection': 'position'  # 👈 ชื่อ collection ที่กำหนดเอง
     }
+
+    def serialize_position(self):
+        # -- เอา element ตัวสุดท้ายของลิสต์นี้ (ตำแหน่งล่าสุดที่เพิ่มเข้ามา)
+        # latest_snap = self.snapShots[-1] if self.snapShots else None
+        data = {
+            "id": str(self.id),
+            "code": self.code,
+            "nameTH": self.nameTH,
+            "nameEN": self.nameEN,
+            "parentId": str(self.parent.id) if self.parent else None,
+            "parentCode": self.parent.code if self.parent else None,
+            "parentNameTH": self.parent.nameTH if self.parent else None,
+            "parentNameEN": self.parent.nameEN if self.parent else None,
+        }
+        return data

@@ -3,6 +3,8 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.contrib import messages
 
+from app_organization.models import Organization
+from app_position.models import Position
 from app_user.models.user import User
 
 # Create your views here.
@@ -10,7 +12,16 @@ def index(request: HttpRequest):
     return render(request, 'user/index.html')
 
 def addUser(request: HttpRequest):
-    return render(request, 'user/add.html')
+    if request.method == "POST":
+        response = HttpResponseRedirect(reverse('indexUser'))
+        try:
+            return response
+        except Exception as e:
+            print(e)
+            messages.error(request, str(e))
+            return response
+    else:
+        return render(request, 'user/add.html')
 
 def AddAlienUser(request: HttpRequest):
     try:

@@ -8,4 +8,5 @@ urlpatterns = [
     path('add/', view= views.addPosition, name='addPosition'),
     path('edit/<str:id>/', view= views.editPosition, name='editPosition'),
     path('delete/<str:id>/', view= views.deletePosition, name='deletePosition'),
+    path('api/list/', view= views.ListPosition, name='listPosition'),
 ]

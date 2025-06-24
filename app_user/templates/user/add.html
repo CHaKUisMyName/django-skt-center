@@ -107,7 +107,7 @@
                                     <p class="fw-bold h4 p-0 m-0">Roles User</p>
                                 </div>
                                 <div class="ms-auto my-auto mt-lg-0">
-                                    <button type="button" class="btn btn-success">
+                                    <button id="addRole" type="button" class="btn btn-success">
                                         <i class="fa-solid fa-plus"></i>
                                         <span>Add Role</span>
                                     </button>
@@ -122,7 +122,7 @@
                                     <thead>
                                         <tr>
                                             <th>Organization</th>
-                                            <th>Role</th>
+                                            <th>Position</th>
                                             <th>Remove</th>
                                         </tr>
                                     </thead>
@@ -162,6 +162,25 @@
     <script type="text/javascript">
         $(document).ready(()=>{
             ActiveMenu("user");
+        });
+        $("#addRole").click((e)=>{
+            e.preventDefault();
+            console.log(window.location.origin + window.location.pathname);
+            console.log(window.location.origin);
+            console.log(window.location.pathname);
+            Loading(true);
+            console.log("click");
+            const settings = {
+                url: window.location.origin + "/pos/api/list/?isactive=true&isdelete=false",
+                method: "GET",
+            }
+            $.ajax(settings).done((data)=>{
+                console.log(data);
+                Loading(false);
+            }).fail((xhr, status, error)=>{
+                Loading(false);
+                console.log(xhr.responseText);
+            });
         });
     </script>
 {% endblock %}

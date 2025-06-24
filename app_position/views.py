@@ -1,3 +1,4 @@
+import json
 from typing import List
 from bson import ObjectId
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
@@ -181,5 +182,42 @@ def deletePosition(request: HttpRequest, id: str):
         returnData = {
             'deleted': False,
             'message': str(e)
+        }
+        return JsonResponse(returnData)
+    
+
+def ListPosition(request: HttpRequest):
+    try:
+        if not request.method == "GET":
+            return JsonResponse({'success': False, 'data': [], 'message': 'Method not allowed'})
+        
+        # รับจาก query string: /list/?isActive=true&isDelete=false
+        isActive_str = request.GET.get("isactive")
+        isDelete_str = request.GET.get("isdelete")
+        # แปลง string เป็น boolean
+        def parse_bool(val):
+            return val.lower() in ["true", "1", "yes"] if val else None
+        
+        isActive = parse_bool(isActive_str)
+        isDelete = parse_bool(isDelete_str)
+
+        query = {}
+        if isActive is not None:
+            query['isActive'] = isActive
+        if isDelete is not None:
+            query['isDelete'] = isDelete
+        pos: List[Position] = Position.objects.filter(**query)
+        returnData = {
+            "success": True,
+            # "data": json.loads(pos.to_json()),
+            "data": [ p.serialize_position() for p in pos],
+            "message": "Success"
+        }
+        return JsonResponse(returnData)
+    except Exception as e:
+        returnData = {
+            "success": False,
+            "data": [],
+            "message": str(e)
         }
         return JsonResponse(returnData)
