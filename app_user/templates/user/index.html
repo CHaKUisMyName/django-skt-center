@@ -1,0 +1,99 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>User</title>{% endblock %}
+{% block css %}
+    <link href="{% static 'css/sweetalert2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/datatables.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/dataTables.bootstrap5.css' %}" rel="stylesheet">
+    <link href="{% static 'css/custom.css' %}" rel="stylesheet">
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span class="fw-bold">User</span>
+</div>
+{% endblock %}
+{% block content %}
+
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">List User</h3>
+                        <p class="text-sm mb-0">
+                            List of user
+                        </p>
+                    </div>
+                    <div class="ms-auto my-auto mt-lg-0 mt-4">
+                        <div class="ms-auto my-auto">
+                            <a href="{% url 'addUser' %}" class="btn btn-primary">
+                                <i class="bi bi-plus"></i>
+                                <span>Add user</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="tb" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Organization</th>
+                                <th>Email</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>20230</td>
+                                <td>Fruit</td>
+                                <td>
+                                    <ul>
+                                        <li>IT (staff)</li>
+                                        <li>GA (Driver)</li>
+                                    </ul>
+                                </td>
+                                <td>kuover@gmail.com</td>
+                                <td>
+                                    <div class="float-end">
+                                        <a href="{% url 'addUser' %}" class="btn btn-info">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/datatables.min.js' %}"></script>
+    <script src="{% static 'js/dataTables.bootstrap5.js' %}"></script>
+    <script type="text/javascript">
+        $(document).ready(()=>{
+            ActiveMenu("user");
+            $('#tb').DataTable({
+                columnDefs: [
+                    { width: '5%', targets: 0 },
+                    { width: '10%', targets: 1 },
+                    { width: '20%', targets: 4 },
+                    { width: '15%', targets: 5 }
+                ]
+            });
+        });
+    </script>
+{% endblock %}

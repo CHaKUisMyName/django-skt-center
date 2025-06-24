@@ -1,0 +1,114 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Level Edit</title>{% endblock %}
+{% block css %}
+<link href="{% static 'css/sweetalert2.min.css' %}" rel="stylesheet">
+<link href="{% static 'css/datatables.min.css' %}" rel="stylesheet">
+<link href="{% static 'css/dataTables.bootstrap5.css' %}" rel="stylesheet">
+<link href="{% static 'css/custom.css' %}" rel="stylesheet">
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>Level /</span><span class="fw-bold">Edit Level</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-lg-9 col-sm-12 m-auto">
+        <div class="card">
+            <form method="post" class="card-body mb-3" novalidate>
+                <h3 class="display-6 fw-bold">Edit Level</h3>
+                <p class="text-sm">Edit data Level</p>
+                {% csrf_token %}
+                <input type="hidden" name="lvId" id="lvId" value="{{ level.id }}" />
+                <div class="col-12">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="code" class="form-label fw-bold text-dark-emphasis">Code</label>
+                            <input type="text" id="code" name="code" class="form-control" value="{{ level.code }}" required/>
+                            <div class="invalid-feedback">Please input data</div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="nameth" class="form-label fw-bold text-dark-emphasis">Level NameTH</label>
+                            <input type="text" id="nameth" name="nameth" class="form-control" value="{{ level.nameTH }}"/>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="nameen" class="form-label fw-bold text-dark-emphasis">Level NameEN</label>
+                            <input type="text" id="nameen" name="nameen" class="form-control" value="{{ level.nameEN }}" required/>
+                            <div class="invalid-feedback">Please input data</div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6 col-sm-12">
+                            <label for="parent" class="form-label fw-bold text-dark-emphasis">Parent</label>
+                            <select id="parent" name="parent" class="form-select">
+                                <option value="none">None</option>
+                                {% for parent in parents  %}
+                                    {% if parent.id == level.parent.id %}
+                                    <option value="{{ parent.id }}" selected>({{parent.code}}) {{ parent.nameEN}}</option>
+                                    {% else %}
+                                    <option value="{{ parent.id }}">({{parent.code}}) {{ parent.nameEN}}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-8 col-sm-12">
+                            <label for="note" class="form-label fw-bold text-dark-emphasis">Note</label>
+                            <textarea id="note" name="note" class="form-control" style="height: 100px;">{{ level.note }}</textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-5">
+                        <div class="col-12">
+                            {% if level.isActive %}
+                            <input type="checkbox" id="isactive" name="isactive" class="form-check-input" checked />
+                            {% else %}
+                            <input type="checkbox" id="isactive" name="isactive" class="form-check-input" />
+                            {% endif %}
+                            <label for="isactive" class="form-check-label fw-bold text-dark-emphasis">Is Active</label>
+                        </div>
+                    </div>
+                    <div class="row mb-3 float-md-end">
+                        <div class="col-12">
+                            <a href="{% url 'indexLevel' %}" class="btn btn-light">
+                                <sapn>Cancel</sapn>
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <sapn>Save</sapn>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+<script src="{% static 'js/datatables.min.js' %}"></script>
+<script src="{% static 'js/dataTables.bootstrap5.js' %}"></script>
+<script type="text/javascript">
+    (function () {
+        'use strict';
+        document.querySelector('form').addEventListener('submit', function (event) {
+            Loading(true);
+            if (!this.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+                Loading(false);
+            }
+            this.classList.add('was-validated');
+            
+        }, false);
+    })();
+    $(document).ready(function(){
+        ActiveMenu("level");
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Visitor</title>{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1>Visitor</h1>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body row mb-3">
+        <div class="col-12">
+            <div id="calendar"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js'></script>
+    <script type="text/javascript">
+        $(document).ready(()=>{
+            ActiveMenu("visitor");
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: "prev,next today",
+                    center: "title",
+                    right: "dayGridMonth,timeGridWeek,timeGridDay,listYear",
+                },
+                eventDisplay: "block",
+                height: "auto",
+                aspectRatio: 2,
+                dateClick: function(info){
+                    console.log(info);
+                    window.location.href = window.location.origin + window.location.pathname + "add";
+                },
+            });
+            calendar.render();
+
+        });
+    </script>
+{% endblock %}

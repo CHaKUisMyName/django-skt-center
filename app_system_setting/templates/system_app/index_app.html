@@ -1,0 +1,146 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>System Menu</title>{% endblock %}
+{% block css %}
+    <link href="{% static 'css/sweetalert2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/datatables.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/dataTables.bootstrap5.css' %}" rel="stylesheet">
+    <link href="{% static 'css/custom.css' %}" rel="stylesheet">
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>System Settings / </span><span class="fw-bold">App Name Setting</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">List App Name</h3>
+                        <p class="text-sm mb-0">
+                            List of App System Name
+                        </p>
+                    </div>
+                    <div class="ms-auto my-auto mt-lg-0 mt-4">
+                        <div class="ms-auto my-auto">
+                            <a href="{% url 'addApp' %}" class="btn btn-primary">
+                                <i class="bi bi-plus"></i>
+                                <span>Add App Name</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table id="tb" class="table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in sysApp %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ item.name }}</td>
+                                        <td>
+                                            {% if item.isActive %}
+                                            <span class="badge text-bg-success text-white">Active</span>
+                                            {% else %}
+                                            <span class="badge text-bg-danger text-white">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <a href="{% url 'editApp' item.id %}" class="btn btn-info">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-danger delete" data-idap="{{ item.id }}">
+                                                    <i class="bi bi-trash"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor  %}
+                                    
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/datatables.min.js' %}"></script>
+    <script src="{% static 'js/dataTables.bootstrap5.js' %}"></script>
+    {% if messages %}
+        {% for message in messages %}
+        <script type="text/javascript">
+            $(document).ready(function(){
+                const mssTag = "{{message.tags}}";
+                const mssMsg = "{{message}}";
+                PopMessage(mssMsg, mssTag);
+            });
+        </script>
+        {% endfor %}
+    {% endif %}
+    <script type="text/javascript">
+        $(document).ready(()=>{
+            ActiveMenu("appname");
+            $('#tb').DataTable({
+                columnDefs: [
+                    { width: '10%', targets: 0 },
+                    { width: '25%', targets: 2 },
+                ]
+            });
+        });
+        $('.delete').click(function(e){
+            e.preventDefault()
+            console.log("click delete : "+ $(e.currentTarget).data('idap'));
+            Swal.fire({
+                title: "Do you want to delete ?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#f97316",
+                confirmButtonText: "Delete",
+                cancelButtonText: "Cancel",
+            }).then((result)=>{
+                if(result.isConfirmed){
+                    Loading(true);
+                    //alert("test");
+                    const settings = {
+                        url: window.location.origin + window.location.pathname + "delete/" + $(e.currentTarget).data('idap'),
+                        method: "GET",
+                    }
+                    $.ajax(settings)
+                    .done((response)=>{
+                        Loading(false);
+                        if(response.deleted == true){
+                            PopMessage("Delete success", "success", true);
+                        }else{
+                            PopMessage(response.message, "error");
+                        }
+                    })
+                    .fail((xhr, status, error)=>{
+                        Loading(false);
+                        console.error("เกิดข้อผิดพลาด: " + status + " - " + error);
+                        PopMessage(error, "error");
+                    });
+                }
+            });
+        });
+    </script>
+{% endblock %}
+intranet

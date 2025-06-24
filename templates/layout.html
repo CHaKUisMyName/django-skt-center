@@ -1,0 +1,198 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <meta name="apple-mobile-web-app-capable" content="yes">  -->
+    <link rel="apple-touch-icon"
+          sizes="180x180"
+          href="{% static 'favicon/apple-touch-icon.png' %}">
+    <link rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="{% static 'favicon/favicon-32x32.png' %}">
+    <link rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="{% static 'favicon/favicon-16x16.png' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link href="{% static 'css/app.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/fontawesome/css/fontawesome.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/fontawesome/css/brands.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/fontawesome/css/solid.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/custom.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/loading.css' %}" rel="stylesheet" />
+    
+    {% block css %}{% endblock %}
+    {% block title %}<title>SKT Center</title>{% endblock %}
+</head>
+<body>
+    <div class="load-screen d-none">
+        <span class="loader">Loading</span>
+    </div>
+    <div class="wrapper">
+        <nav id="sidebar" class="sidebar js-sidebar">
+            <div class="sidebar-content js-simplebar">
+                <a class="sidebar-brand border-bottom" href="#">
+                    <span class="align-middle">SANYO-KASEI</span>
+                  </a>
+                  <ul class="sidebar-nav">
+                    <li class="sidebar-header">Page</li>
+                    <li class="sidebar-item my-2 mx-3">
+                        <a class="sidebar-link" href="{% url 'indexDashboard' %}" data-active="dashboard">
+                            <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
+                                <i class="fa-solid fa-house"></i>
+                            </div>
+                            <span class="fw-bold">Home</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item my-2 mx-3">
+                        <a data-bs-target="#mainorg" data-bs-toggle="collapse" class="sidebar-link">
+                            <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
+                                <i class="bi bi-diagram-3-fill"></i>
+                            </div>
+                            <span class="fw-bold">Ogranization</span>
+                        </a>
+                        <ul id="mainorg" class="parent-menu-collapse sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="{% url 'indexLevel' %}" data-active="level">Level</a>
+                            </li>
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="{% url 'indexOrg' %}" data-active="org">Organization</a>
+                            </li>
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="{% url 'indexPosition' %}" data-active="pos">Position</a>
+                            </li>
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="#">Settings</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="sidebar-item my-2 mx-3">
+                        <a data-bs-target="#user" data-bs-toggle="collapse" class="sidebar-link">
+                            <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            <span class="fw-bold">User</span>
+                        </a>
+                        <ul id="user" class="parent-menu-collapse sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="{% url 'indexUser' %}" data-active="user">User</a>
+                            </li>
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="{% url 'indexSettingUser' %}" data-active="settinguser">Settings</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="sidebar-item my-2 mx-3">
+                        <a data-bs-target="#visitor" data-bs-toggle="collapse" class="sidebar-link">
+                            <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
+                                <i class="bi bi-book-fill"></i>
+                            </div>
+                            <span class="fw-bold">Visitor</span>
+                        </a>
+                        <ul id="visitor" class="parent-menu-collapse sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="{% url 'indexVisitor' %}" data-active="visitor">Visitor</a>
+                            </li>
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="{% url 'listVisitor' %}" data-active="listvisitor">List Visitor</a>
+                            </li>
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="{% url 'listOption' %}" data-active="option">Option</a>
+                            </li>
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="{% url 'listRoom' %}" data-active="room">Room</a>
+                            </li>
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="#" data-active="setuser">Settings</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="sidebar-item my-2 mx-3">
+                        <a data-bs-target="#system" data-bs-toggle="collapse" class="sidebar-link">
+                            <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
+                                <i class="bi bi-gear-fill"></i>
+                            </div>
+                            <span class="fw-bold">System Settings</span>
+                        </a>
+                        <ul id="system" class="parent-menu-collapse sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="{% url 'indexApp' %}" data-active="appname">App Name Setting</a>
+                            </li>
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="{% url 'indexMenu' %}" data-active="menu">System Menu Setting</a>
+                            </li>
+                        </ul>
+                    </li>
+                  </ul>
+            </div>
+        </nav>
+        <div class="main">
+            <nav class="navbar navbar-expand navbar-light">
+                <a class="sidebar-toggle js-sidebar-toggle">
+                    <i class="hamburger align-self-center"></i>
+                </a>
+                {% block breadcrumb %}{% endblock %}
+                <div class="navbar-collapse collapse">
+                    <ul class="navbar-nav navbar-align">
+                        <li class="nav-item dropdown">
+                            <a class="nav-icon dropdown-toggle d-inline-block d-sm-none" href="#" data-bs-toggle="dropdown">
+                                <i class="bi bi-person"></i>
+                            </a>
+                            <a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#" data-bs-toggle="dropdown">
+                                <!-- <img src="img/avatars/avatar.jpg" class="avatar img-fluid rounded me-1" alt="Charles Hall" /> -->
+                                <i class="bi bi-person"></i>
+                                <span>Charles Hall</span>
+                            </a>
+							<div class="dropdown-menu dropdown-menu-end">
+								<a class="dropdown-item" href="pages-profile.html"><i class="align-middle me-1" data-feather="user"></i> Profile</a>
+								<div class="dropdown-divider"></div>
+								<a class="dropdown-item" href="#">Log out</a>
+							</div>
+						</li>
+                    </ul>
+                </div>
+            </nav>
+            <main class="content">
+                <div class="container-fluid p-0">
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
+    <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+    <script src="{% static 'js/app.js'%}"></script>
+    <script src="{% static 'js/custom.js'%}"></script>
+    <script type="text/JavaScript">
+      function ActiveMenu(menu) {
+        // ลบ Active ออกจากทุกเมนูที่ไม่ตรงกับ data-active
+        $('.sidebar-link:not([data-active="' + menu + '"])').parent().removeClass('active');
+        // เพิ่ม Active ให้เมนูที่ถูกเลือก
+        let activeLink = $('.sidebar-link[data-active="' + menu + '"]');
+        activeLink.parent().addClass('active');
+
+        // -- active menu ที่มี menu ย่อย
+        if(activeLink.parents().hasClass('parent-menu-collapse')){
+          // -- show collapse และ active menu แม่
+          activeLink.parents('.parent-menu-collapse').addClass('show');
+          activeLink.parents('.parent-menu-collapse').parent().addClass('active');
+        }else{
+          // -- close collapse และ remove active
+          $('.parent-menu-collapse').removeClass('show');
+          $('.parent-menu-collapse').parent().removeClass('active');
+        }
+      }
+      function Loading(params) {
+        if(params){
+          $('.load-screen').removeClass('d-none');
+        }else{
+          $('.load-screen').addClass('d-none');
+        }
+      }
+    </script>
+    {% block script %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,81 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Position Add</title>{% endblock %}
+{% block css %}
+<link href="{% static 'css/sweetalert2.min.css' %}" rel="stylesheet">
+<link href="{% static 'css/datatables.min.css' %}" rel="stylesheet">
+<link href="{% static 'css/dataTables.bootstrap5.css' %}" rel="stylesheet">
+<link href="{% static 'css/custom.css' %}" rel="stylesheet">
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>Position /</span><span class="fw-bold">Add Position</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-sm-12 col-lg-9 m-auto">
+        <div class="card">
+            <form method="post" class="card-body mb-3" novalidate>
+                {% csrf_token %}
+                <h3 class="display-6 fw-bold">Add Position</h3>
+                <p class="text-sm">craete new position</p>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label for="code" class="form-label fw-bold text-dark-emphasis">Code</label>
+                        <input type="text" id="code" name="code" class="form-control" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label for="nameth" class="form-label fw-bold text-dark-emphasis">Name (TH)</label>
+                        <input type="text" id="nameth" name="nameth" class="form-control" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label for="nameen" class="form-label fw-bold text-dark-emphasis">Name (EN)</label>
+                        <input type="text" id="nameen" name="nameen" class="form-control" />
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-6 col-sm-12">
+                        <label for="parent" class="form-label fw-bold text-dark-emphasis">Parent</label>
+                        <select id="parent" name="parent" class="form-select">
+                            <option value="1">None</option>
+                            <option value="2">Staff</option>
+                            <option value="3">Supervisor</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-5">
+                    <div class="col-12">
+                        <input type="checkbox" id="isactive" name="isactive" class="form-check-input" />
+                        <label for="isactive" class="form-check-label fw-bold text-dark-emphasis">Is Active</label>
+                    </div>
+                </div>
+                <div class="row mb-3 float-end">
+                    <div class="col-12">
+                        <a href="{% url 'indexPosition' %}" class="btn btn-light">
+                            <span>Cancel</span>
+                        </a>
+                        <button type="button" class="btn btn-primary">
+                            <span>Save</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+<script src="{% static 'js/datatables.min.js' %}"></script>
+<script src="{% static 'js/dataTables.bootstrap5.js' %}"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        ActiveMenu("pos");
+    });
+</script>
+{% endblock %}

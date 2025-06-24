@@ -1,0 +1,66 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>System App</title>{% endblock %}
+{% block css %}
+    <link href="{% static 'css/sweetalert2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/datatables.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/dataTables.bootstrap5.css' %}" rel="stylesheet">
+    <link href="{% static 'css/custom.css' %}" rel="stylesheet">
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>System Settings / </span><span>System App Setting / </span><span class="fw-bold">Edit</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <form method="post" class="card-body mb-3" novalidate>
+                <h3 class="display-6 fw-bold">Edit App</h3>
+                <p class="text-sm">Edit data App Name</p>
+                {% csrf_token %}
+                <input type="hidden" name="idApp" value="{{ app.id }}" />
+                <div class="row mb-3">
+                    <div class="col-md-6 col-sm-12">
+                        <label for="appname" class="form-label fw-bold text-dark-emphasis">App Name</label>
+                        <input type="text" id="appname" name="appname" class="form-control" value="{{ app.name }}" required />
+                        <div class="invalid-feedback">Please input data</div>
+                    </div>
+                </div>
+                <div class="row mb-3 float-end">
+                    <div class="col-12">
+                        <a href="{% url 'indexApp' %}" class="btn btn-light">
+                            <span>Cancel</span>
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <span>Save</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+<script type="text/javascript">
+    (function () {
+        'use strict';
+        document.querySelector('form').addEventListener('submit', function (event) {
+            Loading(true);
+            if (!this.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+                Loading(false);
+            }
+            this.classList.add('was-validated');
+            
+        }, false);
+    })();
+    $(document).ready(function(){
+        ActiveMenu("appname");
+    });
+</script>
+{% endblock %}
