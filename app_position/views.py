@@ -13,7 +13,7 @@ from base_models.basemodel import UserSnapshot
 
 # Create your views here.
 def index(request: HttpRequest):
-    positions = Position.objects.filter(isActive = True, isDelete = False)
+    positions = Position.objects.filter(isDelete = False)
     context = {
         "positions": positions
     }
