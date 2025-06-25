@@ -1,6 +1,10 @@
 {% extends 'layout.html' %}
 {% load static %}
 {% block title %}<title>User Add</title>{% endblock %}
+{% block css %}
+<!-- Tempus Dominus Styles -->
+<link rel="stylesheet" href="{% static 'css/tempus-dominus.css' %}" />
+{% endblock %}
 {% block breadcrumb %}
 <div>
     <span>User /</span><span class="fw-bold">Add User</span>
@@ -86,13 +90,23 @@
                             <textarea id="address" name="address" class="form-control" style="height: 100px;">{{ level.note }}</textarea>
                         </div>
                     </div>
-                    <div class="row mb-4">
+                    <div class="row mb-3">
                         <div class="col-md-8 col-sm-12">
                             <label for="note" class="form-label fw-bold text-dark-emphasis">Note</label>
                             <textarea id="note" name="note" class="form-control" style="height: 100px;">{{ level.note }}</textarea>
                         </div>
                     </div>
-                    <div class="row mb-3">
+                    <div class="row mb-4">
+                        <div class="col-md-6 col-sm-12">
+                            <label for="status" class="form-label fw-bold text-dark-emphasis">Status</label>
+                            <select id="status" name="status" class="form-select">
+                                {% for us in userStatus %}
+                                <option value="{{ us.id }}">{{ us.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
                         <div class="col-12">
                             <div class="form-check">
                                 <input type="checkbox" id="isadmin" name="isadmin" class="form-check-input" />
@@ -101,7 +115,7 @@
                         </div>
                     </div>
                     <div class="row mb-3 mt-6">
-                        <div class="col-md-6 col-sm-12">
+                        <div class="col-md-8 col-sm-12">
                             <div class="d-flex">
                                 <div>
                                     <p class="fw-bold h4 p-0 m-0">Roles User</p>
@@ -116,7 +130,7 @@
                         </div>
                     </div>
                     <div class="row mb-3">
-                        <div class="col-md-6 col-sm-12">
+                        <div class="col-md-8 col-sm-12">
                             <div class="table-responsive">
                                 <table class="table">
                                     <thead>
@@ -127,19 +141,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>
-                                                <input type="text" id="org" name="org" class="form-control" />
-                                            </td>
-                                            <td>
-                                                <input type="text" id="role" name="role" class="form-control" />
-                                            </td>
-                                            <td>
-                                                <button type="button" class="btn btn-danger">
-                                                    <i class="fa-solid fa-trash-can"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
+                                        
                                     </tbody>
                                 </table>
                             </div>
@@ -159,44 +161,100 @@
 
 {% endblock %}
 {% block script %}
+<!-- Popperjs -->
+<script src="{% static 'js/popper.min.js' %}"></script>
+<!-- Tempus Dominus JavaScript -->
+<script src="{% static 'js/tempus-dominus.js' %}"></script>
     <script type="text/javascript">
         $(document).ready(()=>{
             ActiveMenu("user");
+            var birthDay = initialDatePk(document.getElementById("birthday"));
+            var startDate = initialDatePk(document.getElementById("sdate"));
+
         });
-        $("#addRole").click((e)=>{
+        $("#addRole").click(async (e)=>{
             e.preventDefault();
-            console.log(window.location.origin + window.location.pathname);
-            console.log(window.location.origin);
-            console.log(window.location.pathname);
             Loading(true);
-            ListPosition();
-            ListOrganization();
+            let pos = await getAPIData(window.location.origin + "/pos/api/list/?isactive=true&isdelete=false");
+            let orgs = await getAPIData(window.location.origin + "/org/api/list/?isactive=true&isdelete=false");
+            if(pos != null && orgs != null){
+                createTableRole(pos, orgs);
+                $('.form-select').select2({
+                    theme: 'bootstrap-5'
+                });
+            }
         });
-        const ListPosition = ()=>{
+        $(document).on("click", ".delete", function(e) {
+            $(e.currentTarget).parent('td').parent("tr").remove();
+        });
+        const createRoleDropdown = (data)=>{
+            const select = $("<select>").addClass('form-select');
+            select.prop("required", true);
+            select.prop("name", "pos");
+            $.each(data, (index, value)=>{
+                const option = $("<option>");
+                option.val(value.id);
+                option.text(value.nameEN+" ("+value.shortName+")");
+                select.append(option);
+            });
+            return select;
+        };
+
+        const getAPIData = async (url) =>{
+            let returnData = null;
             const settings = {
-                url: window.location.origin + "/pos/api/list/?isactive=true&isdelete=false",
+                url: url,
                 method: "GET",
             }
-            $.ajax(settings).done((data)=>{
-                console.log(data);
+            await $.ajax(settings).done((data)=>{
+                // console.log(data);
+                if(data.success == true){
+                    returnData = data.data;
+                }
+                
                 Loading(false);
             }).fail((xhr, status, error)=>{
                 Loading(false);
                 console.log(xhr.responseText);
             });
+            return returnData;
         }
-        const ListOrganization = ()=>{
-            const settings = {
-                url: window.location.origin + "/org/api/list/?isactive=true&isdelete=false",
-                method: "GET",
-            }
-            $.ajax(settings).done((data)=>{
-                console.log(data);
-                Loading(false);
-            }).fail((xhr, status, error)=>{
-                Loading(false);
-                console.log(xhr.responseText);
+        const createTableRole = (pos, orgs) => {
+            const posSelect = createRoleDropdown(pos);
+            const orgSelect = createRoleDropdown(orgs);
+            // -- div invalid feed back
+            const invalidDiv = $("<div>").addClass("invalid-feedback");
+            invalidDiv.text('Please select Data');
+            const button = $("<button>",{ 
+                type: "button", 
+                text: "Delete", 
+                class:"btn btn-danger delete",
             });
-        }
+            // -- <td>
+                const td = $("<td>");
+            
+            // -- td organization column
+            const tdOrg = td.clone().append(orgSelect);
+            tdOrg.append(invalidDiv.clone());
+            // -- td position column
+            const tdPos = td.clone().append(posSelect);
+            tdPos.append(invalidDiv.clone());
+            // -- td delete button column
+            const tdDl = td.clone().append(button);
+            // -- <tr>
+            const tr = $("<tr>");
+            tr.append(tdOrg);
+            tr.append(tdPos);
+            tr.append(tdDl);
+            if(!$('.table > tbody')[0]){
+                const tbody = $("<tbody>");
+                tbody.append(tr);
+                const table = $('.table');
+                table.append(tbody);
+            }else{
+                const table = $(".table > tbody");
+                table.append(tr);
+            }
+        };
     </script>
 {% endblock %}

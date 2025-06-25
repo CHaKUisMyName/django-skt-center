@@ -5,7 +5,7 @@ from django.contrib import messages
 
 from app_organization.models import Organization
 from app_position.models import Position
-from app_user.models.user import User
+from app_user.models.user import User, UserStatus
 
 # Create your views here.
 def index(request: HttpRequest):
@@ -21,7 +21,11 @@ def addUser(request: HttpRequest):
             messages.error(request, str(e))
             return response
     else:
-        return render(request, 'user/add.html')
+        userStatus = [{"id":us.value, "name":us.name}for us in UserStatus]
+        context = {
+            'userStatus': userStatus
+        }
+        return render(request, 'user/add.html', context= context)
 
 def AddAlienUser(request: HttpRequest):
     try:

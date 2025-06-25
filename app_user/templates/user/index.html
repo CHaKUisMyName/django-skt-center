@@ -43,8 +43,10 @@
                                 <th>#</th>
                                 <th>Code</th>
                                 <th>Name</th>
-                                <th>Organization</th>
+                                <th>Role</th>
                                 <th>Email</th>
+                                <th>Register</th>
+                                <th>Repassword</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -61,7 +63,13 @@
                                 </td>
                                 <td>kuover@gmail.com</td>
                                 <td>
-                                    <div class="float-end">
+                                    <button type="button" class="btn btn-warning">Register</button>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-secondary disabled">No Account</button>
+                                </td>
+                                <td>
+                                    <div class="">
                                         <a href="{% url 'addUser' %}" class="btn btn-info">
                                             <i class="bi bi-pencil"></i>
                                         </a>
@@ -88,10 +96,10 @@
             ActiveMenu("user");
             $('#tb').DataTable({
                 columnDefs: [
-                    { width: '5%', targets: 0 },
-                    { width: '10%', targets: 1 },
-                    { width: '20%', targets: 4 },
-                    { width: '15%', targets: 5 }
+                    // { width: '5%', targets: 0 },
+                    // { width: '10%', targets: 1 },
+                    // { width: '20%', targets: 4 },
+                    // { width: '15%', targets: 5 }
                 ]
             });
         });
