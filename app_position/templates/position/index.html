@@ -43,6 +43,7 @@
                                         <th>Code</th>
                                         <th>Name (TH)</th>
                                         <th>Name (EN)</th>
+                                        <th>Parent</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
@@ -52,8 +53,9 @@
                                     <tr>
                                         <td>{{ forloop.counter }}</td>
                                         <td>{{ pos.code }}</td>
-                                        <td>{{ pos.nameTH }}</td>
+                                        <td>{{ pos.nameTH|default:'-' }}</td>
                                         <td>{{ pos.nameEN }}</td>
+                                        <td>{{ pos.parent.nameEN|default:"-" }}</td>
                                         <td>
                                             {% if pos.isActive %}
                                             <span class="badge text-bg-success text-white">Active</span>

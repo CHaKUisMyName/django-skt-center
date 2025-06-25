@@ -31,7 +31,7 @@
                 <div class="row mb-3">
                     <div class="col-12">
                         <label for="nameth" class="form-label fw-bold text-dark-emphasis">Name (TH)</label>
-                        <input type="text" id="nameth" name="nameth" class="form-control" value="{{ position.nameTH }}" />
+                        <input type="text" id="nameth" name="nameth" class="form-control" value="{{ position.nameTH|default:'' }}" />
                     </div>
                 </div>
                 <div class="row mb-3">
@@ -39,6 +39,12 @@
                         <label for="nameen" class="form-label fw-bold text-dark-emphasis">Name (EN)</label>
                         <input type="text" id="nameen" name="nameen" class="form-control" value="{{ position.nameEN }}" required />
                         <div class="invalid-feedback">Please input data</div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label for="shortname" class="form-label fw-bold text-dark-emphasis">ShortName</label>
+                        <input type="text" id="shortname" name="shortname" class="form-control" value="{{ position.shortName|default:'' }}" />
                     </div>
                 </div>
                 <div class="row mb-3">
@@ -92,6 +98,19 @@
 <script src="{% static 'js/datatables.min.js' %}"></script>
 <script src="{% static 'js/dataTables.bootstrap5.js' %}"></script>
 <script type="text/javascript">
+    (function () {
+        'use strict';
+        document.querySelector('form').addEventListener('submit', function (event) {
+            Loading(true);
+            if (!this.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+                Loading(false);
+            }
+            this.classList.add('was-validated');
+            
+        }, false);
+    })();
     $(document).ready(function(){
         ActiveMenu("pos");
         $('.form-select').select2({

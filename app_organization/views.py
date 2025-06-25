@@ -46,8 +46,8 @@ def addOrg(request: HttpRequest):
             org.isActive = isactive
             org.isDelete = False
             org.note = note
-            org.level = level
-            org.parent = parent
+            org.level = ObjectId(level) if level else None
+            org.parent = ObjectId(parent) if parent else None
             currentUser: User = request.currentUser
             if currentUser:
                 uCreate = UserSnapshot().UserToSnapshot(currentUser)

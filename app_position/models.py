@@ -11,15 +11,18 @@ class PositionSnapShot(me.EmbeddedDocument):
     code = me.StringField()
     nameTH = me.StringField()
     nameEN = me.StringField()
+    shortName = me.StringField(null= True, required= False, default = None)
     parentCode = me.StringField(null= True, required= False, default = None)
     parentNameTH = me.StringField(null= True, required= False, default = None)
     parentNameEN = me.StringField(null= True, required= False, default = None)
+    parentShortName = me.StringField(null= True, required= False, default = None)
     createDate = me.DateTimeField(default = timezone.now())
     createBy = me.EmbeddedDocumentField(UserSnapshot)
 
 
 class Position(BaseClass, BaseOrganization):
     id = me.ObjectIdField(primary_key=True, default=lambda: ObjectId())
+    shortName = me.StringField(null= True, required= False, default = None)
     parent = me.ReferenceField('Position', null= True, required= False, default = None)
     snapShots = me.EmbeddedDocumentListField(PositionSnapShot)
     
@@ -35,9 +38,13 @@ class Position(BaseClass, BaseOrganization):
             "code": self.code,
             "nameTH": self.nameTH,
             "nameEN": self.nameEN,
+            "shortName": self.shortName,
             "parentId": str(self.parent.id) if self.parent else None,
             "parentCode": self.parent.code if self.parent else None,
             "parentNameTH": self.parent.nameTH if self.parent else None,
             "parentNameEN": self.parent.nameEN if self.parent else None,
+            "parentShortName": self.parent.shortName if self.parent else None,
+            "isActive": self.isActive,
+            "isDelete": self.isDelete,
         }
         return data

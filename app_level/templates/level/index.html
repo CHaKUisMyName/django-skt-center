@@ -56,7 +56,7 @@
                                     <tr>
                                         <td>{{ forloop.counter }}</td>
                                         <td>{{ level.code }}</td>
-                                        <td>{{ level.nameTH}}</td>
+                                        <td>{{ level.nameTH|default:'-'}}</td>
                                         <td>{{ level.nameEN }}</td>
                                         <td>{{ level.parent.nameEN|default:"-" }}</td>
                                         <td>

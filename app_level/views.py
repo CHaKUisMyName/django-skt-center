@@ -45,7 +45,7 @@ def addLevel(request: HttpRequest):
             level.isActive = isactive
             level.isDelete = False
             level.note = note
-            level.parent = parent
+            level.parent = ObjectId(parent) if parent else None
             currentUser: User = request.currentUser
             if currentUser:
                 uCreate = UserSnapshot().UserToSnapshot(currentUser)

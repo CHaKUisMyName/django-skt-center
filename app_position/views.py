@@ -32,6 +32,7 @@ def addPosition(request: HttpRequest):
             if not nameen:
                 messages.error(request, "NameEN is required")
                 return response
+            shortName = request.POST.get("shortname")
             parent = None if request.POST.get("parent") == "none" else request.POST.get("parent")
             isactive = True if request.POST.get("isactive") == 'on' else False
             note = request.POST.get("note")
@@ -40,9 +41,10 @@ def addPosition(request: HttpRequest):
             position.code = code
             position.nameTH = nameth
             position.nameEN = nameen
+            position.shortName = shortName
             position.isActive = isactive
             position.isDelete = False
-            position.parent = parent
+            position.parent = ObjectId(parent) if parent else None
             position.note = note
             currentUser: User = request.currentUser
             if currentUser:
@@ -85,6 +87,7 @@ def editPosition(request: HttpRequest, id: str):
             if not nameen:
                 messages.error(request, "NameEN is required")
                 return response
+            shortName = request.POST.get("shortname")
             parent = None if request.POST.get("parent") == "none" else request.POST.get("parent")
             isactive = True if request.POST.get("isactive") == 'on' else False
             note = request.POST.get("note")
@@ -93,10 +96,12 @@ def editPosition(request: HttpRequest, id: str):
             snapShot.code = position.code
             snapShot.nameTH = position.nameTH
             snapShot.nameEN = position.nameEN
+            snapShot.shortName = position.shortName
 
             position.code = code
             position.nameTH = nameth
             position.nameEN = nameen
+            position.shortName = shortName
             position.note = note
             position.isActive = isactive
 
@@ -110,10 +115,12 @@ def editPosition(request: HttpRequest, id: str):
                 snapShot.parentCode = position.parent.code
                 snapShot.parentNameTH = position.parent.nameTH
                 snapShot.parentNameEN = position.parent.nameEN
+                snapShot.parentShortName = position.parent.shortName
             else:
                 snapShot.parentCode = None
                 snapShot.parentNameTH = None
                 snapShot.parentNameEN = None
+                snapShot.parentShortName = None
 
             position.parent = parent
 
