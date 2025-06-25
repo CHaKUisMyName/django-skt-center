@@ -53,7 +53,7 @@
                         <select id="parent" name="parent" class="form-select">
                             <option value="none">None</option>
                             {% for po in pos %}
-                                {% if po.id != position.parent.id %}
+                                {% if po.id == position.parent.id %}
                                 <option value="{{ po.id }}" selected>({{ po.code }}) {{ po.nameEN }}</option>
                                 {% else %}
                                 <option value="{{ po.id }}">({{ po.code }}) {{ po.nameEN }}</option>

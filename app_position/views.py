@@ -122,7 +122,7 @@ def editPosition(request: HttpRequest, id: str):
                 snapShot.parentNameEN = None
                 snapShot.parentShortName = None
 
-            position.parent = parent
+            position.parent = ObjectId(parent) if parent else None
 
             currentUser: User = request.currentUser
             if currentUser:

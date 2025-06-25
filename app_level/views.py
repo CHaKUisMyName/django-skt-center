@@ -120,7 +120,7 @@ def editLevel(request: HttpRequest, id: str):
                 snapShot.parentNameTH = None
                 snapShot.parentNameEN = None
 
-            level.parent = parent
+            level.parent = ObjectId(parent) if parent else None
 
             currentUser: User = request.currentUser
             if currentUser:

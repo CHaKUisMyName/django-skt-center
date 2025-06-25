@@ -135,7 +135,7 @@ def editOrg(request: HttpRequest, id: str):
                 if not findParent:
                     messages.error(request, "Parent not found")
                     return response
-            org.parent = parent
+            org.parent = ObjectId(parent) if parent else None
             if level:
                 findLevel = Level.objects.get(id = ObjectId(level))
                 if not findLevel:
