@@ -41,6 +41,7 @@ class User(BaseClass):
     status = me.EnumField(UserStatus)
     isAdmin = me.BooleanField()
     isActive = me.BooleanField()
+    isRegister = me.BooleanField(null= True, required= False, default = None)
     note = me.StringField(null= True, required= False, default = None)
     address = me.StringField(null= True, required= False, default = None)
     roles = me.EmbeddedDocumentListField(RoleUser)

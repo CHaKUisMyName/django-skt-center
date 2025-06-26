@@ -12,7 +12,11 @@ from base_models.basemodel import UserSnapshot
 
 # Create your views here.
 def index(request: HttpRequest):
-    return render(request, 'user/index.html')
+    users = User.objects.filter(isActive = True)
+    context = {
+        "users": users
+    }
+    return render(request, 'user/index.html', context= context)
 
 def addUser(request: HttpRequest):
     if request.method == "POST":
@@ -89,6 +93,7 @@ def addUser(request: HttpRequest):
             user.status = UserStatus(int(status))
             user.isAdmin = isadmin
             user.isActive = True
+            user.isRegister = False
             user.roles = roleList
             currentUser: User = request.currentUser
             if currentUser:

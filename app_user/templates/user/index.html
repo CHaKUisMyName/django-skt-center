@@ -51,22 +51,36 @@
                             </tr>
                         </thead>
                         <tbody>
+                            {% for user in users %}
                             <tr>
-                                <td>1</td>
-                                <td>20230</td>
-                                <td>Fruit</td>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ user.code }}</td>
+                                <td>{{ user.fNameEN }} {{ user.lNameEN }}</td>
                                 <td>
-                                    <ul>
-                                        <li>IT (staff)</li>
-                                        <li>GA (Driver)</li>
-                                    </ul>
+                                    {% if user.roles|length %}
+                                        {% for role in user.roles %}
+                                            {% if role.isActive and role.isDelete == False %}
+                                                <p>- {{ role.orgNameEN }} ({{ role.posNameEN }})</p>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        <p>-</p>
+                                    {% endif %}
                                 </td>
-                                <td>kuover@gmail.com</td>
+                                <td>{{ user.email }}</td>
                                 <td>
+                                    {% if user.isRegister == False %}
                                     <button type="button" class="btn btn-warning">Register</button>
+                                    {% else %}
+                                    <button type="button" class="btn btn-secondary disabled">Registered</button>
+                                    {% endif %}
                                 </td>
                                 <td>
+                                    {% if user.isRegister == False %}
                                     <button type="button" class="btn btn-secondary disabled">No Account</button>
+                                    {% else %}
+                                    <button type="button" class="btn btn-warning">Reset Password</button>
+                                    {% endif %}
                                 </td>
                                 <td>
                                     <div class="">
@@ -79,6 +93,7 @@
                                     </div>
                                 </td>
                             </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
