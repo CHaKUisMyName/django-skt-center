@@ -213,7 +213,8 @@ def listPosition(request: HttpRequest):
             query['isActive'] = isActive
         if isDelete is not None:
             query['isDelete'] = isDelete
-        pos: List[Position] = Position.objects.filter(**query)
+        pos: List[Position] = Position.objects.filter(**query).order_by('code')
+        
         returnData = {
             "success": True,
             # "data": json.loads(pos.to_json()),

@@ -214,7 +214,8 @@ def listOrg(request: HttpRequest):
             query['isActive'] = isActive
         if isDelete is not None:
             query['isDelete'] = isDelete
-        orgs: List[Organization] = Organization.objects.filter(**query)
+        orgs: List[Organization] = Organization.objects.filter(**query).order_by('code')
+        
         returnData = {
             "success": True,
             # "data": json.loads(pos.to_json()),
