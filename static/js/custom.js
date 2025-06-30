@@ -87,6 +87,9 @@ const getAPIData = async (url) => {
  */
 const createDropdown = (data, name, selectedId = null) => {
   const select = $("<select>").addClass("form-select " + name);
+  select.css({
+    width: "100%",
+  });
   select.prop("required", true);
   select.prop("name", name);
   $.each(data, (index, value) => {

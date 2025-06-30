@@ -198,6 +198,7 @@ def editUser(request: HttpRequest, id: str):
                 return response
             
             updateUserRoles(user, roleList)
+            user.save()
             # print(json.dumps([role.serialize() for role in user.roles], ensure_ascii=False))
         else:
             user = User.objects.get(id = id)
