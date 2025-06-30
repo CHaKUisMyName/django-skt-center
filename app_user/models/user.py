@@ -14,6 +14,7 @@ class UserStatus(Enum):
 
 class RoleUser(BaseEmbedded):
     # -- เก็บ id เวลา load ทำการ lazy loading org จาก db
+    # -- แต่เวลา python load ขั้นมาจะเป็น object
     orgId = me.ReferenceField('app_organization.models.Organization')
     orgNameEN = me.StringField(null= True, required= False, default = None)# -- snapshot ของ org name ไว้
 
@@ -24,6 +25,17 @@ class RoleUser(BaseEmbedded):
     isActive = me.BooleanField(null= True, required= False, default = None)
     isDelete = me.BooleanField(null= True, required= False, default = None)
     note = me.StringField(null= True, required= False, default = None)
+
+    def serialize(self):
+        return {
+            "orgId": str(self.orgId.id),
+            "orgNameEN": self.orgNameEN,
+            "posId": str(self.posId.id),
+            "posNameEN": self.posNameEN,
+            "isActive": self.isActive,
+            "isDelete": self.isDelete,
+            "note": self.note
+        }
 
 class User(BaseClass):
     id = me.ObjectIdField(primary_key= True, default= lambda: ObjectId())

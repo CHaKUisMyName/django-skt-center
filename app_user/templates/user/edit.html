@@ -1,64 +1,64 @@
 {% extends 'layout.html' %}
 {% load static %}
-{% block title %}<title>User Add</title>{% endblock %}
+{% block title %}<title>User Edit</title>{% endblock %}
 {% block css %}
 <!-- Tempus Dominus Styles -->
 <link rel="stylesheet" href="{% static 'css/tempus-dominus.css' %}" />
 {% endblock %}
 {% block breadcrumb %}
 <div>
-    <span>User /</span><span class="fw-bold">Add User</span>
+    <span>User /</span><span class="fw-bold">Edit User</span>
 </div>
 {% endblock %}
 {% block content %}
 <div class="row mb-3">
     <div class="col-sm-12 col-lg-9 mx-auto">
         <div class="card">
-            <form method="post" action="{% url 'addUser' %}" class="card-body mb-3" novalidate>
-                <h3 class="display-6 fw-bold">Add User</h3>
-                <p class="text-sm">create new User</p>
-                <!-- <hr /> -->
+            <form method="post" class="card-body mb-3" novalidate>
+                <h3 class="display-6 fw-bold">Edit User</h3>
+                <p class="text-sm">Edit data User</p>
                 {% csrf_token %}
+                <input type="hidden" name="usid" value="{{ user.id }}" />
                 <div class="col-12">
                     <div class="row mb-3">
                         <div class="col-12">
                             <label for="fnameth" class="form-label fw-bold text-dark-emphasis">First Name (Thai)</label>
-                            <input type="text" class="form-control" id="fnameth" name="fnameth" />
+                            <input type="text" class="form-control" id="fnameth" name="fnameth" value="{{ user.fNameTH|default:'' }}" />
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-12">
                             <label for="lnameth" class="form-label fw-bold text-dark-emphasis">Last Name (Thai)</label>
-                            <input type="text" class="form-control" id="lnameth" name="lnameth" />
+                            <input type="text" class="form-control" id="lnameth" name="lnameth" value="{{ user.lNameTH|default:'' }}" />
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-12">
                             <label for="fnameeng" class="form-label fw-bold text-dark-emphasis">First Name (English)</label>
-                            <input type="text" class="form-control" id="fnameeng" name="fnameeng" required />
+                            <input type="text" class="form-control" id="fnameeng" name="fnameeng" value="{{ user.fNameEN }}" required />
                             <div class="invalid-feedback">Please input data</div>
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-12">
                             <label for="lnameeng" class="form-label fw-bold text-dark-emphasis">Last Name (English)</label>
-                            <input type="text" class="form-control" id="lnameeng" name="lnameeng" required />
+                            <input type="text" class="form-control" id="lnameeng" name="lnameeng" value="{{ user.lNameEN }}" required />
                             <div class="invalid-feedback">Please input data</div>
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-2 co-sm-12">
                             <label for="nickname" class="form-label fw-bold text-dark-emphasis">Nickname</label>
-                            <input type="text" class="form-control" id="nickname" name="nickname" />
+                            <input type="text" class="form-control" id="nickname" name="nickname" value="{{ user.nickName|default:'' }}" />
                         </div>
                         <div class="col-md-2 col-sm-12">
                             <label for="code" class="form-label fw-bold text-dark-emphasis">Employee Code</label>
-                            <input type="text" class="form-control" id="code" name="code" required />
+                            <input type="text" class="form-control" id="code" name="code" value="{{ user.code|default:'' }}" required />
                             <div class="invalid-feedback">Please input data</div>
                         </div>
                         <div class="col-md-2 col-sm-12">
                             <label for="nation" class="form-label fw-bold text-dark-emphasis">Naition</label>
-                            <input type="text" id="nation" name="nation" class="form-control" />
+                            <input type="text" id="nation" name="nation" class="form-control" value="{{ user.nation|default:'' }}" />
                         </div>
                         <div class="col-md-6 col-sm-12">
                             <label for="birthday" class="form-label fw-bold text-dark-emphasis">Birth Date</label>
@@ -69,11 +69,11 @@
                     <div class="row mb-3">
                         <div class="col-md-6 col-sm-12">
                             <label for="email" class="form-label fw-bold text-dark-emphasis">Email</label>
-                            <input type="email" id="email" name="email" class="form-control" />
+                            <input type="email" id="email" name="email" class="form-control" value="{{ user.email|default:'' }}" />
                         </div>
                         <div class="col-md-6 col-sm-12">
                             <label for="phone" class="form-label fw-bold text-dark-emphasis">Phone</label>
-                            <input type="text" id="phone" name="phone" class="form-control" />
+                            <input type="text" id="phone" name="phone" class="form-control" value="{{ user.phone|default:'' }}" />
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -86,13 +86,13 @@
                     <div class="row mb-4">
                         <div class="col-md-8 col-sm-12">
                             <label for="address" class="form-label fw-bold text-dark-emphasis">Address</label>
-                            <textarea id="address" name="address" class="form-control" style="height: 100px;">{{ level.note }}</textarea>
+                            <textarea id="address" name="address" class="form-control" style="height: 100px;">{{ user.address }}</textarea>
                         </div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-8 col-sm-12">
                             <label for="note" class="form-label fw-bold text-dark-emphasis">Note</label>
-                            <textarea id="note" name="note" class="form-control" style="height: 100px;">{{ level.note }}</textarea>
+                            <textarea id="note" name="note" class="form-control" style="height: 100px;">{{ user.note }}</textarea>
                         </div>
                     </div>
                     <div class="row mb-4">
@@ -100,7 +100,11 @@
                             <label for="status" class="form-label fw-bold text-dark-emphasis">Status</label>
                             <select id="status" name="status" class="form-select">
                                 {% for us in userStatus %}
-                                <option value="{{ us.id }}">{{ us.name }}</option>
+                                    {% if us.id == user.status.value %}
+                                        <option value="{{ us.id }}" selected>{{ us.name }}</option>
+                                    {% else %}
+                                        <option value="{{ us.id }}">{{ us.name }}</option>
+                                    {% endif %}
                                 {% endfor %}
                             </select>
                         </div>
@@ -108,7 +112,11 @@
                     <div class="row mb-4">
                         <div class="col-12">
                             <div class="form-check">
+                                {% if user.isAdmin == True %}
+                                <input type="checkbox" id="isadmin" name="isadmin" class="form-check-input" checked />
+                                {% else %}
                                 <input type="checkbox" id="isadmin" name="isadmin" class="form-check-input" />
+                                {% endif %}
                                 <label for="isadmin" class="form-check-label fw-bold text-dark-emphasis">Is Admin</label>
                             </div>
                         </div>
@@ -139,9 +147,7 @@
                                             <th>Remove</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        
-                                    </tbody>
+                                    <tbody></tbody>
                                 </table>
                             </div>
                         </div>
@@ -157,49 +163,70 @@
         </div>
     </div>
 </div>
-
 {% endblock %}
 {% block script %}
 <!-- Popperjs -->
 <script src="{% static 'js/popper.min.js' %}"></script>
 <!-- Tempus Dominus JavaScript -->
 <script src="{% static 'js/tempus-dominus.js' %}"></script>
-    <script type="text/javascript">
-        (function () {
-            'use strict';
-            document.querySelector('form').addEventListener('submit', function (event) {
-                Loading(true);
-                if (!this.checkValidity()) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    Loading(false);
-                }
-                this.classList.add('was-validated');
-                
-            }, false);
-        })();
-        $(document).ready(()=>{
-            ActiveMenu("user");
-            var birthDay = initialDatePk(document.getElementById("birthday"));
-            var startDate = initialDatePk(document.getElementById("sdate"));
-
-        });
-        $("#addRole").click(async (e)=>{
-            e.preventDefault();
+<script type="text/javascript">
+    var pos = null;
+    var orgs = null;
+    (function () {
+        'use strict';
+        document.querySelector('form').addEventListener('submit', function (event) {
             Loading(true);
-            let pos = await getAPIData(window.location.origin + "/pos/api/list/?isactive=true&isdelete=false");
-            let orgs = await getAPIData(window.location.origin + "/org/api/list/?isactive=true&isdelete=false");
-            if(pos != null && orgs != null){
-                createTableRole(pos, orgs);
-                $('.form-select').select2({
-                    theme: 'bootstrap-5'
-                });
+            if (!this.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+                Loading(false);
             }
-        });
-        $(document).on("click", ".delete", function(e) {
-            $(e.currentTarget).parent('td').parent("tr").remove();
-        });
-
+            this.classList.add('was-validated');
+        }, false);
+    })();
+    $(document).ready(async ()=>{
+        ActiveMenu("user");
+        Loading(true);
+        var birthDay = initialDatePk(document.getElementById("birthday"));
+        var startDate = initialDatePk(document.getElementById("sdate"));
+        let birth = "{{ user.birthDay|date:'c' }}";// e.g. 1992-09-21T00:00:00+00:00
+        let sDate = "{{ user.startJobDate|date:'c' }}";
         
-    </script>
+        if(birth){
+            birthDay.dates.setValue(tempusDominus.DateTime.convert(new Date(birth)));
+        }
+        if(sDate){
+            startDate.dates.setValue(tempusDominus.DateTime.convert(new Date(sDate)));
+        }
+        pos = await getAPIData(window.location.origin + "/pos/api/list/?isactive=true&isdelete=false");
+        orgs = await getAPIData(window.location.origin + "/org/api/list/?isactive=true&isdelete=false");
+        
+        const userRolesJson = JSON.parse(`{{userRolesJson|safe}}`);
+        if(userRolesJson && userRolesJson.length > 0){
+            $.each(userRolesJson, (index, value)=>{
+                if(value.isDelete == false){
+                    createTableRole(pos, orgs, value.posId, value.orgId);
+                }
+            });
+        }
+
+        Loading(false);
+    });
+    $("#addRole").click(async (e) => {
+        e.preventDefault();
+        Loading(true);
+        // let pos = await getAPIData(window.location.origin + "/pos/api/list/?isactive=true&isdelete=false");
+        // let orgs = await getAPIData(window.location.origin + "/org/api/list/?isactive=true&isdelete=false");
+        if(pos != null && orgs != null){
+            createTableRole(pos, orgs);
+            $('.form-select').select2({
+                theme: 'bootstrap-5'
+            });
+        }
+        Loading(false);
+    });
+    $(document).on("click", ".delete", function(e) {
+        $(e.currentTarget).parent('td').parent("tr").remove();
+    });
+</script>
 {% endblock %}

@@ -56,3 +56,85 @@ const initialDatePk = (element) => {
   });
   return dp;
 };
+
+const getAPIData = async (url) => {
+  let returnData = null;
+  const settings = {
+    url: url,
+    method: "GET",
+  };
+  await $.ajax(settings)
+    .done((data) => {
+      // console.log(data);
+      if (data.success == true) {
+        returnData = data.data;
+      }
+      Loading(false);
+    })
+    .fail((xhr, status, error) => {
+      Loading(false);
+      console.log(xhr.responseText);
+    });
+  return returnData;
+};
+
+/**
+ * create dropdown jquery
+ *
+ * @param {List(obj)} data - list object
+ * @param {string} name - name attr select
+ * @returns
+ */
+const createDropdown = (data, name, selectedId = null) => {
+  const select = $("<select>").addClass("form-select");
+  select.prop("required", true);
+  select.prop("name", name);
+  $.each(data, (index, value) => {
+    const option = $("<option>");
+    option.val(value.id);
+    option.text(value.nameEN + " (" + value.shortName + ")");
+    if (selectedId == value.id) {
+      option.prop("selected", true);
+    }
+    select.append(option);
+  });
+  return select;
+};
+
+const createTableRole = (pos, orgs, seletedPos = null, seletedOrg = null) => {
+  const posSelect = createDropdown(pos, "pos", seletedPos);
+  const orgSelect = createDropdown(orgs, "org", seletedOrg);
+  // -- div invalid feed back
+  const invalidDiv = $("<div>").addClass("invalid-feedback");
+  invalidDiv.text("Please select Data");
+  const button = $("<button>", {
+    type: "button",
+    text: "Delete",
+    class: "btn btn-danger delete",
+  });
+  // -- <td>
+  const td = $("<td>");
+
+  // -- td organization column
+  const tdOrg = td.clone().append(orgSelect);
+  tdOrg.append(invalidDiv.clone());
+  // -- td position column
+  const tdPos = td.clone().append(posSelect);
+  tdPos.append(invalidDiv.clone());
+  // -- td delete button column
+  const tdDl = td.clone().append(button);
+  // -- <tr>
+  const tr = $("<tr>");
+  tr.append(tdOrg);
+  tr.append(tdPos);
+  tr.append(tdDl);
+  if (!$(".table > tbody")[0]) {
+    const tbody = $("<tbody>");
+    tbody.append(tr);
+    const table = $(".table");
+    table.append(tbody);
+  } else {
+    const table = $(".table > tbody");
+    table.append(tr);
+  }
+};

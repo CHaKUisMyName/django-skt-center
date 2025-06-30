@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 from typing import List
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
@@ -13,6 +14,7 @@ from base_models.basemodel import UserSnapshot
 # Create your views here.
 def index(request: HttpRequest):
     users = User.objects.filter(isActive = True)
+    # users = User.objects.all()
     context = {
         "users": users
     }
@@ -128,6 +130,130 @@ def AddAlienUser(request: HttpRequest):
         data = {'status': False, 'mss': str(e)}
         return JsonResponse(data)
 
+def editUser(request: HttpRequest, id: str):
+    response = HttpResponseRedirect(reverse('indexUser'))
+    try:
+        if request.method == "POST":
+            usId = request.POST.get("usid")
+            if not usId:
+                messages.error(request, "Not found id !")
+                return response
+            user: User = User.objects.get(id = usId)
+            if not user:
+                messages.error(request, "User not found")
+                return response
+            code = request.POST.get("code")
+            if not code:
+                messages.error(request, "Code is required")
+                return response
+            fNameTH = request.POST.get("fnameth")
+            lNameTH = request.POST.get("lnameth")
+            fNameEN = request.POST.get("fnameeng")
+            if not fNameEN:
+                messages.error(request, "First Name EN is required")
+                return response
+            lNameEN = request.POST.get("lnameeng")
+            if not lNameEN:
+                messages.error(request, "Last Name EN is required")
+                return response
+            nickName = request.POST.get("nickname")
+            nation = request.POST.get("nation")
+            birthday = request.POST.get("birthday")
+            print(f"""bd : {birthday}""")
+            if birthday:
+                birthday = datetime.strptime(birthday, "%d/%m/%Y")
+            sDate = request.POST.get("sdate")
+            print(f"""sd : {sDate}""")
+            if sDate:
+                sDate = datetime.strptime(sDate, "%d/%m/%Y")
+            email = request.POST.get("email")
+            phone = request.POST.get("phone")
+            address = request.POST.get("address")
+            note = request.POST.get("note")
+            status = request.POST.get("status")
+            isadmin = True if request.POST.get("isadmin") == 'on' else False
+            
+            posList = request.POST.getlist("pos")
+            orgList = request.POST.getlist("org")
+            roleData =[{"posId": pos, "orgId": org} for pos, org in zip(posList, orgList)]
+            roleList: List[RoleUser] = list()
+            for role in roleData:
+                posId = role.get("posId")
+                orgId = role.get("orgId")
+                if posId and orgId:
+                    pos: Position = Position.objects.get(id = posId)
+                    org: Organization = Organization.objects.get(id = orgId)
+                    if pos and org:
+                        roleUser = RoleUser()
+                        roleUser.posId = pos
+                        roleUser.posNameEN = pos.nameEN
+                        roleUser.orgId = org
+                        roleUser.orgNameEN = org.nameEN
+                        roleUser.isActive = True
+                        roleUser.isDelete = False
+                        roleList.append(roleUser)
+            
+            update_user_roles(user, roleList)
+            print(json.dumps([role.serialize() for role in user.roles], ensure_ascii=False))
+        else:
+            user = User.objects.get(id = id)
+            if not user:
+                messages.error(request, "User not found")
+                return response
+            userStatus = [{"id":us.value, "name":us.name}for us in UserStatus]
+            userRolesJson = json.dumps([role.serialize() for role in user.roles], ensure_ascii=False)
+            print(userRolesJson)
+            context = {
+                'userStatus': userStatus,
+                'user': user,
+                "userRolesJson": userRolesJson,
+            }
+            return render(request, 'user/edit.html', context= context)
+    except Exception as e:
+        print(e)
+        messages.error(request, str(e))
+    return response
+
+def update_user_roles(user: User, new_roles: list[RoleUser]):
+    # map ของของเก่า: key = (posId, orgId)
+    old_map = {
+        (str(r.posId.id), str(r.orgId.id)): r
+        for r in user.roles
+        if r.isActive and not r.isDelete
+    }
+    print(f"""old map : {old_map}""")
+
+    new_keys = set((str(r.posId.id), str(r.orgId.id)) for r in new_roles)
+
+    updated_roles = []
+
+    # 1. เพิ่ม/แทนที่ของใหม่
+    for r in new_roles:
+        key = (str(r.posId.id), str(r.orgId.id))
+        updated_roles.append(RoleUser(
+            posId=r.posId,
+            posNameEN=r.posNameEN,
+            orgId=r.orgId,
+            orgNameEN=r.orgNameEN,
+            isActive=True,
+            isDelete=False,
+            note=r.note
+        ))
+
+    # 2. เปลี่ยนสถานะของเก่าที่ยังมีอยู่แต่หายไปในของใหม่
+    for key, old in old_map.items():
+        if key not in new_keys:
+            updated_roles.append(RoleUser(
+                posId=old.posId,
+                posNameEN=old.posNameEN,
+                orgId=old.orgId,
+                orgNameEN=old.orgNameEN,
+                isActive=False,
+                isDelete=True,
+                note=old.note
+            ))
+
+    user.roles = updated_roles
 
 
 # ---------- user settings ---------
