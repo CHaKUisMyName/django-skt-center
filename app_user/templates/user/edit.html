@@ -206,6 +206,9 @@
             $.each(userRolesJson, (index, value)=>{
                 if(value.isDelete == false){
                     createTableRole(pos, orgs, value.posId, value.orgId);
+                    $('.form-select').select2({
+                        theme: 'bootstrap-5'
+                    });
                 }
             });
         }
