@@ -75,9 +75,10 @@ def addUser(request: HttpRequest):
                         roleUser.isActive = True
                         roleUser.isDelete = False
                         roleList.append(roleUser)
-
-            print(roleData)
-
+            if isDuplicateRoles(roleList):
+                messages.error(request, "Duplicate Roles")
+                return response
+            
             user = User()
             user.code = code
             user.fNameTH = fNameTH
@@ -192,9 +193,12 @@ def editUser(request: HttpRequest, id: str):
                         roleUser.isActive = True
                         roleUser.isDelete = False
                         roleList.append(roleUser)
+            if isDuplicateRoles(roleList):
+                messages.error(request, "Duplicate Roles")
+                return response
             
-            update_user_roles(user, roleList)
-            print(json.dumps([role.serialize() for role in user.roles], ensure_ascii=False))
+            updateUserRoles(user, roleList)
+            # print(json.dumps([role.serialize() for role in user.roles], ensure_ascii=False))
         else:
             user = User.objects.get(id = id)
             if not user:
@@ -202,7 +206,6 @@ def editUser(request: HttpRequest, id: str):
                 return response
             userStatus = [{"id":us.value, "name":us.name}for us in UserStatus]
             userRolesJson = json.dumps([role.serialize() for role in user.roles], ensure_ascii=False)
-            print(userRolesJson)
             context = {
                 'userStatus': userStatus,
                 'user': user,
@@ -214,7 +217,21 @@ def editUser(request: HttpRequest, id: str):
         messages.error(request, str(e))
     return response
 
-def update_user_roles(user: User, new_roles: list[RoleUser]):
+def isDuplicateRoles(roles: List[RoleUser]):
+    # -- set to keep track of elements that have been seen
+    seen = set()
+    # -- list to store duplicates found in the input list
+    duplicates = []
+    for r in roles:
+        key = (str(r.posId.id), str(r.orgId.id))
+        if key in seen:
+            duplicates.append(key)
+        else:
+            seen.add(key)
+    return True if len(duplicates) > 0 else False
+
+
+def updateUserRoles(user: User, new_roles: list[RoleUser]):
     # map ของของเก่า: key = (posId, orgId)
     old_map = {
         (str(r.posId.id), str(r.orgId.id)): r
