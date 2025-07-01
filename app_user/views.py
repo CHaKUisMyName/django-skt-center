@@ -190,6 +190,11 @@ def editUser(request: HttpRequest, id: str):
             user.startJobDate = sDate
             user.status = UserStatus(int(status))
             user.isAdmin = isadmin
+            currentUser: User = request.currentUser
+            if currentUser:
+                uUpdate = UserSnapshot().UserToSnapshot(currentUser)
+                if uUpdate:
+                    user.updateBy = uUpdate
             
             posList = request.POST.getlist("pos")
             orgList = request.POST.getlist("org")
@@ -289,23 +294,23 @@ def updateUserRoles(user: User, new_roles: list[RoleUser]):
             isActive=True,
             isDelete=False,
             note=r.note,
-            createDate = r.createDate
+            createDate = r.createDate,
         ))
 
     # 2. เปลี่ยนสถานะของเก่าที่ยังมีอยู่แต่หายไปในของใหม่
     for key, old in old_map.items():
         if key not in new_keys:
-            updated_roles.append(RoleUser(
-                posId=old.posId,
-                posNameEN=old.posNameEN,
-                orgId=old.orgId,
-                orgNameEN=old.orgNameEN,
-                isActive=False,
-                isDelete=True,
-                note=old.note,
-                createDate = old.createDate,
-                updateDate = timezone.now()
-            ))
+            role = RoleUser()
+            role.posId = old.posId
+            role.posNameEN = old.posNameEN
+            role.orgId = old.orgId
+            role.orgNameEN = old.orgNameEN
+            role.isActive = False
+            role.isDelete = True
+            role.note = old.note
+            role.createDate = old.createDate
+            role.updateDate = timezone.now()
+            updated_roles.append(role)
 
     user.roles = updated_roles
 
