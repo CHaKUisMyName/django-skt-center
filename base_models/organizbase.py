@@ -1,7 +1,4 @@
 import mongoengine as me
-from django.utils import timezone
-
-from base_models.basemodel import BaseClass, BaseEmbedded
 
 class BaseOrganization:
     code = me.StringField()

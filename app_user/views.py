@@ -5,6 +5,7 @@ from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib import messages
+from django.utils import timezone
 
 from app_organization.models import Organization
 from app_position.models import Position
@@ -97,6 +98,7 @@ def addUser(request: HttpRequest):
             user.isAdmin = isadmin
             user.isActive = True
             user.isRegister = False
+            user.isDelete = False
             user.roles = roleList
             currentUser: User = request.currentUser
             if currentUser:
@@ -160,11 +162,9 @@ def editUser(request: HttpRequest, id: str):
             nickName = request.POST.get("nickname")
             nation = request.POST.get("nation")
             birthday = request.POST.get("birthday")
-            print(f"""bd : {birthday}""")
             if birthday:
                 birthday = datetime.strptime(birthday, "%d/%m/%Y")
             sDate = request.POST.get("sdate")
-            print(f"""sd : {sDate}""")
             if sDate:
                 sDate = datetime.strptime(sDate, "%d/%m/%Y")
             email = request.POST.get("email")
@@ -173,6 +173,23 @@ def editUser(request: HttpRequest, id: str):
             note = request.POST.get("note")
             status = request.POST.get("status")
             isadmin = True if request.POST.get("isadmin") == 'on' else False
+
+            # -- update data
+            user.code = code
+            user.fNameTH = fNameTH
+            user.lNameTH = lNameTH
+            user.fNameEN = fNameEN
+            user.lNameEN = lNameEN
+            user.nickName = nickName
+            user.nation = nation
+            user.email = email
+            user.phone = phone
+            user.address = address
+            user.note = note
+            user.birthDay = birthday
+            user.startJobDate = sDate
+            user.status = UserStatus(int(status))
+            user.isAdmin = isadmin
             
             posList = request.POST.getlist("pos")
             orgList = request.POST.getlist("org")
@@ -192,14 +209,19 @@ def editUser(request: HttpRequest, id: str):
                         roleUser.orgNameEN = org.nameEN
                         roleUser.isActive = True
                         roleUser.isDelete = False
+                        roleUser.createDate = timezone.now()
                         roleList.append(roleUser)
             if isDuplicateRoles(roleList):
                 messages.error(request, "Duplicate Roles")
                 return response
-            
-            updateUserRoles(user, roleList)
-            user.save()
+            if is_same_roles(user.roles, roleList) == False:
+                updateUserRoles(user, roleList)
+
             # print(json.dumps([role.serialize() for role in user.roles], ensure_ascii=False))
+            
+            user.save()
+            messages.success(request, 'Save Success')
+            return response
         else:
             user = User.objects.get(id = id)
             if not user:
@@ -218,6 +240,18 @@ def editUser(request: HttpRequest, id: str):
         messages.error(request, str(e))
     return response
 
+# -- check ว่ามีการแก้ไข role มาหรือไม่
+def is_same_roles(old_roles: list[RoleUser], new_roles: list[RoleUser]) -> bool:
+    def to_key_set(roles):
+        return set(
+            (str(r.posId.id), str(r.orgId.id), r.isActive, r.isDelete)
+            for r in roles
+            if r.isActive and not r.isDelete
+        )
+    
+    return to_key_set(old_roles) == to_key_set(new_roles)
+
+# -- check ว่ามีการเลือก role ซ้ำกันเองหรือไม่
 def isDuplicateRoles(roles: List[RoleUser]):
     # -- set to keep track of elements that have been seen
     seen = set()
@@ -235,13 +269,12 @@ def isDuplicateRoles(roles: List[RoleUser]):
 def updateUserRoles(user: User, new_roles: list[RoleUser]):
     # map ของของเก่า: key = (posId, orgId)
     old_map = {
-        (str(r.posId.id), str(r.orgId.id)): r
+        (str(r.posId.id), str(r.orgId.id), r.isActive, r.isDelete): r
         for r in user.roles
-        if r.isActive and not r.isDelete
+        # if r.isActive and not r.isDelete
     }
-    print(f"""old map : {old_map}""")
 
-    new_keys = set((str(r.posId.id), str(r.orgId.id)) for r in new_roles)
+    new_keys = set((str(r.posId.id), str(r.orgId.id), True, False) for r in new_roles)
 
     updated_roles = []
 
@@ -255,7 +288,8 @@ def updateUserRoles(user: User, new_roles: list[RoleUser]):
             orgNameEN=r.orgNameEN,
             isActive=True,
             isDelete=False,
-            note=r.note
+            note=r.note,
+            createDate = r.createDate
         ))
 
     # 2. เปลี่ยนสถานะของเก่าที่ยังมีอยู่แต่หายไปในของใหม่
@@ -268,7 +302,9 @@ def updateUserRoles(user: User, new_roles: list[RoleUser]):
                 orgNameEN=old.orgNameEN,
                 isActive=False,
                 isDelete=True,
-                note=old.note
+                note=old.note,
+                createDate = old.createDate,
+                updateDate = timezone.now()
             ))
 
     user.roles = updated_roles

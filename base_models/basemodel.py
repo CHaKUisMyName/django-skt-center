@@ -32,7 +32,7 @@ class BaseClass(me.Document):
 
 # - เอาสำหรับใช้ embedded ใน class
 class BaseEmbedded(me.EmbeddedDocument):
-    createDate = me.DateTimeField(default = timezone.now())
+    createDate = me.DateTimeField()
     createBy = me.EmbeddedDocumentField(UserSnapshot)
     updateDate = me.DateTimeField()
     updateBy = me.EmbeddedDocumentField(UserSnapshot)

@@ -53,6 +53,7 @@ class User(BaseClass):
     status = me.EnumField(UserStatus)
     isAdmin = me.BooleanField()
     isActive = me.BooleanField()
+    isDelete = me.BooleanField(null= True, required= False, default = None)
     isRegister = me.BooleanField(null= True, required= False, default = None)
     note = me.StringField(null= True, required= False, default = None)
     address = me.StringField(null= True, required= False, default = None)
