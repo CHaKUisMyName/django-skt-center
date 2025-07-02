@@ -170,8 +170,8 @@
 <!-- Tempus Dominus JavaScript -->
 <script src="{% static 'js/tempus-dominus.js' %}"></script>
 <script type="text/javascript">
-    var pos = null;
-    var orgs = null;
+    // var pos = null;
+    // var orgs = null;
     (function () {
         'use strict';
         document.querySelector('form').addEventListener('submit', function (event) {
@@ -198,13 +198,14 @@
         if(sDate){
             startDate.dates.setValue(tempusDominus.DateTime.convert(new Date(sDate)));
         }
-        pos = await getAPIData(window.location.origin + "/pos/api/list/?isactive=true&isdelete=false");
-        orgs = await getAPIData(window.location.origin + "/org/api/list/?isactive=true&isdelete=false");
+        let pos = await getAPIData(window.location.origin + "/pos/api/list/?isactive=true&isdelete=false");
+        let orgs = await getAPIData(window.location.origin + "/org/api/list/?isactive=true&isdelete=false");
         
         const userRolesJson = JSON.parse(`{{userRolesJson|safe}}`);
         if(userRolesJson && userRolesJson.length > 0){
             $.each(userRolesJson, (index, value)=>{
                 if(value.isDelete == false){
+                    console.log(value);
                     createTableRole(pos, orgs, value.posId, value.orgId);
                     $('.form-select').select2({
                         theme: 'bootstrap-5'
@@ -218,8 +219,8 @@
     $("#addRole").click(async (e) => {
         e.preventDefault();
         Loading(true);
-        // let pos = await getAPIData(window.location.origin + "/pos/api/list/?isactive=true&isdelete=false");
-        // let orgs = await getAPIData(window.location.origin + "/org/api/list/?isactive=true&isdelete=false");
+        let pos = await getAPIData(window.location.origin + "/pos/api/list/?isactive=true&isdelete=false");
+        let orgs = await getAPIData(window.location.origin + "/org/api/list/?isactive=true&isdelete=false");
         if(pos != null && orgs != null){
             createTableRole(pos, orgs);
             $('.form-select').select2({

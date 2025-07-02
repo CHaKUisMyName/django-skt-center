@@ -223,6 +223,7 @@ def editUser(request: HttpRequest, id: str):
                 updateUserRoles(user, roleList)
 
             # print(json.dumps([role.serialize() for role in user.roles], ensure_ascii=False))
+            # print(user.to_json())
             
             user.save()
             messages.success(request, 'Save Success')
@@ -272,45 +273,88 @@ def isDuplicateRoles(roles: List[RoleUser]):
 
 
 def updateUserRoles(user: User, new_roles: list[RoleUser]):
-    # map ของของเก่า: key = (posId, orgId)
+    # Map ของ role เดิมทั้งหมด
     old_map = {
         (str(r.posId.id), str(r.orgId.id), r.isActive, r.isDelete): r
         for r in user.roles
-        # if r.isActive and not r.isDelete
     }
 
+    # Key ใหม่ (เฉพาะที่ active)
     new_keys = set((str(r.posId.id), str(r.orgId.id), True, False) for r in new_roles)
 
     updated_roles = []
 
-    # 1. เพิ่ม/แทนที่ของใหม่
     for r in new_roles:
-        key = (str(r.posId.id), str(r.orgId.id))
-        updated_roles.append(RoleUser(
-            posId=r.posId,
-            posNameEN=r.posNameEN,
-            orgId=r.orgId,
-            orgNameEN=r.orgNameEN,
-            isActive=True,
-            isDelete=False,
-            note=r.note,
-            createDate = r.createDate,
-        ))
+        key_active = (str(r.posId.id), str(r.orgId.id), True, False)
+        key_removed = (str(r.posId.id), str(r.orgId.id), False, True)
 
-    # 2. เปลี่ยนสถานะของเก่าที่ยังมีอยู่แต่หายไปในของใหม่
+        if key_active in old_map:
+            # ✅ ยังมีอยู่แบบ active → reuse ได้เลย
+            updated_roles.append(old_map[key_active])
+
+        elif key_removed in old_map:
+            # ✅ เคยถูกลบ → snapshot เก่า แล้วเพิ่มใหม่ (ใหม่จริง → ไม่ reuse เดิมเลย)
+            old = old_map[key_removed]
+            now = timezone.now()
+
+            # 🔸 1. snapshot เก่าซ้ำอีกครั้ง
+            snapshot = RoleUser(
+                posId=old.posId,
+                posNameEN=old.posNameEN,
+                orgId=old.orgId,
+                orgNameEN=old.orgNameEN,
+                isActive=False,
+                isDelete=True,
+                note=old.note,
+                createDate=old.createDate,
+                updateDate=old.updateDate if old.updateDate else now,
+                # updateDate=now
+            )
+            updated_roles.append(snapshot)
+
+            # 🔹 2. เพิ่มใหม่ (ไม่ reuse, createDate ใหม่แน่นอน)
+            new_role = RoleUser(
+                posId=r.posId,
+                posNameEN=r.posNameEN,
+                orgId=r.orgId,
+                orgNameEN=r.orgNameEN,
+                isActive=True,
+                isDelete=False,
+                note=r.note,
+                createDate=now  # ✅ ใหม่ทุกครั้ง
+            )
+            updated_roles.append(new_role)
+
+        else:
+            # ✅ ใหม่จริง → createDate ใหม่
+            new_role = RoleUser(
+                posId=r.posId,
+                posNameEN=r.posNameEN,
+                orgId=r.orgId,
+                orgNameEN=r.orgNameEN,
+                isActive=True,
+                isDelete=False,
+                note=r.note,
+                createDate=timezone.now()
+            )
+            updated_roles.append(new_role)
+
+    # 3. role เดิมที่หายไปจาก new_roles → ถือว่าถูกลบ → snapshot ทิ้ง
     for key, old in old_map.items():
-        if key not in new_keys:
-            role = RoleUser()
-            role.posId = old.posId
-            role.posNameEN = old.posNameEN
-            role.orgId = old.orgId
-            role.orgNameEN = old.orgNameEN
-            role.isActive = False
-            role.isDelete = True
-            role.note = old.note
-            role.createDate = old.createDate
-            role.updateDate = timezone.now()
-            updated_roles.append(role)
+        base_key = (str(old.posId.id), str(old.orgId.id), True, False)
+        if base_key not in new_keys:
+            removed = RoleUser(
+                posId=old.posId,
+                posNameEN=old.posNameEN,
+                orgId=old.orgId,
+                orgNameEN=old.orgNameEN,
+                isActive=False,
+                isDelete=True,
+                note=old.note,
+                createDate=old.createDate,
+                updateDate=timezone.now()
+            )
+            updated_roles.append(removed)
 
     user.roles = updated_roles
 

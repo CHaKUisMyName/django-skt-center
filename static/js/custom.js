@@ -95,7 +95,9 @@ const createDropdown = (data, name, selectedId = null) => {
   $.each(data, (index, value) => {
     const option = $("<option>");
     option.val(value.id);
-    option.text(value.nameEN + " (" + value.shortName + ")");
+    option.text(
+      "(" + value.code + ") " + value.nameEN + " (" + value.shortName + ")"
+    );
     if (selectedId == value.id) {
       option.prop("selected", true);
     }
