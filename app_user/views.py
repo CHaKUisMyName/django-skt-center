@@ -358,6 +358,25 @@ def updateUserRoles(user: User, new_roles: list[RoleUser]):
 
     user.roles = updated_roles
 
+def deleteUser(request: HttpRequest, id: str):
+    try:
+        if not request.method == "GET":
+            return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
+        if not id:
+            return JsonResponse({'deleted': False, 'message': 'Not found id'})
+        
+        user: User = User.objects.get(id = id)
+        if not user:
+            return JsonResponse({'deleted': False, 'message': 'User not found'})
+        
+        user.isDelete = True
+        user.isActive = False
+        user.save()
+        
+        return JsonResponse({'deleted': True, 'message': 'Delete success'})
+    except Exception as e:
+        return JsonResponse({'deleted': False, 'message': str(e)})
+
 
 # ---------- user settings ---------
 def indexSettingUser(request: HttpRequest):

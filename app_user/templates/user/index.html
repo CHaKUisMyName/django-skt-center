@@ -87,7 +87,7 @@
                                         <a href="{% url 'editUser' user.id %}" class="btn btn-info">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <button type="button" class="btn btn-danger delete">
+                                        <button type="button" class="btn btn-danger delete" data-usid="{{ user.id }}">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
@@ -141,6 +141,21 @@
             }).then((result) => {
                 if(result.isConfirmed){
                     Loading(true);
+                    const settings = {
+                        url: window.location.origin + window.location.pathname + "delete/" + $(e.currentTarget).data('usid'),
+                        method: "GET",
+                    }
+                    $.ajax(settings).done((response) => {
+                        Loading(false);
+                        if(response.deleted == true){
+                            PopMessage("Delete success", "success", true);
+                        }else{
+                            PopMessage(response.message, "error");
+                        }
+                    }).fail((xjr, status, error) => {
+                        Loading(false);
+                        PopMessage(error, "error");
+                    });
                 }
             });
         });
