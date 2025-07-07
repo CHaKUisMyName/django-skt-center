@@ -28,4 +28,5 @@ urlpatterns = [
     path('org/', include('app_organization.urls')),
     path('pos/', include('app_position.urls')),
     path('login/', userViews.login, name= 'login'),
+    path('logout/', userViews.logout, name= 'logout'),
 ]

@@ -14,7 +14,7 @@ def requiredLogin(view_func):
             expireSeession.delete()
 
         # หา session
-        session: AuthSession = AuthSession.objects.get(session = clientSession)
+        session: AuthSession = AuthSession.objects.filter(session = clientSession).first()
         if not session:
             return HttpResponseRedirect('/login')
         

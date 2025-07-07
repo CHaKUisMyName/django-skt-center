@@ -454,6 +454,22 @@ def login(request: HttpRequest):
         return render(request, 'login.html')
     
 @requiredLogin
+def logout(request: HttpRequest):
+    try:
+        session = request.COOKIES.get("session")
+        authSession: AuthSession = AuthSession.objects.filter(session = session).first()
+        if authSession:
+            authSession.delete()
+        response = HttpResponseRedirect(reverse('login'))
+        response.delete_cookie('session')
+        return response
+    except Exception as e:
+        print(e)
+        messages.error(request, str(e))
+        # return HttpResponseRedirect(reverse('login'))
+        return HttpResponseRedirect('/')
+    
+@requiredLogin
 def regisUser(request: HttpRequest, id:str):
     try:
         user: User = User.objects.get(id = id)
