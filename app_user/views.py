@@ -422,7 +422,7 @@ def login(request: HttpRequest):
                 messages.error(request, "Password is required")
                 return HttpResponseRedirect(reverse('login'))
             
-            authUser: AuthUser = AuthUser.objects.get(userAuth = username)
+            authUser: AuthUser = AuthUser.objects.filter(userAuth = username).first()
             if not authUser:
                 messages.error(request, "Not Found User.")
                 return HttpResponseRedirect(reverse('login'))
@@ -433,10 +433,9 @@ def login(request: HttpRequest):
             session = AuthSession()
             session.session = secrets.token_hex(20)
             session.expireDate = timezone.now() + timezone.timedelta(days=1)
-            print(str(authUser.refUser.id))
+            
             session.SaveSessionData({"userId": str(authUser.refUser.id)})
             session.save()
-            print(session.to_json())
 
             authUser.lastLogin = timezone.now()
             authUser.save()
@@ -508,6 +507,65 @@ def regisUser(request: HttpRequest, id:str):
         print(e)
         messages.error(request, str(e))
         return HttpResponseRedirect(reverse('indexUser'))
+    
+@requiredLogin
+def resetPassword(request: HttpRequest, id:str):
+    response = HttpResponseRedirect(reverse('indexUser'))
+    try:
+        user: User = User.objects.filter(id = id).first()
+        if not user:
+            messages.error(request, "User not found")
+            return response
+        
+        if request.method == "POST":
+            usid = request.POST.get("usid")
+            if not usid:
+                messages.error(request, "Not found user id !")
+                return response
+            authid = request.POST.get("authid")
+            if not authid:
+                messages.error(request, "Not found auth id !")
+                return response
+            username = request.POST.get('username')
+            if not username:
+                messages.error(request, "Username is required")
+                return response
+            password = request.POST.get("password")
+            if not password:
+                messages.error(request, "Password is required")
+                return response
+            authUser: AuthUser = AuthUser.objects.filter(id = authid).first()
+            if not authUser:
+                messages.error(request, "Auth User not found")
+                return response
+            
+            authUser.userAuth = username
+            authUser.hashPassword(password)
+            authUser.save()
+            authSession: List[AuthSession] = AuthSession.objects.all()
+            if authSession:
+                for authSS in authSession:
+                    data = authSS.GetSessionData()
+                    if str(data["userId"]) == str(authUser.refUser.id):
+                        authSS.delete()
+                        response.delete_cookie('session')
+            messages.success(request, 'Reset Password Success')
+            return response
+        else:
+            authUser: AuthUser = AuthUser.objects.filter(refUser = user).first()
+            if not authUser:
+                messages.error(request, "Auth User not found")
+                return response
+            context = {
+                "user": user,
+                "authUser": authUser
+            }
+            return render(request, 'repassword.html', context)
+    except Exception as e:
+        print(e)
+        messages.error(request, str(e))
+        return response
+
 
 # ---------- user settings ---------
 def indexSettingUser(request: HttpRequest):

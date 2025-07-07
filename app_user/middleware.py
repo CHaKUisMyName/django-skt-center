@@ -1,5 +1,6 @@
 from django.http import HttpRequest
 
+from app_user.models.auth_session import AuthSession
 from app_user.models.user import User
 
 class UserInjectMiddleware:
@@ -10,13 +11,17 @@ class UserInjectMiddleware:
         # Code to execute before the view is called
         # For example, you could fetch user data and attach it to the request object
         # request.user_data = fetch_user_data(request)
-
-        user = User.objects.first()
-        if not user:
-            user = None
-        request.currentUser = user
+        session = request.COOKIES.get("session")
+        authSesstion: AuthSession  =  AuthSession.objects.filter(session = session).first()
+        if authSesstion:
+            if not authSesstion.IsExpired():
+                data = authSesstion.GetSessionData()
+                print(data)
+                user = User.objects.filter(id = data["userId"]).first()
+                request.currentUser = user if user else None
+            else:
+                request.currentUser = None
+        else:
+            request.currentUser = None
         response = self.get_response(request)
-
-        # Code to execute after the view is called
-
         return response

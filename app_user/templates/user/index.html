@@ -79,7 +79,7 @@
                                     {% if user.isRegister == False %}
                                     <button type="button" class="btn btn-secondary disabled">No Account</button>
                                     {% else %}
-                                    <button type="button" class="btn btn-warning">Reset Password</button>
+                                    <a href="{% url 'rePassUser' user.id %}" class="btn btn-warning">Reset Password</a>
                                     {% endif %}
                                 </td>
                                 <td>
