@@ -70,7 +70,7 @@
                                 <td>{{ user.email }}</td>
                                 <td>
                                     {% if user.isRegister == False %}
-                                    <button type="button" class="btn btn-warning">Register</button>
+                                    <a href="{% url 'regisUser' user.id %}" class="btn btn-warning">Register</a>
                                     {% else %}
                                     <button type="button" class="btn btn-secondary disabled">Registered</button>
                                     {% endif %}

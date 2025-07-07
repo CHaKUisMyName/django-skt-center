@@ -9,9 +9,10 @@ from django.utils import timezone
 from app_level.models import Level
 from app_organization.models import Organization, OrganizationSnapShot
 from app_user.models.user import User
+from app_user.utils import requiredLogin
 from base_models.basemodel import UserSnapshot
 
-# Create your views here.
+@requiredLogin
 def index(request: HttpRequest):
     orgs = Organization.objects.filter(isDelete = False)
     context = {
@@ -19,6 +20,7 @@ def index(request: HttpRequest):
     }
     return render(request, 'organization/index.html', context= context)
 
+@requiredLogin
 def addOrg(request: HttpRequest):
     if request.method == "POST":
         response = HttpResponseRedirect(reverse('indexOrg'))
@@ -68,7 +70,8 @@ def addOrg(request: HttpRequest):
             "orgs": orgs,
         }
         return render(request, 'organization/add.html', context= context)
-    
+
+@requiredLogin 
 def editOrg(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexOrg'))
     try:
@@ -165,6 +168,7 @@ def editOrg(request: HttpRequest, id: str):
         messages.error(request, str(e))
     return response
 
+@requiredLogin
 def deleteOrg(request: HttpRequest, id: str):
     try:
         if not request.method == "GET":
@@ -194,7 +198,8 @@ def deleteOrg(request: HttpRequest, id: str):
             'message': str(e)
         }
         return JsonResponse(returnData)
-    
+
+@requiredLogin
 def listOrg(request: HttpRequest):
     try:
         if not request.method == "GET":

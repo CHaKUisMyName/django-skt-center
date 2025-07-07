@@ -9,10 +9,11 @@ from django.contrib import messages
 from app_level.models import Level, LevelSnapShot
 from app_organization.models import Organization
 from app_user.models.user import User
+from app_user.utils import requiredLogin
 from base_models.basemodel import UserSnapshot
 
 
-# Create your views here.
+@requiredLogin
 def index(request: HttpRequest):
     levels = Level.objects.filter(isDelete = False)
     context = {
@@ -20,6 +21,7 @@ def index(request: HttpRequest):
     }
     return render(request, 'level/index.html', context= context)
 
+@requiredLogin
 def addLevel(request: HttpRequest):
     if request.method == "POST":
         response = HttpResponseRedirect(reverse('indexLevel'))
@@ -67,7 +69,8 @@ def addLevel(request: HttpRequest):
             "parents": parents
         }
         return render(request, 'level/add.html', context= context)
-    
+
+@requiredLogin
 def editLevel(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexLevel'))
     try:
@@ -159,6 +162,7 @@ def editLevel(request: HttpRequest, id: str):
         messages.error(request, str(e))
     return response
 
+@requiredLogin
 def deleteLevel(request: HttpRequest, id: str):
     try:
         if not request.method == "GET":

@@ -9,9 +9,10 @@ from django.utils import timezone
 
 from app_position.models import Position, PositionSnapShot
 from app_user.models.user import User
+from app_user.utils import requiredLogin
 from base_models.basemodel import UserSnapshot
 
-# Create your views here.
+@requiredLogin
 def index(request: HttpRequest):
     positions = Position.objects.filter(isDelete = False)
     context = {
@@ -19,6 +20,7 @@ def index(request: HttpRequest):
     }
     return render(request, 'position/index.html', context= context)
 
+@requiredLogin
 def addPosition(request: HttpRequest):
     if request.method == "POST":
         response = HttpResponseRedirect(reverse('indexPosition'))
@@ -65,7 +67,8 @@ def addPosition(request: HttpRequest):
             "pos": pos,
         }
         return render(request, 'position/add.html', context= context)
-    
+
+@requiredLogin   
 def editPosition(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexPosition'))
     try:
@@ -161,6 +164,7 @@ def editPosition(request: HttpRequest, id: str):
         messages.error(request, str(e))
     return response
 
+@requiredLogin
 def deletePosition(request: HttpRequest, id: str):
     try:
         if not request.method == "GET":
@@ -193,6 +197,7 @@ def deletePosition(request: HttpRequest, id: str):
         return JsonResponse(returnData)
     
 
+@requiredLogin
 def listPosition(request: HttpRequest):
     try:
         if not request.method == "GET":

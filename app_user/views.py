@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+import secrets
 from typing import List
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
@@ -9,18 +10,24 @@ from django.utils import timezone
 
 from app_organization.models import Organization
 from app_position.models import Position
+from app_user.models.auth_session import AuthSession
+from app_user.models.auth_user import AuthUser, VerifyPassword
 from app_user.models.user import RoleUser, User, UserStatus
+from app_user.utils import requiredLogin
 from base_models.basemodel import UserSnapshot
 
 # Create your views here.
+@requiredLogin
 def index(request: HttpRequest):
     users = User.objects.filter(isActive = True)
     # users = User.objects.all()
+    
     context = {
         "users": users
     }
     return render(request, 'user/index.html', context= context)
 
+@requiredLogin
 def addUser(request: HttpRequest):
     if request.method == "POST":
         response = HttpResponseRedirect(reverse('indexUser'))
@@ -48,9 +55,14 @@ def addUser(request: HttpRequest):
             birthday = request.POST.get("birthday")
             if birthday:
                 birthday = datetime.strptime(birthday, "%d/%m/%Y")
+            else:
+                birthday = None
             sDate = request.POST.get("sdate")
-            if sDate:
-                sDate = datetime.strptime(sDate, "%d/%m/%Y")
+            if not sDate:
+                messages.error(request, "Start Job Date is required")
+                return response
+            sDate = datetime.strptime(sDate, "%d/%m/%Y")
+
             status = request.POST.get("status")
             isadmin = True if request.POST.get("isadmin") == 'on' else False
 
@@ -133,6 +145,7 @@ def AddAlienUser(request: HttpRequest):
         data = {'status': False, 'mss': str(e)}
         return JsonResponse(data)
 
+@requiredLogin
 def editUser(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexUser'))
     try:
@@ -164,9 +177,14 @@ def editUser(request: HttpRequest, id: str):
             birthday = request.POST.get("birthday")
             if birthday:
                 birthday = datetime.strptime(birthday, "%d/%m/%Y")
+            else:
+                birthday = None
             sDate = request.POST.get("sdate")
-            if sDate:
-                sDate = datetime.strptime(sDate, "%d/%m/%Y")
+            if not sDate:
+                messages.error(request, "Start Job Date is required")
+                return response
+            
+            sDate = datetime.strptime(sDate, "%d/%m/%Y")
             email = request.POST.get("email")
             phone = request.POST.get("phone")
             address = request.POST.get("address")
@@ -226,6 +244,13 @@ def editUser(request: HttpRequest, id: str):
             # print(user.to_json())
             
             user.save()
+
+            authUser: AuthUser = AuthUser.objects.filter(refUser = user.id).first()
+            if authUser:
+                if UserStatus(int(status)) != UserStatus.Hire:
+                    authUser.isActive = False
+                    authUser.save()
+
             messages.success(request, 'Save Success')
             return response
         else:
@@ -358,6 +383,7 @@ def updateUserRoles(user: User, new_roles: list[RoleUser]):
 
     user.roles = updated_roles
 
+@requiredLogin
 def deleteUser(request: HttpRequest, id: str):
     try:
         if not request.method == "GET":
@@ -372,13 +398,102 @@ def deleteUser(request: HttpRequest, id: str):
         user.isDelete = True
         user.isActive = False
         user.save()
+
+        authUser = AuthUser.objects.get(refUser = user)
+        if authUser:
+            authUser.isDelete = True
+            authUser.isActive = False
+            authUser.save()
         
         return JsonResponse({'deleted': True, 'message': 'Delete success'})
     except Exception as e:
         return JsonResponse({'deleted': False, 'message': str(e)})
+    
+# ---------- user login ---------
+def login(request: HttpRequest):
+    if request.method == "POST":
+        try:
+            username = request.POST.get("uname")
+            if not username:
+                messages.error(request, "User Name is required")
+                return HttpResponseRedirect(reverse('login'))
+            password = request.POST.get("password")
+            if not password:
+                messages.error(request, "Password is required")
+                return HttpResponseRedirect(reverse('login'))
+            
+            authUser: AuthUser = AuthUser.objects.get(userAuth = username)
+            if not authUser:
+                messages.error(request, "Not Found User.")
+                return HttpResponseRedirect(reverse('login'))
+            
+            if VerifyPassword(password, authUser.passWord) == False:
+                return HttpResponseRedirect(reverse('login'))
+            
+            session = AuthSession()
+            session.session = secrets.token_hex(20)
+            session.expireDate = timezone.now() + timezone.timedelta(days=1)
+            print(str(authUser.refUser.id))
+            session.SaveSessionData({"userId": str(authUser.refUser.id)})
+            session.save()
+            print(session.to_json())
 
+            authUser.lastLogin = timezone.now()
+            authUser.save()
+
+            response = HttpResponseRedirect('/')
+            response.set_cookie('session', session.session, expires = session.expireDate)
+            return response
+
+            
+        except Exception as e:
+            print(e)
+            messages.error(request, str(e))
+            return HttpResponseRedirect(reverse('login'))
+    else:
+        return render(request, 'login.html')
+    
+@requiredLogin
+def regisUser(request: HttpRequest, id:str):
+    try:
+        user: User = User.objects.get(id = id)
+        if not user:
+            messages.error(request, "User not found")
+            return HttpResponseRedirect(reverse('indexUser'))
+        if request.method == "POST":
+            username = request.POST.get("username")
+            if not username:
+                messages.error(request, "Username is required")
+                return HttpResponseRedirect(reverse('indexUser'))
+            password = request.POST.get("password")
+            if not password:
+                messages.error(request, "Password is required")
+                return HttpResponseRedirect(reverse('indexUser'))
+
+            authUser = AuthUser()
+            authUser.refUser = user
+            authUser.userAuth = username
+            authUser.hashPassword(password)
+            authUser.isActive = True
+            authUser.isDelete = False
+            authUser.save()
+
+            user.isRegister = True
+            user.save()
+
+            messages.success(request, 'Register Success')
+            return HttpResponseRedirect(reverse('indexUser'))
+        else:
+            context = {
+                "user": user
+            }
+            return render(request, 'regis.html', context= context)
+    except Exception as e:
+        print(e)
+        messages.error(request, str(e))
+        return HttpResponseRedirect(reverse('indexUser'))
 
 # ---------- user settings ---------
 def indexSettingUser(request: HttpRequest):
-    return render(request, 'user/indexSetting.html')
+    return render(request, 'setting_user/indexSetting.html')
 

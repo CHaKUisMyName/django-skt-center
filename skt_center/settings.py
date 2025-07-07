@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 from mongoengine import connect
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,7 +26,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-k1&l6is^zt5tsv)o&jfr*91wo^p=p1awd)*elp)m6(@37t+y4m'
+# SECRET_KEY = 'django-insecure-k1&l6is^zt5tsv)o&jfr*91wo^p=p1awd)*elp)m6(@37t+y4m'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -91,11 +96,11 @@ DATABASES = {
 
 # connect mongodb
 connect(
-    db='mydb',
-    host='localhost',
-    port=27017,
-    username='root',
-    password='U@ssw0rd',
+    db = os.getenv('DB_NAME'),
+    host = os.getenv('DB_HOST'),
+    port = int(os.getenv('DB_PORT')),
+    username = os.getenv('DB_USER'),
+    password = os.getenv('DB_PASSWORD'),
     authentication_source='admin',
 )
 # connect(
