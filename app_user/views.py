@@ -404,6 +404,13 @@ def deleteUser(request: HttpRequest, id: str):
             authUser.isDelete = True
             authUser.isActive = False
             authUser.save()
+
+        authSession: List[AuthSession] = AuthSession.objects.all()
+        if authSession:
+            for authSS in authSession:
+                data = authSS.GetSessionData()
+                if str(data["userId"]) == str(user.id):
+                    authSS.delete()
         
         return JsonResponse({'deleted': True, 'message': 'Delete success'})
     except Exception as e:
@@ -552,7 +559,7 @@ def resetPassword(request: HttpRequest, id:str):
             messages.success(request, 'Reset Password Success')
             return response
         else:
-            authUser: AuthUser = AuthUser.objects.filter(refUser = user).first()
+            authUser: AuthUser = AuthUser.objects.filter(refUser = user.id).first()
             if not authUser:
                 messages.error(request, "Auth User not found")
                 return response
