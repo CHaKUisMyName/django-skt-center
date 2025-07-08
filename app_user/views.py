@@ -154,7 +154,7 @@ def editUser(request: HttpRequest, id: str):
             if not usId:
                 messages.error(request, "Not found id !")
                 return response
-            user: User = User.objects.get(id = usId)
+            user: User = User.objects.filter(id = usId).first()
             if not user:
                 messages.error(request, "User not found")
                 return response
@@ -254,7 +254,7 @@ def editUser(request: HttpRequest, id: str):
             messages.success(request, 'Save Success')
             return response
         else:
-            user = User.objects.get(id = id)
+            user = User.objects.filter(id = id).first()
             if not user:
                 messages.error(request, "User not found")
                 return response
@@ -391,7 +391,7 @@ def deleteUser(request: HttpRequest, id: str):
         if not id:
             return JsonResponse({'deleted': False, 'message': 'Not found id'})
         
-        user: User = User.objects.get(id = id)
+        user: User = User.objects.filter(id = id).first()
         if not user:
             return JsonResponse({'deleted': False, 'message': 'User not found'})
         
@@ -399,7 +399,7 @@ def deleteUser(request: HttpRequest, id: str):
         user.isActive = False
         user.save()
 
-        authUser = AuthUser.objects.get(refUser = user)
+        authUser = AuthUser.objects.filter(refUser = user).first()
         if authUser:
             authUser.isDelete = True
             authUser.isActive = False
@@ -471,7 +471,7 @@ def logout(request: HttpRequest):
 @requiredLogin
 def regisUser(request: HttpRequest, id:str):
     try:
-        user: User = User.objects.get(id = id)
+        user: User = User.objects.filter(id = id).first()
         if not user:
             messages.error(request, "User not found")
             return HttpResponseRedirect(reverse('indexUser'))

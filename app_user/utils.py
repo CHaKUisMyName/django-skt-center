@@ -25,6 +25,7 @@ def requiredLogin(view_func):
             return response
         else:
             if session.ContinueSession() == True:
+                print("continue session")
                 session.expireDate = session.expireDate + timedelta(days = 1)
                 session.save()
                 response = view_func(request, *args, **kwargs)

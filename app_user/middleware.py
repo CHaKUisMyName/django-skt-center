@@ -13,6 +13,7 @@ class UserInjectMiddleware:
         # request.user_data = fetch_user_data(request)
         session = request.COOKIES.get("session")
         authSesstion: AuthSession  =  AuthSession.objects.filter(session = session).first()
+        
         if authSesstion:
             if not authSesstion.IsExpired():
                 data = authSesstion.GetSessionData()
