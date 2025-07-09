@@ -1,8 +1,11 @@
 from datetime import timedelta
 from django.http import HttpRequest, HttpResponseRedirect
 from django.utils.timezone import now
+from django.contrib import messages
+
 
 from app_user.models.auth_session import AuthSession
+from app_user.models.user import User
 
 def requiredLogin(view_func):
     def wrapper(request: HttpRequest, *args, **kwargs):
@@ -32,4 +35,13 @@ def requiredLogin(view_func):
                 response.set_cookie('session', session.session, expires = session.expireDate)
                 return response
             return view_func(request, *args, **kwargs)
+    return wrapper
+
+def requiredSuperAdmin(view_func):
+    def wrapper(request: HttpRequest, *args, **kwargs):
+        user: User = request.currentUser
+        if user.isAdmin == False:
+            messages.error(request, "Not Permission")
+            return HttpResponseRedirect('/')
+        return view_func(request, *args, **kwargs)
     return wrapper

@@ -8,11 +8,12 @@ from bson import ObjectId
 
 from app_system_setting.models import SystemApp, SystemMenu
 from app_user.models.user import User
-from app_user.utils import requiredLogin
+from app_user.utils import requiredLogin, requiredSuperAdmin
 from base_models.basemodel import UserSnapshot
 
 # ----------- System App Name -----------
 @requiredLogin
+@requiredSuperAdmin
 def indexApp(request: HttpRequest):
     # sysApp = SystemApp.objects(isActive=True)
     sysApp = SystemApp.objects()
@@ -22,6 +23,7 @@ def indexApp(request: HttpRequest):
     return render(request, "system_app/index_app.html", context= context)
 
 @requiredLogin
+@requiredSuperAdmin
 def addApp(request: HttpRequest):
     if request.method == "POST":
         response = HttpResponseRedirect(reverse('indexApp'))
@@ -53,6 +55,7 @@ def addApp(request: HttpRequest):
     return render(request, "system_app/add_app.html")
 
 @requiredLogin
+@requiredSuperAdmin
 def editApp(request: HttpRequest, id):
     response = HttpResponseRedirect(reverse('indexApp'))
     if request.method == "POST":
@@ -101,7 +104,8 @@ def editApp(request: HttpRequest, id):
             messages.error(request, str(e))
             return response
 
-@requiredLogin       
+@requiredLogin
+@requiredSuperAdmin       
 def deleteApp(request: HttpRequest, id):
     try:
         app = SystemApp.objects(id = id).first()
@@ -133,6 +137,7 @@ def deleteApp(request: HttpRequest, id):
 
 # ---------- System Menu Name ----------     
 @requiredLogin
+@requiredSuperAdmin
 def indexMenu(request: HttpRequest):
     menus = SystemMenu.objects.select_related()
     context = {
@@ -141,6 +146,7 @@ def indexMenu(request: HttpRequest):
     return render(request, "system_menu/index_menu.html", context= context)
 
 @requiredLogin
+@requiredSuperAdmin
 def addMenu(request: HttpRequest):
     if request.method == "POST":
         response = HttpResponseRedirect(reverse('indexMenu'))
@@ -182,6 +188,7 @@ def addMenu(request: HttpRequest):
     return render(request, "system_menu/add_menu.html",context= context)
 
 @requiredLogin
+@requiredSuperAdmin
 def editMenu(request: HttpRequest, id):
     response = HttpResponseRedirect(reverse('indexMenu'))
     if request.method == "POST":
@@ -240,6 +247,7 @@ def editMenu(request: HttpRequest, id):
         return response
 
 @requiredLogin
+@requiredSuperAdmin
 def deleteMenu(request: HttpRequest, id):
     try:
         menu = SystemMenu.objects(id = id).first()
