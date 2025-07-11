@@ -416,6 +416,19 @@ def deleteUser(request: HttpRequest, id: str):
     except Exception as e:
         return JsonResponse({'deleted': False, 'message': str(e)})
     
+@requiredLogin
+def listUser(request: HttpRequest):
+    if not request.method == "GET":
+        return JsonResponse({'success': False, 'data': [], 'message': 'Method not allowed'})
+    try:
+        isActive_str = request.GET.get("isactive")
+        isactive = bool(isActive_str)
+        print(f"""isactive : {isactive}""")
+        users: List[User] = User.objects.all() if isactive is None else User.objects.filter(isActive = isactive)
+        return JsonResponse({'success': True, 'data': [user.to_json() for user in users], 'message': 'Success'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'data': [], 'message': str(e)})
+    
 # ---------------------------------------------------------------------------------
 # ------------------------------ user login ---------------------------------------
 # ---------------------------------------------------------------------------------

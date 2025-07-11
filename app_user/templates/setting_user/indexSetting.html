@@ -184,9 +184,10 @@
         $(document).ready(()=>{
             ActiveMenu("settinguser");
             $('#tb').DataTable();
-            $('#addUser').click(function(){
+            $('#addUser').click(async function(){
                 const fromHtml = $('#fmAddUser').clone().show().html();
-                
+                let users = await getAPIData(window.location.origin + "/user/api/list/?isactive=true");
+                console.log(users);
                 Swal.fire({
                     title: 'Add User',
                     html: fromHtml,

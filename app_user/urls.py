@@ -12,6 +12,7 @@ urlpatterns = [
     path('delete/<str:id>/', view=user_views.deleteUser, name='deleteUser'),
     path('regisuser/<str:id>/', view=user_views.regisUser, name='regisUser'),
     path('repass/<str:id>/', view=user_views.resetPassword, name='rePassUser'),
+    path('api/list/', view=user_views.listUser, name='listUser'),
     path('setting/', view=setting__user_views.indexSettingUser, name= 'indexSettingUser'),
     path('alien/', view= user_views.AddAlienUser, name= 'AddAlienUser'),
 ]
