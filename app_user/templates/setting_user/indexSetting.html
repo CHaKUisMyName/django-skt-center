@@ -187,7 +187,6 @@
             $('#addUser').click(async function(){
                 const fromHtml = $('#fmAddUser').clone().show().html();
                 let users = await getAPIData(window.location.origin + "/user/api/list/?isactive=true");
-                console.log(users);
                 Swal.fire({
                     title: 'Add User',
                     html: fromHtml,
@@ -199,9 +198,17 @@
                     width:'800px',
                     didOpen: ()=>{
                         $('.swal2-html-container').find('#btnAddU').on('click', function(){
-                            CreateUserRow();
+                            console.log(users.length);
+                            if(users.length > 0){
+                                CreateUserRow(users);
+                                $('.form-select').select2({
+                                    theme: 'bootstrap-5',
+                                    dropdownParent: $('.swal2-popup'),
+                                });
+                            }
                         });
                     },
+                    focusConfirm: false  // ✅ ปิดการ auto focus
                 });
             });
             $('#addAll').click(function(e){
@@ -224,8 +231,8 @@
                 });
             });
         });
-        function CreateUserRow(){
-            console.log($('.swal2-html-container').find('#tb2').find('tbody').find('tr').length);
+        function CreateUserRow(users){
+            // console.log($('.swal2-html-container').find('#tb2').find('tbody').find('tr').length);
             const tb2 = $('.swal2-html-container').find('#tb2');
             const tr = $("<tr>");
             const td = $("<td>");
@@ -238,15 +245,14 @@
             // -- employee td
             const tdEmployee = td.clone();
             const selectEmployee = select.clone();
-            const chaku = option.clone();
-            chaku.val("1");
-            chaku.text("Chanon Anekphong");
-            const chaku2 = option.clone();
-            chaku2.val("2");
-            chaku2.text("TEST Anekphong");
-            selectEmployee.append(chaku);
-            selectEmployee.append(chaku2);
-            tdEmployee.append(selectEmployee);
+            console.log(users);
+            $.each(users, function(index, value){
+                const op = option.clone();
+                op.val(value.id);
+                op.text(value.fNameEN + " " + value.lNameEN);
+                selectEmployee.append(op);
+                tdEmployee.append(selectEmployee);
+            });
 
             // -- menu td
             const tdMenu = td.clone();

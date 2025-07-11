@@ -59,9 +59,32 @@ class User(BaseClass):
     address = me.StringField(null= True, required= False, default = None)
     roles = me.EmbeddedDocumentListField(RoleUser)
 
-
     meta = {
         'collection': 'user'  # 👈 ชื่อ collection ที่กำหนดเอง
     }
+
+    def serialize(self):
+        return {
+            "id": str(self.id),
+            "code": self.code,
+            "fNameTH": self.fNameTH,
+            "lNameTH": self.lNameTH,
+            "fNameEN": self.fNameEN,
+            "lNameEN": self.lNameEN,
+            "nickName": self.nickName,
+            "nation": self.nation,
+            "email": self.email,
+            "phone": self.phone,
+            "birthDay": self.birthDay.strftime("%Y-%m-%d") if self.birthDay else None,
+            "startJobDate": self.startJobDate.strftime("%Y-%m-%d") if self.startJobDate else None,
+            "status": self.status.name if self.status else None,  # <-- แปลง Enum เป็น string
+            "isAdmin": self.isAdmin,
+            "isActive": self.isActive,
+            "isDelete": self.isDelete,
+            "isRegister": self.isRegister,
+            "note": self.note,
+            "address": self.address,
+            "roles": [role.serialize() for role in self.roles],  # <-- เรียก serialize จาก RoleUser
+        }
 
 
