@@ -416,7 +416,10 @@ def deleteUser(request: HttpRequest, id: str):
     except Exception as e:
         return JsonResponse({'deleted': False, 'message': str(e)})
     
-# ---------- user login ---------
+# ---------------------------------------------------------------------------------
+# ------------------------------ user login ---------------------------------------
+# ---------------------------------------------------------------------------------
+
 def login(request: HttpRequest):
     if request.method == "POST":
         try:
