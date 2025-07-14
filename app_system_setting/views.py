@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
@@ -135,7 +136,9 @@ def deleteApp(request: HttpRequest, id):
         }
         return JsonResponse(returnData)
 
-# ---------- System Menu Name ----------     
+# --------------------------------------------------------------
+# -------------------- System Menu Name ------------------------
+# --------------------------------------------------------------     
 @requiredLogin
 @requiredSuperAdmin
 def indexMenu(request: HttpRequest):
@@ -278,3 +281,24 @@ def deleteMenu(request: HttpRequest, id):
         }
         return JsonResponse(returnData)
     
+
+@requiredLogin
+def listMenu(request: HttpRequest):
+    if not request.method == "GET":
+        return JsonResponse({'success': False, 'data': [], 'message': 'Method not allowed'})
+    try:
+        isActive_str = request.GET.get("isactive")
+        def parse_bool(val):
+            return val.lower() in ["true", "1", "yes"] if val else None
+        isactive = parse_bool(isActive_str)
+        # app: SystemApp = SystemApp.objects.filter(name = "app_user").first()
+        app: SystemApp = SystemApp.objects.filter(name = "app_organization").first()
+        if not app:
+            return JsonResponse({'success': False, 'data': [], 'message': 'App not found'})
+        
+        menus: List[SystemMenu] = SystemMenu.objects.all() if isactive is None else SystemMenu.objects.filter(isActive = isactive, app = app.id)
+        return JsonResponse({'success': True, 'data': [ menu.serialize() for menu in menus], 'message': 'Success'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'data': [], 'message': str(e)})
+    
+

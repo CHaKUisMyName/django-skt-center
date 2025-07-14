@@ -4,7 +4,7 @@
  * @param {strin} tag - tag success or error
  * @param {boolean} isRefresh - check location reload
  */
-const PopMessage = (mss, tag, isRefresh = false) => {
+const PopMessage = (mss, tag, isRefresh = false, toURL = null) => {
   const mssTag = tag;
   const mssMsg = mss;
   const mssHeader = mssTag == "error" ? "Error" : "Success";
@@ -18,6 +18,11 @@ const PopMessage = (mss, tag, isRefresh = false) => {
   if (isRefresh == true) {
     popup.then(() => {
       location.reload();
+    });
+  }
+  if (toURL) {
+    popup.then(() => {
+      window.location.href = toURL;
     });
   }
 };

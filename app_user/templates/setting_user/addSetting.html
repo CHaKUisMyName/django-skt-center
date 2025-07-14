@@ -1,0 +1,212 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Setting User</title>{% endblock %}
+{% block css %}
+    <link href="{% static 'css/sweetalert2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/datatables.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/dataTables.bootstrap5.css' %}" rel="stylesheet">
+    <link href="{% static 'css/custom.css' %}" rel="stylesheet">
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>User / </span><span class="fw-bold">Setting</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-sm-12 col-lg-9 mx-auto">
+        <div class="card">
+            <form id="fmAddUser" class="card-body mb-3">
+                {% csrf_token %}
+                <h3 class="display-6 fw-bold">Setting User</h3>
+                <p class="text-sm">Add new setting user</p>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <button id="btnAddU" type="button" class="btn btn-primary">
+                            <i class="bi bi-plus"></i>
+                            <span>Map User</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <table class="table-responsive">
+                            <table id="tb" class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Empployee</th>
+                                        <th>Menu</th>
+                                        <th>Is Admin</th>
+                                        <th>Remove</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </table>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="row float-end">
+                        <div class="col-12">
+                            <a href="{% url 'indexSettingUser' %}" class="btn btn-light">Cancel</a>
+                            <button id="btnSave" type="button" class="btn btn-primary ms-2">Submit</button>
+                        </div> 
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+<script src="{% static 'js/datatables.min.js' %}"></script>
+<script src="{% static 'js/dataTables.bootstrap5.js' %}"></script>
+<script type="text/javascript">
+    var users = [];
+    var menus = [];
+    $(document).ready(async ()=>{
+        ActiveMenu("settinguser");
+        // $('#tb').DataTable();
+        users = await getAPIData(window.location.origin + "/user/api/list/?isactive=true");
+        menus = await getAPIData(window.location.origin + "/sys/menu/api/list/?isactive=true");
+    });
+    $('#btnAddU').click(async function(){
+        if(users.length > 0){
+            CreateUserRow(users, menus);
+            $('.form-select').select2({
+                theme: 'bootstrap-5',
+            });
+            if(users.length >= ($('#tb').find('tbody').find('tr').length+1)){
+                SetDisableBtn(false, $('#btnAddU'));
+            }else{
+                SetDisableBtn(true, $('#btnAddU'));
+            }
+        }
+    });
+    $("#btnSave").click(function(e){
+        e.preventDefault();
+        Loading(true);
+        let listSettingData = [];
+        $.each($("#tb >tbody > tr"), function(index, value){
+            let dataObj = {
+                "emp":"",
+                "menu":[],
+                "isadmin":false
+            };
+            const parentObj = $(this);
+            dataObj.emp = parentObj.find(".emp").find(":selected").val();
+            $.each(parentObj.find(".menu"),function(i, v){
+                const childObj = $(this);
+                if($(v).is(":checked")){
+                    dataObj.menu.push(childObj.val());
+                }
+            });
+            listSettingData.push(dataObj);
+        });
+        console.log("chaku");
+        const settings = {
+            url: window.location.origin + "/user/setting/add/",
+            method: "POST",
+            data: JSON.stringify(listSettingData),
+            contentType: "application/json",
+            headers:{
+                "X-CSRFToken": getCSRFToken(),
+            }
+        };
+        $.ajax(settings).done((response) => {
+            Loading(false);
+            console.log(response.success);
+            if(response.success == true){
+                PopMessage(response.message, "success", false, "{% url 'indexSettingUser'%}");
+            }else{
+                PopMessage(response.message, "error");
+            }
+        }).fail((xjr, status, error) => {
+            console.log(error);
+            Loading(false);
+            PopMessage(error, "error");
+        });
+        Loading(false);
+    });
+    function CreateUserRow(users, menus){
+        const tb2 = $('#tb');
+        const tr = $("<tr>");
+        const td = $("<td>");
+        const select = $("<select>", {class: "form-select"});
+        const option = $("<option>");
+
+        // -- employee td
+        const tdEmployee = td.clone();
+        const selectEmployee = select.clone();
+        selectEmployee.attr("name", "employee");
+        selectEmployee.addClass('emp');
+        selectEmployee.css({
+            width: "100%",
+        });
+        $.each(users, function(index, value){
+            const op = option.clone();
+            op.val(value.id);
+            op.text(value.fNameEN + " " + value.lNameEN);
+            selectEmployee.append(op);
+            tdEmployee.append(selectEmployee);
+        });
+
+        // -- menu td
+        const tdMenu = td.clone();
+        const divMenu = $("<div>", {class: "form-check mb-2"});
+        const checkBox = $("<input>", {type: "checkbox", class: "form-check-input menu"});
+        const label = $("<label>", {class: "form-check-label"});
+        $.each(menus, function(index, value){
+            const user = divMenu.clone();
+            checkUser = checkBox.clone().val(value.id);
+            // checkUser.attr("id", ""+value.id);
+            checkUser.attr("name", "menu[]");
+            labelUser = label.clone().text(value.name);
+            labelUser.attr("for", ""+value.id);
+            user.append(checkUser);
+            user.append(labelUser);
+            tdMenu.addClass("text-start");
+            tdMenu.append(user);
+        });
+
+        // -- is admin td
+        const tdIsAdmin = td.clone();
+        const divIsAdmin = $("<div>", {class: "form-check form-check-inline"});
+        const labelIsAdmin = $("<label>", {class: "form-check-label"}).text('Is Admin');
+        const checkIsAdmin = $("<input>", {type: "checkbox", class: "form-check-input isadmin"}).val("1");
+        divIsAdmin.append(checkIsAdmin);
+        divIsAdmin.append(labelIsAdmin);
+        tdIsAdmin.append(divIsAdmin);
+
+        // -- remove td
+        const tdRemove = td.clone();
+        const btnRemove = $("<button>", {type: "button", class: "btn btn-danger delete"}).append($("<i class='bi bi-trash'></i>"));
+        tdRemove.append(btnRemove);
+        // -- append
+        tr.append(tdEmployee);
+        tr.append(tdMenu);
+        tr.append(tdIsAdmin);
+        tr.append(tdRemove);
+        tb2.append(tr);
+    }
+    $(document).on("click", ".delete", function(e) {
+        $(e.currentTarget).parent('td').parent("tr").remove();
+        SetDisableBtn(false, $('#btnAddU'));
+    });
+    function SetDisableBtn(isdisable, btnObj){
+        if(isdisable == false){
+            btnObj.prop("disabled", false);
+            btnObj.removeClass("btn-secondary");
+            btnObj.addClass("btn-primary");
+        }else{
+            btnObj.prop("disabled", true);
+            btnObj.addClass("btn-secondary");
+            btnObj.removeClass("btn-primary");
+        }
+    }
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+</script>
+{% endblock %}

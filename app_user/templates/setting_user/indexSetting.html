@@ -34,6 +34,10 @@
                                 <i class="bi bi-plus"></i>
                                 <span>Map User</span>
                             </button>
+                            <a href="{% url 'addSettingUser' %}" class="btn btn-primary">
+                                <i class="bi bi-plus"></i>
+                                <span>Add Setting</span>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -50,94 +54,26 @@
                             </tr>
                         </thead>
                         <tbody>
+                            {% for user in userSettings %}
                             <tr>
-                                <td>1</td>
-                                <td>Chanon Anekphong (20230)</td>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ user.user.fNameEN }} {{ user.user.lNameEN }} ({{ user.user.code }})</td>
                                 <td>
                                     <ul>
-                                        <li>User (isAdmin)</li>
-                                        <li>Setting</li>
+                                        {% for menu in user.menus %}
+                                            <li>{{ menu.name }}</li>
+                                        {% endfor %}
                                     </ul>
                                 </td>
-                                <td>
-                                    <div>
-                                        <button type="button" class="btn btn-light">
-                                            <i class="bi bi-eye-fill"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-info">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-danger">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
+                                <td></td>
                             </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>TEST Anekphong (20233)</td>
-                                <td>
-                                    <ul>
-                                        <li>User (isAdmin)</li>
-                                    </ul>
-                                </td>
-                                <td>
-                                    <div>
-                                        <button type="button" class="btn btn-light">
-                                            <i class="bi bi-eye-fill"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-info">
-                                            <i class="bi bi-pencil-square"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-danger">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<div id="fmAddUser" class="d-none">
-    <form method="post">
-        <div class="row mb-3">
-            <div class="col-md-12 col-sm-12">
-                <div class="d-lg-flex">
-                    <div class="ms-auto my-auto mt-4 mt-lg-0">
-                        <div class="ms-auto my-auto">
-                            <button id="btnAddU" type="button" class="btn btn-primary">
-                                <i class="bi bi-plus"></i>
-                                <span>Add User</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-12">
-                <div class="table-responsive">
-                    <table id="tb2" class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Employee</th>
-                                <th>Menu</th>
-                                <th>IS Admin</th>
-                                <th>Remove</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </form>
 </div>
 
 <div id="fmAddAll" class="d-none">
@@ -184,33 +120,7 @@
         $(document).ready(()=>{
             ActiveMenu("settinguser");
             $('#tb').DataTable();
-            $('#addUser').click(async function(){
-                const fromHtml = $('#fmAddUser').clone().show().html();
-                let users = await getAPIData(window.location.origin + "/user/api/list/?isactive=true");
-                Swal.fire({
-                    title: 'Add User',
-                    html: fromHtml,
-                    showCloseButton: true,
-                    showCancelButton: true,
-                    confirmButtonText : 'Save',
-                    cancelButtonText: 'Cancel',
-                    confirmButtonColor: "#f97316",
-                    width:'800px',
-                    didOpen: ()=>{
-                        $('.swal2-html-container').find('#btnAddU').on('click', function(){
-                            console.log(users.length);
-                            if(users.length > 0){
-                                CreateUserRow(users);
-                                $('.form-select').select2({
-                                    theme: 'bootstrap-5',
-                                    dropdownParent: $('.swal2-popup'),
-                                });
-                            }
-                        });
-                    },
-                    focusConfirm: false  // ✅ ปิดการ auto focus
-                });
-            });
+            
             $('#addAll').click(function(e){
                 e.preventDefault();
                 const fromHtml = $('#fmAddAll').clone().show().html();
@@ -222,78 +132,9 @@
                     confirmButtonText : 'Save',
                     cancelButtonText: 'Cancel',
                     confirmButtonColor: "#f97316",
-                    // width:'800px',
-                    // didOpen: ()=>{
-                    //     $('.swal2-html-container').find('#btnAddU').on('click', function(){
-                    //         CreateUserRow();
-                    //     });
-                    // },
                 });
             });
         });
-        function CreateUserRow(users){
-            // console.log($('.swal2-html-container').find('#tb2').find('tbody').find('tr').length);
-            const tb2 = $('.swal2-html-container').find('#tb2');
-            const tr = $("<tr>");
-            const td = $("<td>");
-            const select = $("<select>", {class: "form-select"});
-            const option = $("<option>");
-
-            // -- index td
-            const tdIndex = td.clone().append($('.swal2-html-container').find('#tb2').find('tbody').find('tr').length + 1);
-
-            // -- employee td
-            const tdEmployee = td.clone();
-            const selectEmployee = select.clone();
-            console.log(users);
-            $.each(users, function(index, value){
-                const op = option.clone();
-                op.val(value.id);
-                op.text(value.fNameEN + " " + value.lNameEN);
-                selectEmployee.append(op);
-                tdEmployee.append(selectEmployee);
-            });
-
-            // -- menu td
-            const tdMenu = td.clone();
-            const divMenu = $("<div>", {class: "form-check form-check-inline"});
-            const checkBox = $("<input>", {type: "checkbox", class: "form-check-input"});
-            const label = $("<label>", {class: "form-check-label"});
-            const user = divMenu.clone();
-            const setting = divMenu.clone();
-            checkUser = checkBox.clone().val("user");
-            labelUser = label.clone().text("User");
-            checkSetting = checkBox.clone().val("setting");
-            labelSetting = label.clone().text("Setting");
-            user.append(checkUser);
-            user.append(labelUser);
-            setting.append(checkSetting);
-            setting.append(labelSetting);
-            tdMenu.append(user);
-            tdMenu.append(setting);
-
-            // -- is admin td
-            const tdIsAdmin = td.clone();
-            const divIsAdmin = $("<div>", {class: "form-check form-check-inline"});
-            const labelIsAdmin = $("<label>", {class: "form-check-label"}).text('Is Admin');
-            const checkIsAdmin = $("<input>", {type: "checkbox", class: "form-check-input"}).val("1");
-            divIsAdmin.append(checkIsAdmin);
-            divIsAdmin.append(labelIsAdmin);
-            tdIsAdmin.append(divIsAdmin);
-
-            // -- remove td
-            const tdRemove = td.clone();
-            const btnRemove = $("<button>", {type: "button", class: "btn btn-danger"}).append($("<i class='bi bi-trash'></i>"));
-            tdRemove.append(btnRemove);
-
-            // -- append
-            tr.append(tdIndex);
-            tr.append(tdEmployee);
-            tr.append(tdMenu);
-            tr.append(tdIsAdmin);
-            tr.append(tdRemove);
-
-            tb2.append(tr);
-        }
+        
     </script>
 {% endblock %}

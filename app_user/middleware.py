@@ -17,7 +17,7 @@ class UserInjectMiddleware:
         if authSesstion:
             if not authSesstion.IsExpired():
                 data = authSesstion.GetSessionData()
-                print(data)
+                # print(data)
                 user = User.objects.filter(id = data["userId"]).first()
                 request.currentUser = user if user else None
             else:

@@ -25,3 +25,11 @@ class SystemMenu(BaseClass):
     meta = {
         'collection': 'systemMenu'  # 👈 ชื่อ collection ที่กำหนดเอง
     }
+    def serialize(self):
+        return {
+            "id": str(self.id),
+            "name": self.name,
+            "app": str(self.app.id),
+            "isActive": self.isActive,
+            "note": self.note
+        }
