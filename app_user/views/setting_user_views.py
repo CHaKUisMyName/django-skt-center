@@ -5,6 +5,7 @@ from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib import messages
+from django.utils import timezone
 
 from app_system_setting.models import SystemApp, SystemMenu
 from app_user.models.user import User
@@ -22,8 +23,8 @@ def indexSettingUser(request: HttpRequest):
 
 @requiredLogin
 def addSettingUser(request: HttpRequest):
+    response = HttpResponseRedirect(reverse('indexSettingUser'))
     if request.method == "POST":
-        response = HttpResponseRedirect(reverse('indexSettingUser'))
         try:
             isadmin = True if request.POST.get("isadmin") == 'on' else False
             user = request.POST.get("user")
@@ -33,6 +34,10 @@ def addSettingUser(request: HttpRequest):
             menus = request.POST.getlist("menus")
             if not menus:
                 messages.error(request, "Menu is required")
+                return response
+            dupUser: UserSetting = UserSetting.objects.filter(user = user).first()
+            if dupUser:
+                messages.error(request, "Duplicate User")
                 return response
             
             userSetting = UserSetting()
@@ -59,7 +64,7 @@ def addSettingUser(request: HttpRequest):
 
     else:
         users: List[User] = User.objects.filter(isActive = True)
-        app: SystemApp = SystemApp.objects.filter(name = "app_user").first()
+        app: SystemApp = SystemApp.objects.filter(name = "app_organization").first()
         if not app:
             messages.error(request, "App not found")
             return response
@@ -75,10 +80,69 @@ def addSettingUser(request: HttpRequest):
     
 @requiredLogin
 def editSettingUser(request: HttpRequest, id: str):
+    response = HttpResponseRedirect(reverse('indexSettingUser'))
     if request.method == "POST":
-        pass
+        try:
+            sid = request.POST.get("id")
+            if not id:
+                messages.error(request, "Id is required")
+                return response
+            isadmin = True if request.POST.get("isadmin") == 'on' else False
+            
+            menus = request.POST.getlist("menus")
+            if not menus:
+                messages.error(request, "Menu is required")
+                return response
+            
+            userSetting = UserSetting.objects.filter(id = sid).first()
+            if not userSetting:
+                messages.error(request, "User Setting not found")
+                return response
+            
+            userSetting.isAdmin = isadmin
+            menuList = []
+            for menu in menus:
+                menuList.append(ObjectId(menu))
+            userSetting.menus = menuList
+            userSetting.updateDate = timezone.now()
+
+            currentUser: User = request.currentUser
+            if currentUser:
+                uUpdate = UserSnapshot().UserToSnapshot(currentUser)
+                if uUpdate:
+                    userSetting.updateBy = uUpdate
+            userSetting.save()
+
+            messages.success(request, 'Save Success')
+            return response
+        except Exception as e:
+            print(e)
+            messages.error(request, str(e))
+            return response
     else:
-        return render(request, 'setting_user/editSetting.html')
+        users: List[User] = User.objects.filter(isActive = True)
+        app: SystemApp = SystemApp.objects.filter(name = "app_organization").first()
+        if not app:
+            messages.error(request, "App not found")
+            return response
+        menus: List[SystemMenu] = SystemMenu.objects.filter(isActive = True, app = app.id)
+        if not menus:
+            messages.error(request, "Menu not found")
+            return response
+        userSetting: UserSetting = UserSetting.objects.filter(id = id).first()
+        if not userSetting:
+            messages.error(request, "User Setting not found")
+            return response
+        
+        menu_ids = [m.id for m in userSetting.menus]
+
+        context = {
+            "users": users,
+            "menus": menus,
+            "userSetting": userSetting,
+            "menu_ids": menu_ids
+        }
+        return render(request, 'setting_user/editSetting.html',context)
 
 
 # @requiredLogin
