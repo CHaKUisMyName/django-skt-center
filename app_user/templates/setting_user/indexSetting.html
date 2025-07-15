@@ -50,6 +50,7 @@
                                 <th>#</th>
                                 <th>Employee</th>
                                 <th>Menu</th>
+                                <th>Admin</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -59,11 +60,16 @@
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{ user.user.fNameEN }} {{ user.user.lNameEN }} ({{ user.user.code }})</td>
                                 <td>
-                                    <ul>
-                                        {% for menu in user.menus %}
-                                            <li>{{ menu.name }}</li>
-                                        {% endfor %}
-                                    </ul>
+                                    {% for menu in user.menus %}
+                                    <p>- {{ menu.name }}</p>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    {% if user.isAdmin %}
+                                    <span class="badge text-bg-success text-white">Admin</span>
+                                    {% else %}
+                                    <span class="badge text-bg-secondary text-white">User</span>
+                                    {% endif %}
                                 </td>
                                 <td></td>
                             </tr>
@@ -116,6 +122,17 @@
     <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
     <script src="{% static 'js/datatables.min.js' %}"></script>
     <script src="{% static 'js/dataTables.bootstrap5.js' %}"></script>
+    {% if messages %}
+        {% for message in messages %}
+        <script type="text/javascript">
+            $(document).ready(function(){
+                const mssTag = "{{message.tags}}";
+                const mssMsg = "{{message}}";
+                PopMessage(mssMsg, mssTag);
+            });
+        </script>
+        {% endfor %}
+    {% endif %}
     <script type="text/javascript">
         $(document).ready(()=>{
             ActiveMenu("settinguser");

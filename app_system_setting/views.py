@@ -291,8 +291,7 @@ def listMenu(request: HttpRequest):
         def parse_bool(val):
             return val.lower() in ["true", "1", "yes"] if val else None
         isactive = parse_bool(isActive_str)
-        # app: SystemApp = SystemApp.objects.filter(name = "app_user").first()
-        app: SystemApp = SystemApp.objects.filter(name = "app_organization").first()
+        app: SystemApp = SystemApp.objects.filter(name = "app_user").first()
         if not app:
             return JsonResponse({'success': False, 'data': [], 'message': 'App not found'})
         

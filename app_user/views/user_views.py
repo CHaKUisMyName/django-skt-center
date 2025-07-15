@@ -423,7 +423,6 @@ def listUser(request: HttpRequest):
     try:
         isActive_str = request.GET.get("isactive")
         isactive = bool(isActive_str)
-        print(f"""isactive : {isactive}""")
         users: List[User] = User.objects.all() if isactive is None else User.objects.filter(isActive = isactive)
         return JsonResponse({'success': True, 'data': [ user.serialize() for user in users], 'message': 'Success'})
     except Exception as e:

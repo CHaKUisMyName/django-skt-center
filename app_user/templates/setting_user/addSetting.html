@@ -6,6 +6,13 @@
     <link href="{% static 'css/datatables.min.css' %}" rel="stylesheet">
     <link href="{% static 'css/dataTables.bootstrap5.css' %}" rel="stylesheet">
     <link href="{% static 'css/custom.css' %}" rel="stylesheet">
+    <style>
+        /* แสดงขอบสีแดงสำหรับ validation error */
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+
+    </style>
 {% endblock %}
 {% block breadcrumb %}
 <div>
@@ -16,40 +23,53 @@
 <div class="row mb-3">
     <div class="col-sm-12 col-lg-9 mx-auto">
         <div class="card">
-            <form id="fmAddUser" class="card-body mb-3">
+            <form id="fmAddUser" action="{% url 'addSettingUser' %}" method="post" class="card-body mb-3 needs-validation" novalidate>
                 {% csrf_token %}
                 <h3 class="display-6 fw-bold">Setting User</h3>
                 <p class="text-sm">Add new setting user</p>
                 <div class="row mb-3">
-                    <div class="col-12">
-                        <button id="btnAddU" type="button" class="btn btn-primary">
-                            <i class="bi bi-plus"></i>
-                            <span>Map User</span>
-                        </button>
+                    <div class="col-lg-6 col-sm-12">
+                        <label for="user" class="form-label fw-bold text-dark-emphasis">User</label>
+                        <select id="user" name="user" class="form-select" required>
+                            <option value=""></option>
+                            {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.fNameEN }} {{ user.lNameEN }} ({{ user.code }})</option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">Please select data</div>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-12">
-                        <table class="table-responsive">
-                            <table id="tb" class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Empployee</th>
-                                        <th>Menu</th>
-                                        <th>Is Admin</th>
-                                        <th>Remove</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </table>
+                        <div class="mb-2">
+                            <labe class="form-label fw-bold text-dark-emphasis">Menu</labe>
+                        </div>
+                        {% for menu in menus %}
+                        <div class="form-check mb-2">
+                            <input class="form-check-input menu" type="checkbox" name="menus" value="{{ menu.id }}" id="{{ menu.id }}">
+                            <label class="form-check-label menu-label" for="{{ menu.id }}">{{ menu.name }}</label>
+                        </div>
+                        {% endfor %}
+                        <div class="invalid-feedback" id="menu-error" style="display: none;">Please select data</div>
+                    </div>
+                </div>
+                <hr class="my-4">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="mb-2">
+                            <labe class="form-label fw-bold text-dark-emphasis">Is Admin</labe>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input isadmin" type="checkbox" name="isadmin" id="isadmin">
+                            <label class="form-check-label" for="isadmin">Is Admin</label>
+                        </div>
                     </div>
                 </div>
                 <div class="col-12">
                     <div class="row float-end">
                         <div class="col-12">
                             <a href="{% url 'indexSettingUser' %}" class="btn btn-light">Cancel</a>
-                            <button id="btnSave" type="button" class="btn btn-primary ms-2">Submit</button>
+                            <button id="btnSave" type="submit" class="btn btn-primary ms-2">Submit</button>
                         </div> 
                     </div>
                 </div>
@@ -63,150 +83,90 @@
 <script src="{% static 'js/datatables.min.js' %}"></script>
 <script src="{% static 'js/dataTables.bootstrap5.js' %}"></script>
 <script type="text/javascript">
-    var users = [];
-    var menus = [];
+    (function () {
+        'use strict';
+        const form = document.querySelector('form');
+        const menuError = document.getElementById('menu-error');
+        
+        form.addEventListener('submit', function (event) {
+            const checkedMenus = document.querySelectorAll('input[name="menus"]:checked');
+            
+            let isValid = true;
+            // ถ้าไม่มี checkbox ใดถูกเลือก
+            if (checkedMenus.length === 0) {
+                event.preventDefault();
+                event.stopPropagation();
+                Loading(false);
+
+                // แสดง error
+                menuError.style.display = 'block';
+
+                // เพิ่ม is-invalid ไปที่ checkbox แรก (หรือทั้งหมดก็ได้)
+                document.querySelectorAll('input[name="menus"]').forEach(cb => {
+                    cb.classList.add('is-invalid');
+                    console.log("test");
+                });
+                $(".menu-label").each(function(){
+                    $(this).addClass("text-danger");
+                });
+                isValid = false;
+            } else {
+                // ซ่อน error และลบ is-invalid ถ้ามีการเลือกแล้ว
+                menuError.style.display = 'none';
+                document.querySelectorAll('input[name="menus"]').forEach(cb => {
+                    cb.classList.remove('is-invalid');
+                });
+                $(".menu-label").each(function(){
+                    $(this).addClass("text-success");
+                });
+            }
+            Loading(true);
+            if (!form.checkValidity() || !isValid) {
+                event.preventDefault();
+                event.stopPropagation();
+                Loading(false);
+            }
+            form.classList.add('was-validated');
+        }, false);
+    })();
+
     $(document).ready(async ()=>{
         ActiveMenu("settinguser");
         // $('#tb').DataTable();
-        users = await getAPIData(window.location.origin + "/user/api/list/?isactive=true");
-        menus = await getAPIData(window.location.origin + "/sys/menu/api/list/?isactive=true");
+        $('.form-select').select2({
+            theme: 'bootstrap-5',
+        });
     });
-    $('#btnAddU').click(async function(){
-        if(users.length > 0){
-            CreateUserRow(users, menus);
-            $('.form-select').select2({
-                theme: 'bootstrap-5',
-            });
-            if(users.length >= ($('#tb').find('tbody').find('tr').length+1)){
-                SetDisableBtn(false, $('#btnAddU'));
-            }else{
-                SetDisableBtn(true, $('#btnAddU'));
-            }
-        }
-    });
-    $("#btnSave").click(function(e){
-        e.preventDefault();
-        Loading(true);
-        let listSettingData = [];
-        $.each($("#tb >tbody > tr"), function(index, value){
-            let dataObj = {
-                "emp":"",
-                "menu":[],
-                "isadmin":false
-            };
-            const parentObj = $(this);
-            dataObj.emp = parentObj.find(".emp").find(":selected").val();
-            $.each(parentObj.find(".menu"),function(i, v){
-                const childObj = $(this);
-                if($(v).is(":checked")){
-                    dataObj.menu.push(childObj.val());
+    $('.menu').change(function(){
+        if($(this).is(":checked")){
+            const parent = $(this);
+            $(".menu-label").each(function(){
+                if($(this).hasClass("text-danger")){
+                    $(this).removeClass("text-danger");
+                    $(this).addClass("text-success");
                 }
             });
-            listSettingData.push(dataObj);
-        });
-        console.log("chaku");
-        const settings = {
-            url: window.location.origin + "/user/setting/add/",
-            method: "POST",
-            data: JSON.stringify(listSettingData),
-            contentType: "application/json",
-            headers:{
-                "X-CSRFToken": getCSRFToken(),
-            }
-        };
-        $.ajax(settings).done((response) => {
-            Loading(false);
-            console.log(response.success);
-            if(response.success == true){
-                PopMessage(response.message, "success", false, "{% url 'indexSettingUser'%}");
-            }else{
-                PopMessage(response.message, "error");
-            }
-        }).fail((xjr, status, error) => {
-            console.log(error);
-            Loading(false);
-            PopMessage(error, "error");
-        });
-        Loading(false);
-    });
-    function CreateUserRow(users, menus){
-        const tb2 = $('#tb');
-        const tr = $("<tr>");
-        const td = $("<td>");
-        const select = $("<select>", {class: "form-select"});
-        const option = $("<option>");
-
-        // -- employee td
-        const tdEmployee = td.clone();
-        const selectEmployee = select.clone();
-        selectEmployee.attr("name", "employee");
-        selectEmployee.addClass('emp');
-        selectEmployee.css({
-            width: "100%",
-        });
-        $.each(users, function(index, value){
-            const op = option.clone();
-            op.val(value.id);
-            op.text(value.fNameEN + " " + value.lNameEN);
-            selectEmployee.append(op);
-            tdEmployee.append(selectEmployee);
-        });
-
-        // -- menu td
-        const tdMenu = td.clone();
-        const divMenu = $("<div>", {class: "form-check mb-2"});
-        const checkBox = $("<input>", {type: "checkbox", class: "form-check-input menu"});
-        const label = $("<label>", {class: "form-check-label"});
-        $.each(menus, function(index, value){
-            const user = divMenu.clone();
-            checkUser = checkBox.clone().val(value.id);
-            // checkUser.attr("id", ""+value.id);
-            checkUser.attr("name", "menu[]");
-            labelUser = label.clone().text(value.name);
-            labelUser.attr("for", ""+value.id);
-            user.append(checkUser);
-            user.append(labelUser);
-            tdMenu.addClass("text-start");
-            tdMenu.append(user);
-        });
-
-        // -- is admin td
-        const tdIsAdmin = td.clone();
-        const divIsAdmin = $("<div>", {class: "form-check form-check-inline"});
-        const labelIsAdmin = $("<label>", {class: "form-check-label"}).text('Is Admin');
-        const checkIsAdmin = $("<input>", {type: "checkbox", class: "form-check-input isadmin"}).val("1");
-        divIsAdmin.append(checkIsAdmin);
-        divIsAdmin.append(labelIsAdmin);
-        tdIsAdmin.append(divIsAdmin);
-
-        // -- remove td
-        const tdRemove = td.clone();
-        const btnRemove = $("<button>", {type: "button", class: "btn btn-danger delete"}).append($("<i class='bi bi-trash'></i>"));
-        tdRemove.append(btnRemove);
-        // -- append
-        tr.append(tdEmployee);
-        tr.append(tdMenu);
-        tr.append(tdIsAdmin);
-        tr.append(tdRemove);
-        tb2.append(tr);
-    }
-    $(document).on("click", ".delete", function(e) {
-        $(e.currentTarget).parent('td').parent("tr").remove();
-        SetDisableBtn(false, $('#btnAddU'));
-    });
-    function SetDisableBtn(isdisable, btnObj){
-        if(isdisable == false){
-            btnObj.prop("disabled", false);
-            btnObj.removeClass("btn-secondary");
-            btnObj.addClass("btn-primary");
+            $("#menu-error").css("display", "none");
+            $('.menu').each(function(){
+            if($(this).hasClass('is-invalid')){
+                    $(this).removeClass('is-invalid');
+                }
+            });
         }else{
-            btnObj.prop("disabled", true);
-            btnObj.addClass("btn-secondary");
-            btnObj.removeClass("btn-primary");
+            // -- ถ้า menu ไม่ถูกเลือก เอา checkbox isadmin ออก
+            if($('.menu').length != $('.menu:checked').length){
+                $("#isadmin").prop("checked", false).change();
+            }
         }
-    }
-    function getCSRFToken() {
-        return document.querySelector('[name=csrfmiddlewaretoken]').value;
-    }
+    });
+
+    // -- ถ้าเป็น admin ให้ checked all menu
+    $("#isadmin").change(function(){
+        if($(this).is(":checked")){
+            $('.menu').each(function(){
+                $(this).prop("checked",true).change();
+            });
+        }
+    });
 </script>
 {% endblock %}
