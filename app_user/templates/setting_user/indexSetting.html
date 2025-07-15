@@ -71,7 +71,16 @@
                                     <span class="badge text-bg-secondary text-white">User</span>
                                     {% endif %}
                                 </td>
-                                <td></td>
+                                <td>
+                                    <div>
+                                        <a href="{% url 'editSettingUser' user.id %}" class="btn btn-info me-2">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>

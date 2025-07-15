@@ -72,6 +72,13 @@ def addSettingUser(request: HttpRequest):
             "menus": menus
         }
         return render(request, 'setting_user/addSetting.html', context)
+    
+@requiredLogin
+def editSettingUser(request: HttpRequest, id: str):
+    if request.method == "POST":
+        pass
+    else:
+        return render(request, 'setting_user/editSetting.html')
 
 
 # @requiredLogin
