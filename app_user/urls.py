@@ -20,5 +20,6 @@ urlpatterns = [
     path('setting/', view=setting__user_views.indexSettingUser, name= 'indexSettingUser'),
     path('setting/add/', view=setting__user_views.addSettingUser, name= 'addSettingUser'),
     path('setting/edit/<str:id>/', view=setting__user_views.editSettingUser, name= 'editSettingUser'),
+    path('setting/delete/<str:id>/', view=setting__user_views.deleteSettingUser, name= 'deleteSettingUser')
     
 ]

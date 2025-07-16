@@ -143,7 +143,30 @@ def editSettingUser(request: HttpRequest, id: str):
             "menu_ids": menu_ids
         }
         return render(request, 'setting_user/editSetting.html',context)
-
+    
+@requiredLogin
+def deleteSettingUser(request: HttpRequest, id: str):
+    try:
+        if not request.method == "GET":
+            return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
+        if not id:
+            return JsonResponse({'deleted': False, 'message': 'Not found id'})
+        
+        userSetting: UserSetting = UserSetting.objects.filter(id = id).first()
+        if not userSetting:
+            return JsonResponse({'deleted': False, 'message': 'User Setting not found'})
+        userSetting.isActive = False
+        userSetting.updateDate = timezone.now()
+        currentUser: User = request.currentUser
+        if currentUser:
+            uUpdate = UserSnapshot().UserToSnapshot(currentUser)
+            if uUpdate:
+                userSetting.updateBy = uUpdate
+        userSetting.save()
+        
+        return JsonResponse({'deleted': True, 'message': 'Delete success'})
+    except Exception as e:
+        return JsonResponse({'deleted': False, 'message': str(e)})
 
 # @requiredLogin
 # def addSettingUser(request: HttpRequest):
