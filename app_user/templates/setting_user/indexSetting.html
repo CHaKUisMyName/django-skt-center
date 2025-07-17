@@ -26,17 +26,13 @@
                     </div>
                     <div class="ms-auto my-auto mt-lg-0 mt-4">
                         <div class="ms-auto my-auto">
-                            <button type="button" id="addAll" class="btn btn-outline-primary">
-                                <i class="bi bi-plus"></i>
-                                <span>Map ALL User</span>
-                            </button>
-                            <button id="addUser" type="button" class="btn btn-primary">
-                                <i class="bi bi-plus"></i>
-                                <span>Map User</span>
-                            </button>
+                            <a href="{% url 'importSettingUser' %}" id="addAll" class="btn btn-outline-primary">
+                                <i class="bi bi-file-earmark-excel"></i>
+                                <span>Import Excel</span>
+                            </a>
                             <a href="{% url 'addSettingUser' %}" class="btn btn-primary">
                                 <i class="bi bi-plus"></i>
-                                <span>Add Setting</span>
+                                <span>Map User</span>
                             </a>
                         </div>
                     </div>
@@ -146,20 +142,6 @@
         $(document).ready(()=>{
             ActiveMenu("settinguser");
             $('#tb').DataTable();
-            
-            $('#addAll').click(function(e){
-                e.preventDefault();
-                const fromHtml = $('#fmAddAll').clone().show().html();
-                Swal.fire({
-                    title: 'Add All User',
-                    html: fromHtml,
-                    showCloseButton: true,
-                    showCancelButton: true,
-                    confirmButtonText : 'Save',
-                    cancelButtonText: 'Cancel',
-                    confirmButtonColor: "#f97316",
-                });
-            });
         });
         $('.delete').click(function(e){
             e.preventDefault();

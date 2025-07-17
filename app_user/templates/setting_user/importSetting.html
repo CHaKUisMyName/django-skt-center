@@ -1,0 +1,104 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Setting User</title>{% endblock %}
+{% block css %}
+    <link href="{% static 'css/sweetalert2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/datatables.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/dataTables.bootstrap5.css' %}" rel="stylesheet">
+    <link href="{% static 'css/custom.css' %}" rel="stylesheet">
+    <style>
+        /* แสดงขอบสีแดงสำหรับ validation error */
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+
+    </style>
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>User / </span><span class="fw-bold">Setting</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-sm-12 col-lg-9 mx-auto">
+        <div class="card">
+            <form id="fmAddAll" 
+            action="{% url 'importSettingUser' %}" 
+            method="post" class="card-body mb-3 needs-validation" 
+            enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                <h3 class="display-6 fw-bold">Setting User</h3>
+                <p class="text-sm">Import setting user</p>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-dark-emphasis me-4">Excel Template :</label>
+                        <a href="{% url 'exportExcelTemplate' %}" class="btn btn-primary">
+                            <i class="bi bi-file-earmark-excel"></i>
+                            <span>Template File</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-12 col-lg-8">
+                        <label class="form-label fw-bold text-dark-emphasis me-4">Import File</label>
+                        <input type="file" class="form-control" id="file" name="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
+                        <div class="invalid-feedback">Please select fire</div>
+                    </div>
+                </div>
+                <div class="row float-end">
+                    <div class="co-12">
+                        <a href="{% url 'indexSettingUser' %}" class="btn btn-light">Cancel</a>
+                        <button type="submit" id="submitBtn" class="btn btn-primary ms-2">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="col-sm-12 col-lg-9 mx-auto">
+        <div class="card">
+            <div class="card-body mb-3">
+                <div class="progress" role="progressbar" aria-label="Example with label" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar" style="width: 25%">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+<script src="{% static 'js/datatables.min.js' %}"></script>
+<script src="{% static 'js/dataTables.bootstrap5.js' %}"></script>
+{% if messages %}
+    {% for message in messages %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            const mssTag = "{{message.tags}}";
+            const mssMsg = "{{message}}";
+            PopMessage(mssMsg, mssTag);
+        });
+    </script>
+    {% endfor %}
+{% endif %}
+<script type="text/javascript">
+    (function () {
+        'use strict';
+        document.querySelector('form').addEventListener('submit', function (event) {
+            Loading(true);
+            if (!this.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+                Loading(false);
+            }
+            this.classList.add('was-validated');
+        }, false);
+    })();
+    $(document).ready(() => {
+        ActiveMenu("settinguser");
+    });
+    
+</script>
+{% endblock %}
