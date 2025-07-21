@@ -67,7 +67,7 @@ def addSettingUser(request: HttpRequest):
 
     else:
         users: List[User] = User.objects.filter(isActive = True)
-        app: SystemApp = SystemApp.objects.filter(name = "app_organization").first()
+        app: SystemApp = SystemApp.objects.filter(name = "app_user").first()
         if not app:
             messages.error(request, "App not found")
             return response
@@ -131,7 +131,7 @@ def editSettingUser(request: HttpRequest, id: str):
             return response
     else:
         users: List[User] = User.objects.filter(isActive = True)
-        app: SystemApp = SystemApp.objects.filter(name = "app_organization").first()
+        app: SystemApp = SystemApp.objects.filter(name = "app_user").first()
         if not app:
             messages.error(request, "App not found")
             return response
@@ -185,7 +185,6 @@ def importSettingUser(request: HttpRequest):
         try:
             file = request.FILES.get("file")
             if not file:
-                print('File is required')
                 messages.error(request, "File is required")
                 return HttpResponseRedirect(reverse('importSettingUser'))
             if not file.name.endswith(".xlsx"):
@@ -288,7 +287,7 @@ def exportExcelTemplate(request: HttpRequest):
         ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=3)
         ws.cell(row=1, column=1).value = "Employee"
         ws.cell(row=1, column=1).alignment = styles.Alignment(horizontal='center')
-        app: SystemApp = SystemApp.objects.filter(name = "app_organization").first()
+        app: SystemApp = SystemApp.objects.filter(name = "app_user").first()
         header = ["code", "fNameEN", "lNameEN"]
         if app:
             menus: List[SystemMenu] = SystemMenu.objects.filter(isActive = True, app = app.id)
@@ -353,30 +352,3 @@ def exportExcelTemplate(request: HttpRequest):
         print(e)
         messages.error(request, str(e))
         return HttpResponseRedirect(reverse('indexSettingUser'))
-
-
-# @requiredLogin
-# def addSettingUser(request: HttpRequest):
-#     if request.method == "GET":
-#         # return JsonResponse({'success': False, 'data': [], 'message': 'Method not allowed'})
-#         return render(request, 'setting_user/addSetting.html')
-#     try:
-#         # -- request.body = b'[{"emp":"...","menu":["..."],"isadmin":false}]'
-#         body_unicode = request.body.decode('utf-8')# -- [{"emp":"...","menu":["..."],"isadmin":false}]
-#         data = json.loads(body_unicode)  # <-- data เป็น list ของ dict
-        
-#         for us in data:
-#             menus = []
-#             for menu in us.get("menu"):
-#                 menus.append(ObjectId(menu))
-
-#             userSetting = UserSetting()
-#             userSetting.user = ObjectId(us.get("emp"))
-#             userSetting.menus = menus
-#             userSetting.isAdmin = us.get("isadmin")
-#             userSetting.isActive = True
-#             # userSetting.save()
-        
-#         return JsonResponse({'success': True, 'data': [], 'message': 'Save Success'})
-#     except Exception as e:
-#         return JsonResponse({'success': False, 'data': [], 'message': str(e)})
