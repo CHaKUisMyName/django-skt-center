@@ -205,9 +205,70 @@ def importSettingUser(request: HttpRequest):
 
                 wb = load_workbook(temp_file.name)
                 ws = wb.active
-                for row in ws.iter_rows(min_row=3, values_only=True):
-                    print(row)
+                usSettings = []
+                header_row = [cell.value for cell in ws[2]]
+                menu_names = header_row[3:]  # คอลัมน์เมนูเริ่มจาก index 4
+                # ดึง SystemMenu ทั้งหมด
+                system_menus = {menu.name: menu for menu in SystemMenu.objects(name__in=menu_names)}
+                inserted_codes = set()
+                rowCount = 3
+                for row in ws.iter_rows(min_row=3):
+                    code = str(row[0].value).strip() if row[0].value else None
+                    if not code:
+                        continue  # skip ถ้าไม่มี code 
 
+                    if code in inserted_codes:
+                        messages.error(request, f"Duplicate code: {code} in row ({rowCount})")# skip ถ้า code ซ้ำในไฟล์เดิม
+                        return HttpResponseRedirect(reverse('importSettingUser'))
+                    
+                    user:User = User.objects.filter(code=code).first()
+                    if not user:
+                        messages.error(request, f"User not found in row ({rowCount}) with code: {code}")
+                        return HttpResponseRedirect(reverse('importSettingUser'))
+                    
+                    checkUsSetting: UserSetting = UserSetting.objects.filter(user = user).first()
+                    if checkUsSetting:
+                        if checkUsSetting.isActive == True:
+                            # -- ถ้ายัง active ให้ show error
+                            messages.error(request, f"Duplicate code: {code} in row ({rowCount})")
+                            return HttpResponseRedirect(reverse('importSettingUser'))
+                        else:
+                            # -- ถ้ามีข้อมูลใน db แล้ว ไม่ active false ให้ลบข้อมูลออกจาก db แล้ว save ของใหม่จาก excel ไปเลย
+                            checkUsSetting.delete()
+
+                    selected_menu_names = []
+                    for i, cell in enumerate(row[3:], start=3):
+                        if str(cell.value).strip() == "1":
+                            selected_menu_names.append(header_row[i])
+
+                    if not selected_menu_names:
+                        continue  # ข้ามถ้าไม่ได้เลือกเมนู
+
+                    menu_refs = [system_menus[name] for name in selected_menu_names if name in system_menus]
+
+                    # สร้าง UserSetting
+                    setting: UserSetting = UserSetting()
+                    setting.user=user
+                    setting.menus=menu_refs
+                    setting.isActive=True
+                    setting.isAdmin=False
+                    setting.note=''
+                    currentUser: User = request.currentUser
+                    if currentUser:
+                        uCreate = UserSnapshot().UserToSnapshot(currentUser)
+                        if uCreate:
+                            setting.createBy=uCreate
+                    setting.createDate=timezone.now()
+
+                    
+                    usSettings.append(setting)
+                    inserted_codes.add(code)
+                    rowCount += 1
+                # print(usSettings)
+
+                # MongoEngine สามารถ insert หลาย document พร้อมกัน
+                # ทำงานเร็วกว่า for setting in usSettings: setting.save()
+                UserSetting.objects.insert(usSettings)
             messages.success(request, 'Save Success')
             return response
         except Exception as e:
