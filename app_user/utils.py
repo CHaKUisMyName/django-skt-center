@@ -1,11 +1,12 @@
 from datetime import timedelta
+from bson import ObjectId
 from django.http import HttpRequest, HttpResponseRedirect
 from django.utils.timezone import now
 from django.contrib import messages
 
-
 from app_user.models.auth_session import AuthSession
 from app_user.models.user import User
+from app_user.models.user_setting import UserSetting
 
 def requiredLogin(view_func):
     def wrapper(request: HttpRequest, *args, **kwargs):
@@ -45,3 +46,15 @@ def requiredSuperAdmin(view_func):
             return HttpResponseRedirect('/')
         return view_func(request, *args, **kwargs)
     return wrapper
+
+def isSettingUserAdmin(id):
+    try:
+        result = False
+        userSetting: UserSetting = UserSetting.objects.filter(user = ObjectId(id), isActive = True).first()
+        if userSetting:
+            if userSetting.isAdmin == True:
+                result = True
+        return result
+    except Exception as e:
+        print(e)
+        return False

@@ -51,11 +51,15 @@
                             <label for="nickname" class="form-label fw-bold text-dark-emphasis">Nickname</label>
                             <input type="text" class="form-control" id="nickname" name="nickname" value="{{ user.nickName|default:'' }}" />
                         </div>
+                        {% if isUserAdmin == True or request.currentUser.isAdmin == True %}
                         <div class="col-md-2 col-sm-12">
                             <label for="code" class="form-label fw-bold text-dark-emphasis">Employee Code</label>
                             <input type="text" class="form-control" id="code" name="code" value="{{ user.code|default:'' }}" required />
                             <div class="invalid-feedback">Please input data</div>
                         </div>
+                        {% else %}
+                        <input type="hidden" id="code" name="code" value="{{ user.code|default:'' }}" />
+                        {% endif %}
                         <div class="col-md-2 col-sm-12">
                             <label for="nation" class="form-label fw-bold text-dark-emphasis">Naition</label>
                             <input type="text" id="nation" name="nation" class="form-control" value="{{ user.nation|default:'' }}" />
@@ -95,6 +99,7 @@
                             <textarea id="note" name="note" class="form-control" style="height: 100px;">{{ user.note }}</textarea>
                         </div>
                     </div>
+                    {% if isUserAdmin == True or request.currentUser.isAdmin == True %}
                     <div class="row mb-4">
                         <div class="col-md-6 col-sm-12">
                             <label for="status" class="form-label fw-bold text-dark-emphasis">Status</label>
@@ -152,6 +157,7 @@
                             </div>
                         </div>
                     </div>
+                    {% endif %}
                     <div class="row float-end">
                         <div class="col-12">
                             <a href="{% url 'indexUser' %}" class="btn btn-light">Cancel</a>

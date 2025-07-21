@@ -25,6 +25,7 @@
                             List of user
                         </p>
                     </div>
+                    {% if userSetting.isAdmin == True %}
                     <div class="ms-auto my-auto mt-lg-0 mt-4">
                         <div class="ms-auto my-auto">
                             <a href="{% url 'addUser' %}" class="btn btn-primary">
@@ -33,6 +34,7 @@
                             </a>
                         </div>
                     </div>
+                    {% endif %}
                 </div>
             </div>
             <div class="card-body">
@@ -45,8 +47,10 @@
                                 <th>Name</th>
                                 <th>Role</th>
                                 <th>Email</th>
+                                {% if isUserAdmin == True or request.currentUser.isAdmin == True or user.id == request.currentUser.id %}
                                 <th>Register</th>
                                 <th>Repassword</th>
+                                {% endif %}
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -68,6 +72,7 @@
                                     {% endif %}
                                 </td>
                                 <td>{{ user.email }}</td>
+                                {% if isUserAdmin == True or request.currentUser.isAdmin == True %}
                                 <td>
                                     {% if user.isRegister == False %}
                                     <a href="{% url 'regisUser' user.id %}" class="btn btn-warning">Register</a>
@@ -82,15 +87,26 @@
                                     <a href="{% url 'rePassUser' user.id %}" class="btn btn-warning">Reset Password</a>
                                     {% endif %}
                                 </td>
+                                {% endif %}
                                 <td>
+                                    {% if isUserAdmin == True or request.currentUser.isAdmin == True or user.id == request.currentUser.id %}
                                     <div class="">
                                         <a href="{% url 'editUser' user.id %}" class="btn btn-info">
                                             <i class="bi bi-pencil"></i>
                                         </a>
+                                        {% if isUserAdmin == True or request.currentUser.isAdmin == True %}
                                         <button type="button" class="btn btn-danger delete" data-usid="{{ user.id }}">
                                             <i class="bi bi-trash"></i>
                                         </button>
+                                        {% endif %}
                                     </div>
+                                    {% else %}
+                                    <div>
+                                        <button type="button" class="btn btn-secondary">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}

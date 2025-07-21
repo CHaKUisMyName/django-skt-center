@@ -13,12 +13,16 @@ from openpyxl.utils import get_column_letter
 from app_system_setting.models import SystemApp, SystemMenu
 from app_user.models.user import User
 from app_user.models.user_setting import UserSetting
-from app_user.utils import requiredLogin
+from app_user.utils import isSettingUserAdmin, requiredLogin
 from base_models.basemodel import UserSnapshot
 
 @requiredLogin
 def indexSettingUser(request: HttpRequest):
     userSettings = UserSetting.objects.filter(isActive = True)
+    isUserAdmin = isSettingUserAdmin(request.currentUser.id)
+    if not request.currentUser.isAdmin or isUserAdmin == False:
+        messages.error(request, "Not Permission")
+        return HttpResponseRedirect('/')
     context = {
         "userSettings": userSettings
     }
@@ -27,6 +31,10 @@ def indexSettingUser(request: HttpRequest):
 @requiredLogin
 def addSettingUser(request: HttpRequest):
     response = HttpResponseRedirect(reverse('indexSettingUser'))
+    isUserAdmin = isSettingUserAdmin(request.currentUser.id)
+    if not request.currentUser.isAdmin or isUserAdmin == False:
+        messages.error(request, "Not Permission")
+        return HttpResponseRedirect('/')
     if request.method == "POST":
         try:
             isadmin = True if request.POST.get("isadmin") == 'on' else False
@@ -91,6 +99,10 @@ def addSettingUser(request: HttpRequest):
 @requiredLogin
 def editSettingUser(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexSettingUser'))
+    isUserAdmin = isSettingUserAdmin(request.currentUser.id)
+    if not request.currentUser.isAdmin or isUserAdmin == False:
+        messages.error(request, "Not Permission")
+        return HttpResponseRedirect('/')
     if request.method == "POST":
         try:
             sid = request.POST.get("id")
@@ -157,6 +169,9 @@ def editSettingUser(request: HttpRequest, id: str):
 @requiredLogin
 def deleteSettingUser(request: HttpRequest, id: str):
     try:
+        isUserAdmin = isSettingUserAdmin(request.currentUser.id)
+        if not request.currentUser.isAdmin or isUserAdmin == False:
+            return JsonResponse({'deleted': False, 'message': 'Not Permission'})
         if not request.method == "GET":
             return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
         if not id:
@@ -180,6 +195,10 @@ def deleteSettingUser(request: HttpRequest, id: str):
     
 @requiredLogin
 def importSettingUser(request: HttpRequest):
+    isUserAdmin = isSettingUserAdmin(request.currentUser.id)
+    if not request.currentUser.isAdmin or isUserAdmin == False:
+        messages.error(request, "Not Permission")
+        return HttpResponseRedirect('/')
     if request.method == "POST":
         response = HttpResponseRedirect(reverse('indexSettingUser'))
         try:

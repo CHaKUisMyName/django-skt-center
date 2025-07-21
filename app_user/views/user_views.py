@@ -2,6 +2,7 @@ from datetime import datetime
 import json
 import secrets
 from typing import List
+from bson import ObjectId
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
@@ -13,17 +14,18 @@ from app_position.models import Position
 from app_user.models.auth_session import AuthSession
 from app_user.models.auth_user import AuthUser, VerifyPassword
 from app_user.models.user import RoleUser, User, UserStatus
-from app_user.utils import requiredLogin
+from app_user.models.user_setting import UserSetting
+from app_user.utils import isSettingUserAdmin, requiredLogin
 from base_models.basemodel import UserSnapshot
 
 # Create your views here.
 @requiredLogin
 def index(request: HttpRequest):
     users = User.objects.filter(isActive = True)
-    # users = User.objects.all()
-    
+    isUserAdmin = isSettingUserAdmin(request.currentUser.id)
     context = {
-        "users": users
+        "users": users,
+        "isUserAdmin": isUserAdmin
     }
     return render(request, 'user/index.html', context= context)
 
@@ -32,6 +34,10 @@ def addUser(request: HttpRequest):
     if request.method == "POST":
         response = HttpResponseRedirect(reverse('indexUser'))
         try:
+            isUserAdmin = isSettingUserAdmin(request.currentUser.id)
+            if not request.currentUser.isAdmin or isUserAdmin == False:
+                messages.error(request, "Not Permission")
+                return response
             code = request.POST.get("code")
             if not code:
                 messages.error(request, "Code is required")
@@ -129,7 +135,7 @@ def addUser(request: HttpRequest):
     else:
         userStatus = [{"id":us.value, "name":us.name}for us in UserStatus]
         context = {
-            'userStatus': userStatus
+            'userStatus': userStatus,
         }
         return render(request, 'user/add.html', context= context)
 
@@ -149,11 +155,17 @@ def AddAlienUser(request: HttpRequest):
 def editUser(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexUser'))
     try:
+        isUserAdmin = isSettingUserAdmin(request.currentUser.id)
         if request.method == "POST":
+            
             usId = request.POST.get("usid")
             if not usId:
                 messages.error(request, "Not found id !")
                 return response
+            if ObjectId(request.currentUser.id) != ObjectId(usId):
+                if not request.currentUser.isAdmin or isUserAdmin == False:
+                    messages.error(request, "Not Permission")
+                    return response
             user: User = User.objects.filter(id = usId).first()
             if not user:
                 messages.error(request, "User not found")
@@ -189,7 +201,7 @@ def editUser(request: HttpRequest, id: str):
             phone = request.POST.get("phone")
             address = request.POST.get("address")
             note = request.POST.get("note")
-            status = request.POST.get("status")
+            status = request.POST.get("status") if request.POST.get("status") else user.status.value
             isadmin = True if request.POST.get("isadmin") == 'on' else False
 
             # -- update data
@@ -216,29 +228,30 @@ def editUser(request: HttpRequest, id: str):
             
             posList = request.POST.getlist("pos")
             orgList = request.POST.getlist("org")
-            roleData =[{"posId": pos, "orgId": org} for pos, org in zip(posList, orgList)]
-            roleList: List[RoleUser] = list()
-            for role in roleData:
-                posId = role.get("posId")
-                orgId = role.get("orgId")
-                if posId and orgId:
-                    pos: Position = Position.objects.get(id = posId)
-                    org: Organization = Organization.objects.get(id = orgId)
-                    if pos and org:
-                        roleUser = RoleUser()
-                        roleUser.posId = pos
-                        roleUser.posNameEN = pos.nameEN
-                        roleUser.orgId = org
-                        roleUser.orgNameEN = org.nameEN
-                        roleUser.isActive = True
-                        roleUser.isDelete = False
-                        roleUser.createDate = timezone.now()
-                        roleList.append(roleUser)
-            if isDuplicateRoles(roleList):
-                messages.error(request, "Duplicate Roles")
-                return response
-            if is_same_roles(user.roles, roleList) == False:
-                updateUserRoles(user, roleList)
+            if len(posList) > 0 and len(orgList) > 0:
+                roleData =[{"posId": pos, "orgId": org} for pos, org in zip(posList, orgList)]
+                roleList: List[RoleUser] = list()
+                for role in roleData:
+                    posId = role.get("posId")
+                    orgId = role.get("orgId")
+                    if posId and orgId:
+                        pos: Position = Position.objects.get(id = posId)
+                        org: Organization = Organization.objects.get(id = orgId)
+                        if pos and org:
+                            roleUser = RoleUser()
+                            roleUser.posId = pos
+                            roleUser.posNameEN = pos.nameEN
+                            roleUser.orgId = org
+                            roleUser.orgNameEN = org.nameEN
+                            roleUser.isActive = True
+                            roleUser.isDelete = False
+                            roleUser.createDate = timezone.now()
+                            roleList.append(roleUser)
+                if isDuplicateRoles(roleList):
+                    messages.error(request, "Duplicate Roles")
+                    return response
+                if is_same_roles(user.roles, roleList) == False:
+                    updateUserRoles(user, roleList)
 
             # print(json.dumps([role.serialize() for role in user.roles], ensure_ascii=False))
             # print(user.to_json())
@@ -254,6 +267,13 @@ def editUser(request: HttpRequest, id: str):
             messages.success(request, 'Save Success')
             return response
         else:
+            if not id:
+                messages.error(request, "Not found id !")
+                return response
+            if ObjectId(request.currentUser.id) != ObjectId(id):
+                if not request.currentUser.isAdmin or isUserAdmin == False:
+                    messages.error(request, "Not Permission")
+                    return response
             user = User.objects.filter(id = id).first()
             if not user:
                 messages.error(request, "User not found")
@@ -264,6 +284,7 @@ def editUser(request: HttpRequest, id: str):
                 'userStatus': userStatus,
                 'user': user,
                 "userRolesJson": userRolesJson,
+                "isUserAdmin": isUserAdmin,
             }
             return render(request, 'user/edit.html', context= context)
     except Exception as e:
@@ -386,10 +407,13 @@ def updateUserRoles(user: User, new_roles: list[RoleUser]):
 @requiredLogin
 def deleteUser(request: HttpRequest, id: str):
     try:
+        isUserAdmin = isSettingUserAdmin(request.currentUser.id)
         if not request.method == "GET":
             return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
         if not id:
             return JsonResponse({'deleted': False, 'message': 'Not found id'})
+        if not request.currentUser.isAdmin or isUserAdmin == False:
+            return JsonResponse({'deleted': False, 'message': 'Not Permission'})
         
         user: User = User.objects.filter(id = id).first()
         if not user:
@@ -399,7 +423,7 @@ def deleteUser(request: HttpRequest, id: str):
         user.isActive = False
         user.save()
 
-        authUser = AuthUser.objects.filter(refUser = user).first()
+        authUser: AuthUser = AuthUser.objects.filter(refUser = user).first()
         if authUser:
             authUser.isDelete = True
             authUser.isActive = False
@@ -493,9 +517,13 @@ def logout(request: HttpRequest):
 @requiredLogin
 def regisUser(request: HttpRequest, id:str):
     try:
+        isUserAdmin = isSettingUserAdmin(request.currentUser.id)
         user: User = User.objects.filter(id = id).first()
         if not user:
             messages.error(request, "User not found")
+            return HttpResponseRedirect(reverse('indexUser'))
+        if not request.currentUser.isAdmin or isUserAdmin == False:
+            messages.error(request, "Not Permission")
             return HttpResponseRedirect(reverse('indexUser'))
         if request.method == "POST":
             username = request.POST.get("username")
@@ -534,9 +562,13 @@ def regisUser(request: HttpRequest, id:str):
 def resetPassword(request: HttpRequest, id:str):
     response = HttpResponseRedirect(reverse('indexUser'))
     try:
+        isUserAdmin = isSettingUserAdmin(request.currentUser.id)
         user: User = User.objects.filter(id = id).first()
         if not user:
             messages.error(request, "User not found")
+            return response
+        if not request.currentUser.isAdmin or isUserAdmin == False:
+            messages.error(request, "Not Permission")
             return response
         
         if request.method == "POST":
