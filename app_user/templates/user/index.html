@@ -25,7 +25,7 @@
                             List of user
                         </p>
                     </div>
-                    {% if userSetting.isAdmin == True %}
+                    {% if isUserAdmin == True or request.currentUser.isAdmin == True %}
                     <div class="ms-auto my-auto mt-lg-0 mt-4">
                         <div class="ms-auto my-auto">
                             <a href="{% url 'addUser' %}" class="btn btn-primary">
