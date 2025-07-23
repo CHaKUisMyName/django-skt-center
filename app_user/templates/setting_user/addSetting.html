@@ -21,7 +21,7 @@
 {% endblock %}
 {% block content %}
 <div class="row mb-3">
-    <div class="col-sm-12 col-lg-9 mx-auto">
+    <div class="col-sm-12 col-lg-10 mx-auto">
         <div class="card">
             <form id="fmAddUser" action="{% url 'addSettingUser' %}" method="post" class="card-body mb-3 needs-validation" novalidate>
                 {% csrf_token %}

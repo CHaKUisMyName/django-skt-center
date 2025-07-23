@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'app_system_setting',
     'app_organization',
     'app_position',
+    'app_welcome_board',
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,91 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Welcome Board Add</title>{% endblock %}
+{% block css %}
+    <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-sm-12 col-lg-10 mx-auto">
+        <div class="card">
+            <div class="card-body mb-3">
+                <h3 class="display-6 fw-bold">Add Welcome Board</h3>
+                <p class="text-sm">create new welcome board data</p>
+                <div class="col-12">
+                    <div class="row mb-3">
+                        <div class="col-sm-12 col-lg-8">
+                            <input type="file" id="inputImage" accept="image/*" class="form-control mb-3">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <h5>Crop Area</h5>
+                            <img id="imageToCrop" style="max-width: 100%;" />
+                            <button id="cropButton" class="btn btn-primary mt-2">Crop</button>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Preview</h5>
+                            <img id="preview" class="img-thumbnail" style="max-width: 300px;">
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-8 col-sm-12">
+                            <label for="note" class="form-label fw-bold text-dark-emphasis">Note</label>
+                            <textarea id="note" name="note" class="form-control" style="height: 100px;"></textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-5">
+                        <div class="col-12">
+                            <input type="checkbox" id="isactive" name="isactive" class="form-check-input" />
+                            <label for="isactive" class="ms-2 form-check-label fw-bold text-dark-emphasis">Is Active</label>
+                        </div>
+                    </div>
+                    <div class="row mb-3 float-end">
+                        <div class="col-12">
+                            <a href="{% url 'indexWelcomeBoard' %}" class="btn btn-light">Cancel</a>
+                            <button type="submit" class="btn btn-primary ms-2">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
+    <script type="text/javascript">
+        let cropper;
+        $(document).ready(()=>{
+            ActiveMenu("welguest");
+        });
+        
+        $("#inputImage").on('change', function(e){
+            const file = e.target.files[0];
+            if(!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(ev){
+                $('#imageToCrop').attr('src', ev.target.result);
+                $('#imageToCrop').on('load', function(){
+                    if(cropper) cropper.destroy();
+                    cropper = new Cropper(this, {
+                        aspectRatio: 1,
+                        viewMode: 1,
+                        preview: '',
+                    });
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+        $('#cropButton').on('click', function () {
+            if (cropper) {
+                const canvas = cropper.getCroppedCanvas({
+                    width: 300,
+                    height: 300,
+                });
+                $('#preview').attr('src', canvas.toDataURL());
+            }
+        });
+    </script>
+{% endblock %}

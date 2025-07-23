@@ -1,0 +1,110 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Welcome Board index</title>{% endblock %}
+{% block css %}
+    <link href="{% static 'css/sweetalert2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/datatables.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/dataTables.bootstrap5.css' %}" rel="stylesheet">
+    <link href="{% static 'css/custom.css' %}" rel="stylesheet">
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span class="fw-bold">Welcome Board Guest</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">List welcome Board</h3>
+                        <p class="text-sm mb-0">
+                            List of welcome board Guest
+                        </p>
+                    </div>
+                    <div class="ms-auto my-auto mt-lg-0 mt-4">
+                        <div class="ms-auto my-auto">
+                            <a href="{% url 'addGuestWelcomeBoard' %}" class="btn btn-primary">
+                                <i class="bi bi-plus"></i>
+                                <span>Add Welcome Board</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="tb" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Images</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>
+                                    <img src="{% static 'images/dragon-bg.jpg' %}" 
+                                    width="150" height="150" 
+                                    class="img-thumbnail rounded" alt="...">
+                                </td>
+                                <td>
+                                    <span>19/07/2025 08:00</span>
+                                </td>
+                                <td>
+                                    <span>19/07/2025 17:00</span>
+                                </td>
+                                <td>
+                                    <h3>
+                                        <span class="badge text-bg-warning">Waiting</span>
+                                    </h3>
+                                </td>
+                                <td>
+                                    <div>
+                                        <a href="#" class="btn btn-info">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-danger delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/datatables.min.js' %}"></script>
+    {% if messages %}
+        {% for message in messages %}
+        <script type="text/javascript">
+            $(document).ready(function(){
+                const mssTag = "{{message.tags}}";
+                const mssMsg = "{{message}}";
+                PopMessage(mssMsg, mssTag);
+            });
+        </script>
+        {% endfor %}
+    {% endif %}
+    <script type="text/javascript">
+        let cropper;
+        $(document).ready(()=>{
+            ActiveMenu("welguest");
+            $('#tb').DataTable();
+        });
+        
+    </script>
+{% endblock %}f
