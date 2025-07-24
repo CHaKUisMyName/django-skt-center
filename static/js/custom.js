@@ -61,7 +61,33 @@ const initialDatePk = (element) => {
   });
   return dp;
 };
-
+const initialDateTimePk = (element) => {
+  const dp = new tempusDominus.TempusDominus(element, {
+    useCurrent: false, // ไม่ให้มีค่าเริ่มต้นที่อาจผิดพลาด
+    localization: {
+      format: "dd/MM/yyyy HH:mm",
+      hourCycle: "h24",
+    },
+    display: {
+      // buttons: {
+      //   today: true,
+      //   clear: true,
+      //   close: true,
+      // },
+      viewMode: "calendar",
+      components: {
+        decades: true,
+        year: true,
+        month: true,
+        date: true,
+        hours: true,
+        minutes: true,
+        seconds: false,
+      },
+    },
+  });
+  return dp;
+};
 const getAPIData = async (url) => {
   let returnData = null;
   const settings = {
