@@ -137,7 +137,11 @@
 
                 if (canvas) {
                     const blob = await canvasToBlobAsync(canvas);
-                    const file = new File([blob], "cropped.png", { type: "image/png" });
+                    const file = new File(
+                        [blob], 
+                        $("#inputImage").prop("files")[0]['name'], 
+                        { type: "image/png" }
+                    );
 
                     const container = new DataTransfer();
                     container.items.add(file);
@@ -145,10 +149,9 @@
                 }
             }
             
-            
             this.classList.add('was-validated');
-            return false;
-            // this.submit(); // ✅ ส่ง form manual
+            // return false;
+            this.submit(); // ✅ ส่ง form manual
         
         });        
         $(document).ready(()=>{

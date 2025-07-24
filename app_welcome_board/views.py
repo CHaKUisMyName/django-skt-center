@@ -2,6 +2,7 @@ from datetime import datetime
 from django.http import HttpRequest, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from django.contrib import messages
 
 from app_user.utils import requiredLogin
 
@@ -14,12 +15,32 @@ def index(request: HttpRequest):
 def addGuest(request: HttpRequest):
     response = HttpResponseRedirect(reverse('indexWelcomeBoard'))
     if request.method == "POST":
-        kuy = request.FILES.get("image")
-        print(kuy.name)
-        birthday = request.POST.get("sdate")
-        if birthday:
-            birthday = datetime.strptime(birthday, "%d/%m/%Y %H:%M")
-            print(f"date : {birthday}")
-        return response
+        try:
+            img = request.FILES.get("image")
+            if not img:
+                messages.error(request, "Image is required")
+                return response
+            print(img.name)
+
+            sDate = request.POST.get("sdate")
+            if sDate:
+                sDate = datetime.strptime(sDate, "%d/%m/%Y %H:%M")
+                print(f"date : {sDate}")
+            else:
+                messages.error(request, "Start Job Date is required")
+                return response
+            
+            eDate = request.POST.get("edate")
+            if eDate:
+                eDate = datetime.strptime(eDate, "%d/%m/%Y %H:%M")
+                print(f"date : {eDate}")
+            else:
+                messages.error(request, "End Job Date is required")
+                return response
+
+            return response
+        except Exception as e:
+            messages.error(request, str(e))
+            return response
     else:
         return render(request, 'welcome_board/guest/add.html')
