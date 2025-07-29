@@ -40,6 +40,7 @@
                         <thead>
                             <tr>
                                 <th>#</th>
+                                <th>Title</th>
                                 <th>Images</th>
                                 <th>Start Date</th>
                                 <th>End Date</th>
@@ -48,23 +49,23 @@
                             </tr>
                         </thead>
                         <tbody>
+                            {% for guest in welcomeGuests %}
                             <tr>
-                                <td>1</td>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ guest.title }}</td>
                                 <td>
-                                    <img src="{% static 'images/dragon-bg.jpg' %}" 
-                                    width="150" height="150" 
-                                    class="img-thumbnail rounded" alt="...">
+                                    <img src="{{ mediaRoot }}{{ guest.path }}" alt="..." class="img-fluid img-thumbnail w-50" />
                                 </td>
+                                <td>{{ guest.sDate|date:"d-m-Y H:i" }}</td>
+                                <td>{{ guest.eDate|date:"d-m-Y H:i" }}</td>
                                 <td>
-                                    <span>19/07/2025 08:00</span>
-                                </td>
-                                <td>
-                                    <span>19/07/2025 17:00</span>
-                                </td>
-                                <td>
-                                    <h3>
-                                        <span class="badge text-bg-warning">Waiting</span>
-                                    </h3>
+                                    {% if guest.status.value == 1 %}
+                                    <span class="badge text-bg-warning fs-4">{{ guest.status.name }}</span>
+                                    {% elif guest.status.value == 2 %}
+                                    <span class="badge text-bg-success text-white fs-4">{{ guest.status.name }}</span>
+                                    {% else %}
+                                    <span class="badge text-bg-secondary fs-4">{{ guest.status.name }}</span>
+                                    {% endif %}
                                 </td>
                                 <td>
                                     <div>
@@ -77,6 +78,7 @@
                                     </div>
                                 </td>
                             </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
@@ -103,7 +105,17 @@
         let cropper;
         $(document).ready(()=>{
             ActiveMenu("welguest");
-            $('#tb').DataTable();
+            $('#tb').DataTable({
+                columnDefs: [
+                    { width: '5%', targets: 0 },
+                    { width: '30%', targets: 1 },
+                    { width: '20%', targets: 2 },
+                    { width: '10%', targets: 3 },
+                    { width: '10%', targets: 4 },
+                    { width: '5%', targets: 5 },
+                    { width: '10%', targets: 6 },
+                ]
+            });
         });
         
     </script>

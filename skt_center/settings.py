@@ -155,3 +155,10 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# -- เป็น URL prefix ที่ผู้ใช้จะเข้าถึงไฟล์ผ่านเว็บเบราว์เซอร์
+# -- jango จะ map path URL ที่ขึ้นต้นด้วย MEDIA_URL → ไปยังไฟล์จริงที่อยู่ใน MEDIA_ROOT
+MEDIA_URL = '/media/'
+
+# -- เป็น path บนเครื่อง (filesystem) ที่ Django จะใช้เก็บ ไฟล์ที่ผู้ใช้ upload เข้ามา
+MEDIA_ROOT = Path.home() / 'desktop/chaku-folder/skt-media/media'
