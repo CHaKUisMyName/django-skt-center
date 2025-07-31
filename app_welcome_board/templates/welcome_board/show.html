@@ -1,0 +1,96 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description"
+              content="เว็บไซต์นี้ให้ข้อมูลเกี่ยวกับ HTML, CSS และการพัฒนาเว็บ">
+        <meta name="keywords"
+              content="HTML, CSS, JavaScript, เว็บดีไซน์, การพัฒนาเว็บ">
+        <title>Document</title>
+        <!-- <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet"> -->
+         <link href="{% static 'css/app.css' %}" rel="stylesheet" />
+         <link href="{% static 'css/fontawesome/css/fontawesome.min.css' %}" rel="stylesheet" />
+         <link href="{% static 'css/fontawesome/css/brands.min.css' %}" rel="stylesheet" />
+         <link href="{% static 'css/fontawesome/css/solid.min.css' %}" rel="stylesheet" />
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+         <link href="{% static 'css/sweetalert2.min.css' %}" rel="stylesheet">
+        <style>
+            .body{
+                height: 100%;
+            }
+            .bg-image{
+                background-image: url("{% static 'images/dragon-bg.jpg' %}");
+                /* background-image: url("https://www.sanyo-kasei.co.th/images/banner/banner_sanyo_3.jpg"); */
+                background-repeat: round;
+            }
+            img{
+                display:block;
+                width:100%; 
+                height:100%;
+                object-fit: cover;
+            }
+        </style>
+    </head>
+    <body class="">
+        <div>
+            <!-- <img src="{% static 'images/dragon-bg.jpg' %}" alt="..." /> -->
+            <img id="img" src="" alt="..." />
+        </div>
+        
+        <!-- <script src="{% static 'js/bootstrap.min.js' %}"></script> -->
+        <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
+        <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+        <script src="{% static 'js/app.js'%}"></script>
+        <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+        <script src="{% static 'js/custom.js'%}"></script>
+        {% if messages %}
+            {% for message in messages %}
+            <script type="text/javascript">
+                $(document).ready(function(){
+                    const mssTag = "{{message.tags}}";
+                    const mssMsg = "{{message}}";
+                    PopMessage(mssMsg, mssTag);
+                });
+            </script>
+            {% endfor %}
+        {% endif %}
+        <script type="text/javascript">
+            $(document).ready(function(){
+                
+                const socket = new WebSocket("ws://"+window.location.host+"/ws/wb/welcome/");
+                let paths = [];
+                let currentIndex = 0;
+                let intervalId;
+                socket.onmessage = function(event){
+                    const data = JSON.parse(event.data);
+                    paths = data.path;
+                    currentIndex = 0;
+                    // เริ่ม interval ใหม่ทุกครั้งที่มีข้อมูลใหม่
+                    if (intervalId) clearInterval(intervalId);
+                    if (paths.length > 0) {
+                        intervalId = setInterval(function () {
+                            const v = paths[currentIndex];
+                            console.log("กำลังแสดงรูป:", v.path);
+
+                            $("#img").attr("src", window.location.origin + "/media/" + v.path);
+
+                            // ไปยัง index ถัดไป ถ้าครบรอบแล้วเริ่มที่ 0 ใหม่
+                            currentIndex = (currentIndex + 1) % paths.length;
+                        }, 3000); // เปลี่ยนภาพทุก 3 วินาที
+                    }
+                    
+                };
+                socket.onopen = function() {
+                    console.log('WebSocket connected!');
+                };
+
+                socket.onclose = function() {
+                    console.log('WebSocket disconnected');
+                    if (intervalId) clearInterval(intervalId);
+                };
+            });
+        </script>
+    </body>
+</html>

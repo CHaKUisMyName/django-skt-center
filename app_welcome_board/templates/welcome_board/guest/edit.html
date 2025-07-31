@@ -11,18 +11,18 @@
     <div class="col-sm-12 col-lg-10 mx-auto">
         <div class="card">
             <form id="fm" 
-            action="{% url 'addGuestWelcomeBoard' %}"
             method="post" 
             class="card-body mb-3 needs-validation"
             enctype="multipart/form-data" novalidate>
                 {% csrf_token %}
-                <h3 class="display-6 fw-bold">Add Welcome Board</h3>
-                <p class="text-sm">create new welcome board data</p>
+                <input type="hidden" id="wgid" name="wgid" value="{{ guest.id }}"/>
+                <h3 class="display-6 fw-bold">Edit Welcome Board</h3>
+                <p class="text-sm">Edit welcome board data</p>
                 <div class="col-12">
                     <div class="rwo mb-3">
                         <div class="col-sm-12 col-lg-8">
                             <label for="title" class="form-label fw-bold text-dark-emphasis">Title</label>
-                            <input type="text" id="title" name="title" class="form-control"/>
+                            <input type="text" id="title" name="title" class="form-control" value="{{ guest.title }}"/>
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -57,10 +57,20 @@
                             <div id="edate-error" class="invalid-feedback">Please input date format (DD/MM/YYYY)</div>
                         </div>
                     </div>
-                    <div class="row mb-5">
+                    <div class="row mb-4">
                         <div class="col-md-8 col-sm-12">
                             <label for="note" class="form-label fw-bold text-dark-emphasis">Note</label>
-                            <textarea id="note" name="note" class="form-control" style="height: 100px;"></textarea>
+                            <textarea id="note" name="note" class="form-control" style="height: 100px;">{{ guest.note }}</textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-5">
+                        <div class="col-12">
+                            {% if guest.isActive == True %}
+                            <input type="checkbox" id="isactive" name="isactive" class="form-check-input" checked />
+                            {% else %}
+                            <input type="checkbox" id="isactive" name="isactive" class="form-check-input" />
+                            {% endif %}
+                            <label for="isactive" class="ms-2 form-check-label fw-bold text-dark-emphasis">Is Active</label>
                         </div>
                     </div>
                     <div class="row mb-3 float-end">
@@ -159,6 +169,14 @@
             ActiveMenu("welguest");
             var startDate = initialDateTimePk(document.getElementById("sdate"));
             var endDate = initialDateTimePk(document.getElementById("edate"));
+            let sDate = "{{ guest.sDate|date:'c' }}";// e.g. 1992-09-21T00:00:00+00:00
+            let eDate = "{{ guest.eDate|date:'c' }}";
+            if(sDate){
+                startDate.dates.setValue(tempusDominus.DateTime.convert(new Date(sDate)));
+            }
+            if(eDate){
+                endDate.dates.setValue(tempusDominus.DateTime.convert(new Date(eDate)));
+            }
         });
         
         $("#inputImage").on('change', function(e){

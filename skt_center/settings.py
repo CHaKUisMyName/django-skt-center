@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     'app_welcome_board',
 ]
 
+INSTALLED_APPS += ["channels"]
+
 MIDDLEWARE = [
     'app_user.middleware.UserInjectMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -83,6 +85,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'skt_center.wsgi.application'
+ASGI_APPLICATION = "skt_center.asgi.application"
+
+# ถ้าใช้ Redis สำหรับหลายเครื่อง
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("localhost", 6379)],
+        },
+    },
+}
 
 
 # Database
@@ -144,7 +157,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 # ระบุ path ของ static files (optional หากไม่ได้ใช้ default directory)
 STATICFILES_DIRS = [
