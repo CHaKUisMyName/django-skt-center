@@ -20,6 +20,7 @@ from app_welcome_board.models.welcomeboard import WelcomeBoardStatus
 from base_models.basemodel import UserSnapshot
 
 uploadDir = 'guest-img'
+# -- welcome board guest URL : http://127.0.0.1:8000/wb/gs/show
 
 # Create your views here.
 @requiredLogin
@@ -104,22 +105,79 @@ def addGuest(request: HttpRequest):
 @requiredLogin
 def editGuest(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexWelcomeBoard'))
-    if not id:
-        messages.error(request, "Id is required")
-        return response
-    wg: WelcomeBoardGuest = WelcomeBoardGuest.objects.filter(id= ObjectId(id)).first()
-    if not wg:
-        messages.error(request, "Guest not found")
-        return response
+    
     if request.method == "POST":
         try:
-            pass
+            wgid = request.POST.get("wgid")
+            if not wgid:
+                messages.error(request, "id is required")
+                return response
+            wg: WelcomeBoardGuest = WelcomeBoardGuest.objects.filter(id = ObjectId(wgid)).first()
+            if not wg:
+                messages.error(request, "Guest not found")
+                return response
+            img = request.FILES.get("image")
+            if not img:
+                messages.error(request, "Image is required")
+                return response
+            print(img.name)
+            sDate = request.POST.get("sdate")
+            if sDate:
+                sDate = datetime.strptime(sDate, "%d/%m/%Y %H:%M")
+                print(f"date : {sDate}")
+            else:
+                messages.error(request, "Start Job Date is required")
+                return response
+            
+            eDate = request.POST.get("edate")
+            if eDate:
+                eDate = datetime.strptime(eDate, "%d/%m/%Y %H:%M")
+                print(f"date : {eDate}")
+            else:
+                messages.error(request, "End Job Date is required")
+                return response
+            messages.success(request, "Upload success")
+            wg.title = request.POST.get('title') if request.POST.get("title") else wg.title
+            wg.note = request.POST.get("note") if request.POST.get("note") else wg.note
+            wg.sDate = sDate
+            wg.eDate = eDate
+            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, uploadDir))
+            fs.delete(os.path.join(settings.MEDIA_ROOT, wg.path))# -- delete old image
+            filename = fs.save(img.name, img)  # จะเก็บไฟล์และ return filename
+            file_path = os.path.join(uploadDir, filename)  # เช่น welcome_board/xxx.jpg
+            if not file_path:
+                messages.error(request, "Upload failed")
+                return response
+            wg.path = file_path
+            currentUser: User = request.currentUser
+            if currentUser:
+                uCreate = UserSnapshot().UserToSnapshot(currentUser)
+                if uCreate:
+                    wg.createBy = uCreate
+            wg.updateDate = timezone.now()
+            wg.save()
+            broadCastWelcomeBoard()
+
+            if sDate >= eDate:
+                messages.error(request, 'Start date must be before end date.')
+                return response
+            return response
         except Exception as e:
             messages.error(request, str(e))
             return response
     else:
+        if not id:
+            messages.error(request, "Id is required")
+            return response
+        wg: WelcomeBoardGuest = WelcomeBoardGuest.objects.filter(id= ObjectId(id)).first()
+        if not wg:
+            messages.error(request, "Guest not found")
+            return response
         context = {
-            'guest': wg
+            'guest': wg,
+            # 'imgPath': os.path.join(settings.MEDIA_ROOT, wg.path),
+            'imgPath': wg.path,
+            'mediaRoot': settings.MEDIA_URL,
         }
         return render(request, 'welcome_board/guest/edit.html',context= context)
     

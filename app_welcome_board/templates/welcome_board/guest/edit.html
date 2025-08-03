@@ -30,6 +30,7 @@
                             <label for="inputImage" class="form-label fw-bold text-dark-emphasis">Image</label>
                             <input type="file" id="inputImage" name="imagekuy" accept="image/*" class="form-control mb-3" required>
                             <div class="invalid-feedback">Please upload image</div>
+                            
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -57,20 +58,10 @@
                             <div id="edate-error" class="invalid-feedback">Please input date format (DD/MM/YYYY)</div>
                         </div>
                     </div>
-                    <div class="row mb-4">
+                    <div class="row mb-5">
                         <div class="col-md-8 col-sm-12">
                             <label for="note" class="form-label fw-bold text-dark-emphasis">Note</label>
                             <textarea id="note" name="note" class="form-control" style="height: 100px;">{{ guest.note }}</textarea>
-                        </div>
-                    </div>
-                    <div class="row mb-5">
-                        <div class="col-12">
-                            {% if guest.isActive == True %}
-                            <input type="checkbox" id="isactive" name="isactive" class="form-check-input" checked />
-                            {% else %}
-                            <input type="checkbox" id="isactive" name="isactive" class="form-check-input" />
-                            {% endif %}
-                            <label for="isactive" class="ms-2 form-check-label fw-bold text-dark-emphasis">Is Active</label>
                         </div>
                     </div>
                     <div class="row mb-3 float-end">
@@ -165,7 +156,7 @@
             this.submit(); // ✅ ส่ง form manual
         
         });        
-        $(document).ready(()=>{
+        $(document).ready(async ()=>{
             ActiveMenu("welguest");
             var startDate = initialDateTimePk(document.getElementById("sdate"));
             var endDate = initialDateTimePk(document.getElementById("edate"));
@@ -177,39 +168,74 @@
             if(eDate){
                 endDate.dates.setValue(tempusDominus.DateTime.convert(new Date(eDate)));
             }
+            // แสดงรูปเก่าและ init cropper ถ้ามี
+            const imgUrl = window.location.origin + '{{ mediaRoot }}{{ imgPath }}';
+            $('#imageToCrop').attr('src', imgUrl);
+            $('#imageToCrop').on('load', function(){
+                if(cropper) cropper.destroy();
+                cropper = new Cropper(this, {
+                    aspectRatio: 16 / 9,
+                    viewMode: 0,
+                    autoCropArea: 1,
+                    responsive:true,
+                    ready: async function(){
+                        const canvas = cropper.getCroppedCanvas({
+                            width: 1920,
+                            height: 1080
+                        });
+                        console.log("Canvas ready:", canvas);
+                        if (canvas) {
+                            $('#preview').addClass("img-thumbnail");
+                            $('#preview').attr('src', canvas.toDataURL());
+                            const imgName = "{{ imgPath }}";
+                            const blob = await canvasToBlobAsync(canvas);
+                            const file = new File([blob], imgName.split("/")[1], { type: "image/png" });
+
+                            const dt = new DataTransfer();
+                            dt.items.add(file);
+
+                            // ✅ ใส่ cropped file ลงไปใน input ทั้ง 2 ตัว
+                            document.getElementById('croppedImageInput').files = dt.files;
+                            document.getElementById('inputImage').files = dt.files;
+
+                            // ✅ Trigger inputImage change event
+                            const changeEvent = new Event('change', { bubbles: true });
+                            document.getElementById('inputImage').dispatchEvent(changeEvent);
+                        }
+                    }
+                });
+            });
         });
         
         $("#inputImage").on('change', function(e){
             const file = e.target.files[0];
             if(!file) return;
-
             const reader = new FileReader();
             reader.onload = function(ev){
                 $('#imageToCrop').attr('src', ev.target.result);
                 $('#imageToCrop').on('load', function(){
                     if(cropper) cropper.destroy();
                     cropper = new Cropper(this, {
-                        aspectRatio: 16 / 9, // ✅ 16:9 สำหรับ TV
+                        aspectRatio: 16 / 9,
                         viewMode: 0,
-                        preview: '',
                         autoCropArea: 1,
                         responsive:true,
                         crop: function () {
                             const canvas = cropper.getCroppedCanvas({
-                                width: 1920,  // ✅ Full HD 16:9
+                                width: 1920,
                                 height: 1080
                             });
                             if (canvas) {
                                 $('#preview').addClass("img-thumbnail");
                                 $('#preview').attr('src', canvas.toDataURL());
                             }
-                            
                         }
                     });
                 });
             };
             reader.readAsDataURL(file);
         });
+
         const dateTimeStrToDateTime = (str) => {
             if(str){
                 const parts = str.match(/(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})/);

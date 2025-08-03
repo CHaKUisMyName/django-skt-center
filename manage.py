@@ -3,7 +3,7 @@
 import os
 import sys
 
-
+# -- run project : uvicorn skt_center.asgi:application --host 127.0.0.1 --port 8000 --reload
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'skt_center.settings')
