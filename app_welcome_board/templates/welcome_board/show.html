@@ -85,6 +85,8 @@
                 };
                 socket.onopen = function() {
                     console.log('WebSocket connected!');
+                    // แจ้ง server ว่าอันนี้ show.html นะ ขอข้อมูลแบบมี sDate/eDate
+                    socket.send(JSON.stringify({ "action": "filtered" }));
                 };
 
                 socket.onclose = function() {

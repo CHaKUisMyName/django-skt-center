@@ -1,57 +1,43 @@
-# ✅ ต้อง setup Django ก่อน import model
-import os
-import django
-from django.utils import timezone
-
-from app_welcome_board.models.welcomeboard import WelcomeBoardStatus
-# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_skt_center.settings')
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'skt_center.settings')
-django.setup()
+from app_welcome_board.utils import get_all_welcome_data, get_filtered_welcome_data
 
 import json
-from typing import List
 from channels.generic.websocket import AsyncWebsocketConsumer
-from asgiref.sync import sync_to_async
-
-from app_welcome_board.models.welcome_guest import WelcomeBoardGuest
-
-@sync_to_async
-def get_welcome_data():
-    now = timezone.now()
-    welcome: List[WelcomeBoardGuest] = WelcomeBoardGuest.objects.filter(
-        status=WelcomeBoardStatus.Show,
-        isActive=True,
-        sDate__lte=now,
-        eDate__gte=now
-    )
-    if welcome:
-        return {
-            "media_type": "image",
-            "path": [w.serialize() for w in welcome]
-        }
-    return {
-        "media_type": "video",
-        "path": [{"path": "guest-img/senikame-2.jpg"}]
-    }
-
 
 class WelcomeBoardConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.group_name = 'welcome_board'
-        await self.channel_layer.group_add(self.group_name, self.channel_name)
+        # ยังไม่รู้ group รอรับ message แรกก่อน
         await self.accept()
-
-        welcome_data = await get_welcome_data()
-        await self.send(text_data=json.dumps(welcome_data))
+        self.group_name = None
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(self.group_name, self.channel_name)
+        if self.group_name:
+            await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
     async def receive(self, text_data):
-        print(f"Received from client: {text_data}")
+        print(f"Received raw data: {text_data}")
+        data = json.loads(text_data)
+        print(f"Parsed data: {data}")
+
+        # ลบ group เก่าถ้ามี เพื่อเปลี่ยน group
+        if self.group_name:
+            await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+        action = data.get("action")
+        if action == "filtered":
+            self.group_name = "filtered_guests"
+            await self.channel_layer.group_add(self.group_name, self.channel_name)
+            welcome_data = await get_filtered_welcome_data()
+        else:
+            self.group_name = "all_guests"
+            await self.channel_layer.group_add(self.group_name, self.channel_name)
+            welcome_data = await get_all_welcome_data()
+
+        welcome_data["type"] = "send_welcome_board"
+        await self.send(text_data=json.dumps(welcome_data))
 
     async def send_welcome_board(self, event):
         await self.send(text_data=json.dumps({
+            "type": "send_welcome_board",
             "media_type": event["media_type"],
             'path': event['path']
         }))

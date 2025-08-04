@@ -1,7 +1,8 @@
 from enum import Enum
 import mongoengine as me
 from datetime import datetime
-from django.utils import timezone
+from django.utils.timezone import localtime, make_aware, get_current_timezone
+import pytz
 
 from base_models.basemodel import BaseClass
 
@@ -23,8 +24,8 @@ def format_enum(e):
 class WelcomeBoard(BaseClass):
     title = me.StringField(null=True, required=False, default=None)
     path = me.StringField(null=True, required=False, default=None)
-    sDate = me.DateTimeField()
-    eDate = me.DateTimeField()
+    sDate = me.DateTimeField(null=True, required=False, default=None)
+    eDate = me.DateTimeField(null=True, required=False, default=None)
     note = me.StringField(null=True, required=False, default=None)
     status = me.EnumField(WelcomeBoardStatus)
     isActive = me.BooleanField()
@@ -32,22 +33,31 @@ class WelcomeBoard(BaseClass):
     meta = {'abstract': True}  # 👈 ต้องใส่เพื่อให้เป็น abstract class
 
     def clean(self):
-        # ทำให้ sDate และ eDate เป็น timezone-aware
-        tz = timezone.get_current_timezone()
+        utc = pytz.UTC
         if self.sDate and self.sDate.tzinfo is None:
-            self.sDate = timezone.make_aware(self.sDate, tz)
+            self.sDate = self.sDate.replace(tzinfo=utc)
         if self.eDate and self.eDate.tzinfo is None:
-            self.eDate = timezone.make_aware(self.eDate, tz)
+            self.eDate = self.eDate.replace(tzinfo=utc)
 
     def serialize(self):
         return {
             "id": str(self.id),
             "title": self.title,
             "path": self.path,
-            "sDate": format_date(self.sDate),
-            "eDate": format_date(self.eDate),
+            "sDate": safe_localtime(self.sDate).isoformat() if self.sDate else None,
+            "eDate": safe_localtime(self.eDate).isoformat() if self.eDate else None,
             "note": self.note,
-            "status": format_enum(self.status),
+            "status": {
+                "name": self.status.name if self.status else None,
+                "value": self.status.value if self.status else None,
+            },
             "isActive": self.isActive,
         
         }
+    
+def safe_localtime(dt):
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        dt = make_aware(dt, get_current_timezone())
+    return localtime(dt)

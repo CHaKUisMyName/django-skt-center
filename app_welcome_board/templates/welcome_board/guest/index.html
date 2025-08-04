@@ -120,25 +120,123 @@
                     { width: '10%', targets: 6 },
                 ]
             });
-        });
-        $(".g-img").click(function(e){
-            e.preventDefault();
-            console.log($(e.currentTarget).data('img'));
-            const img = $(e.currentTarget).data('img');
-            Swal.fire({
-                // title: "Sweet!",
-                // text: "Modal with a custom image.",
-                imageUrl: img,
-                // imageWidth: 400,
-                // imageHeight: 200,
-                width:1000,
-                height:600,
-                imageAlt: "Custom image",
-                showConfirmButton: false
 
-            });
-        
+            let ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+            let socket = new WebSocket(ws_scheme + '://' + window.location.host + "/ws/wb/welcome/");
+
+            socket.onopen = function () {
+                console.log("✅ Connected to WebSocket");
+                socket.send(JSON.stringify({ action: "all" }));  // ✅ สำคัญ
+            };
+
+            socket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                if (data.type === "send_welcome_board") {
+                    console.log("📡 New data received:", data);
+
+                    // รีเฟรชตารางใหม่ด้วยข้อมูลล่าสุด
+                    updateGuestTable(data.path);
+                }
+            }
+
+            function updateGuestTable(guests) {
+                let tableBody = $("#tb tbody");
+                tableBody.empty(); // ล้างของเก่า
+
+                guests.forEach((guest, index) => {
+                    console.log(guest.status);
+                    let statusBadge = `<span class="badge text-bg-secondary fs-4">Unknown</span>`;
+                    if (guest.status?.value === 1) {
+                        statusBadge = `<span class="badge text-bg-warning fs-4">Waiting</span>`;
+                    } else if (guest.status?.value === 2) {
+                        statusBadge = `<span class="badge text-bg-success text-white fs-4">Show</span>`;
+                    } else if (guest.status?.value === 3) {
+                        statusBadge = `<span class="badge text-bg-secondary fs-4">Showed</span>`;
+                    } else {
+                        statusBadge = `<span class="badge text-bg-danger fs-4">Unknown</span>`;
+                    }
+
+
+                    tableBody.append(`
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${guest.title}</td>
+                            <td>
+                                <a href="#" class="g-img" data-img="{{ mediaRoot }}${guest.path}">
+                                    <img src="{{ mediaRoot }}${guest.path}" alt="..." class="img-fluid img-thumbnail w-50" />
+                                </a>
+                            </td>
+                            <td>${formatDate(guest.sDate)}</td>
+                            <td>${formatDate(guest.eDate)}</td>
+                            <td>${statusBadge}</td>
+                            <td>
+                                <div>
+                                    <a href="/wb/gs/edit/${guest.id}" class="btn btn-info">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-danger delete" data-wgid="${guest.id}" onclick='kuy(this);'>
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `);
+                });
+
+                $(".g-img").click(function(e){
+                    e.preventDefault();
+                    const img = $(e.currentTarget).data('img');
+                    Swal.fire({
+                        imageUrl: img,
+                        width: 1000,
+                        height: 600,
+                        showConfirmButton: false
+                    });
+                });
+            }
+            
+
         });
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
+        }
+        function kuy(el){
+            console.log($(el));
+            Swal.fire({
+                title: "Do you want to delete ?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#f97316",
+                confirmButtonText: "Delete",
+                cancelButtonText: "Cancel"
+            }).then((result)=>{
+                if(result.isConfirmed){
+                    console.log('confirm');
+                    Loading(true);
+                    const settings = {
+                        url: window.location.origin + window.location.pathname + "delete/" + $(el).data('wgid'),
+                        method: "GET",
+                    }
+                    $.ajax(settings)
+                    .done((response)=>{
+                        Loading(false);
+                        if(response.deleted == true){
+                            PopMessage("Delete success", "success", true);
+                        }else{
+                            PopMessage(response.message, "error");
+                        }
+                    })
+                    .fail((xhr, status, error)=>{
+                        Loading(false);
+                        console.error("เกิดข้อผิดพลาด: " + status + " - " + error);
+                        PopMessage(error, "error");
+                    });
+                }
+            });
+        }
+        
+        
         $(".delete").click(function(e){
             e.preventDefault();
             Swal.fire({
@@ -176,4 +274,4 @@
         });
         
     </script>
-{% endblock %}f
+{% endblock %}

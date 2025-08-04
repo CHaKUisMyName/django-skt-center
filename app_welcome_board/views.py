@@ -17,6 +17,7 @@ from app_user.models.user import User
 from app_user.utils import requiredLogin
 from app_welcome_board.models.welcome_guest import WelcomeBoardGuest
 from app_welcome_board.models.welcomeboard import WelcomeBoardStatus
+from app_welcome_board.utils import get_all_welcome_data, get_filtered_welcome_data
 from base_models.basemodel import UserSnapshot
 
 uploadDir = 'guest-img'
@@ -91,8 +92,10 @@ def addGuest(request: HttpRequest):
                 uCreate = UserSnapshot().UserToSnapshot(currentUser)
                 if uCreate:
                     wg.createBy = uCreate
+            wg.createDate = timezone.now()
             wg.save()
             broadCastWelcomeBoard()
+            # broadCastAllGuests()
 
             messages.success(request, "Upload success")
             return response
@@ -161,6 +164,7 @@ def editGuest(request: HttpRequest, id: str):
             wg.updateDate = timezone.now()
             wg.save()
             broadCastWelcomeBoard()
+            # broadCastAllGuests()
 
             if sDate >= eDate:
                 messages.error(request, 'Start date must be before end date.')
@@ -209,6 +213,7 @@ def deleteGuest(request: HttpRequest, id: str):
         wg.delete()
         
         broadCastWelcomeBoard()
+        # broadCastAllGuests()
         returnData = {
             'deleted': True,
             'message': 'Delete success'
@@ -226,30 +231,73 @@ def showWelcomeBoard(request: HttpRequest):
     broadCastWelcomeBoard()
     return render(request, 'welcome_board/show.html')
 
+# def broadCastWelcomeBoard():
+#     now = timezone.now()
+#     print(f"now : {now}")
+#     channel_layer = get_channel_layer()
+#     welcome: List[WelcomeBoardGuest] = WelcomeBoardGuest.objects.filter(
+#         status=WelcomeBoardStatus.Show,
+#         isActive=True,
+#         sDate__lte=now,
+#         eDate__gte=now
+#     )
+#     if welcome:
+#         wg = [ w.serialize() for w in welcome]
+#         # print(wg)
+#         payload = {
+#             "type": "send_welcome_board",
+#             "path": wg,
+#             "media_type": "image"
+#         }
+#     else:
+#         payload = {
+#             "type": "send_welcome_board",
+#             "path": [{"path":"guest-img/senikame-2.jpg"}],
+#             "media_type": "video"
+#         }
+#     async_to_sync(channel_layer.group_send)(
+#         "welcome_board",
+#         payload
+#     )
+
+# def broadCastAllGuests():
+#     print("broadCastAllGuests")
+#     channel_layer = get_channel_layer()
+#     welcome: List[WelcomeBoardGuest] = WelcomeBoardGuest.objects.filter(isActive=True)
+#     payload = {
+#         "type": "send_welcome_board",
+#         "path": [w.serialize() for w in welcome],
+#         "media_type": "image"
+#     }
+#     async_to_sync(channel_layer.group_send)(
+#         "welcome_board",
+#         payload
+#     )
+
+channel_layer = get_channel_layer()
+
 def broadCastWelcomeBoard():
-    now = timezone.now()
-    channel_layer = get_channel_layer()
-    welcome: List[WelcomeBoardGuest] = WelcomeBoardGuest.objects.filter(
-        status=WelcomeBoardStatus.Show,
-        isActive=True,
-        sDate__lte=now,
-        eDate__gte=now
-    )
-    if welcome:
-        wg = [ w.serialize() for w in welcome]
-        # print(wg)
-        payload = {
-            "type": "send_welcome_board",
-            "path": wg,
-            "media_type": "image"
-        }
-    else:
-        payload = {
-            "type": "send_welcome_board",
-            "path": [{"path":"guest-img/senikame-2.jpg"}],
-            "media_type": "video"
-        }
-    async_to_sync(channel_layer.group_send)(
-        "welcome_board",
-        payload
-    )
+    async def send_message():
+        data = await get_filtered_welcome_data()
+        await channel_layer.group_send(
+            "filtered_guests",
+            {
+                "type": "send_welcome_board",
+                "media_type": data["media_type"],
+                "path": data["path"],
+            }
+        )
+    async_to_sync(send_message)()
+
+def broadCastAllGuests():
+    async def send_message():
+        data = await get_all_welcome_data()
+        await channel_layer.group_send(
+            "all_guests",
+            {
+                "type": "send_welcome_board",
+                "media_type": data["media_type"],
+                "path": data["path"],
+            }
+        )
+    async_to_sync(send_message)()
