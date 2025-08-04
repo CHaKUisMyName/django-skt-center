@@ -1,6 +1,9 @@
 # ✅ ต้อง setup Django ก่อน import model
 import os
 import django
+from django.utils import timezone
+
+from app_welcome_board.models.welcomeboard import WelcomeBoardStatus
 # os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_skt_center.settings')
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'skt_center.settings')
 django.setup()
@@ -14,7 +17,13 @@ from app_welcome_board.models.welcome_guest import WelcomeBoardGuest
 
 @sync_to_async
 def get_welcome_data():
-    welcome: List[WelcomeBoardGuest] = list(WelcomeBoardGuest.objects.filter(isActive=True))
+    now = timezone.now()
+    welcome: List[WelcomeBoardGuest] = WelcomeBoardGuest.objects.filter(
+        status=WelcomeBoardStatus.Show,
+        isActive=True,
+        sDate__lte=now,
+        eDate__gte=now
+    )
     if welcome:
         return {
             "media_type": "image",

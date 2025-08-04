@@ -46,6 +46,7 @@ def addGuest(request: HttpRequest):
             sDate = request.POST.get("sdate")
             if sDate:
                 sDate = datetime.strptime(sDate, "%d/%m/%Y %H:%M")
+                sDate = timezone.make_aware(sDate, timezone.get_current_timezone())
                 print(f"date : {sDate}")
             else:
                 messages.error(request, "Start Job Date is required")
@@ -54,6 +55,7 @@ def addGuest(request: HttpRequest):
             eDate = request.POST.get("edate")
             if eDate:
                 eDate = datetime.strptime(eDate, "%d/%m/%Y %H:%M")
+                eDate = timezone.make_aware(eDate, timezone.get_current_timezone())
                 print(f"date : {eDate}")
             else:
                 messages.error(request, "End Job Date is required")
@@ -124,6 +126,7 @@ def editGuest(request: HttpRequest, id: str):
             sDate = request.POST.get("sdate")
             if sDate:
                 sDate = datetime.strptime(sDate, "%d/%m/%Y %H:%M")
+                sDate = timezone.make_aware(sDate, timezone.get_current_timezone())
                 print(f"date : {sDate}")
             else:
                 messages.error(request, "Start Job Date is required")
@@ -132,6 +135,7 @@ def editGuest(request: HttpRequest, id: str):
             eDate = request.POST.get("edate")
             if eDate:
                 eDate = datetime.strptime(eDate, "%d/%m/%Y %H:%M")
+                eDate = timezone.make_aware(eDate, timezone.get_current_timezone())
                 print(f"date : {eDate}")
             else:
                 messages.error(request, "End Job Date is required")
@@ -223,12 +227,17 @@ def showWelcomeBoard(request: HttpRequest):
     return render(request, 'welcome_board/show.html')
 
 def broadCastWelcomeBoard():
-    # now = datetime.now()
+    now = timezone.now()
     channel_layer = get_channel_layer()
-    welcome: List[WelcomeBoardGuest] = WelcomeBoardGuest.objects.filter(isActive=True)
-    print(len(welcome))
+    welcome: List[WelcomeBoardGuest] = WelcomeBoardGuest.objects.filter(
+        status=WelcomeBoardStatus.Show,
+        isActive=True,
+        sDate__lte=now,
+        eDate__gte=now
+    )
     if welcome:
         wg = [ w.serialize() for w in welcome]
+        # print(wg)
         payload = {
             "type": "send_welcome_board",
             "path": wg,

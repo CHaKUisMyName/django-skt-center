@@ -24,7 +24,7 @@ class UserSnapshot(me.EmbeddedDocument):
             return None
 
 class BaseClass(me.Document):
-    createDate = me.DateTimeField(default = timezone.now())
+    createDate = me.DateTimeField(default = timezone.now)
     createBy = me.EmbeddedDocumentField(UserSnapshot)
     updateDate = me.DateTimeField()
     updateBy = me.EmbeddedDocumentField(UserSnapshot)

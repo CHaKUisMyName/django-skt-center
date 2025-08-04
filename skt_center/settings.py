@@ -51,7 +51,8 @@ INSTALLED_APPS = [
     'app_system_setting',
     'app_organization',
     'app_position',
-    'app_welcome_board',
+    # 'app_welcome_board',
+    'app_welcome_board.apps.AppWelcomeBoardConfig'
 ]
 
 INSTALLED_APPS += ["channels"]
@@ -147,7 +148,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+# TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Bangkok'
 
 USE_I18N = True
 

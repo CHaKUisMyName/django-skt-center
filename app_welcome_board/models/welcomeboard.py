@@ -1,6 +1,7 @@
 from enum import Enum
 import mongoengine as me
 from datetime import datetime
+from django.utils import timezone
 
 from base_models.basemodel import BaseClass
 
@@ -29,6 +30,14 @@ class WelcomeBoard(BaseClass):
     isActive = me.BooleanField()
 
     meta = {'abstract': True}  # 👈 ต้องใส่เพื่อให้เป็น abstract class
+
+    def clean(self):
+        # ทำให้ sDate และ eDate เป็น timezone-aware
+        tz = timezone.get_current_timezone()
+        if self.sDate and self.sDate.tzinfo is None:
+            self.sDate = timezone.make_aware(self.sDate, tz)
+        if self.eDate and self.eDate.tzinfo is None:
+            self.eDate = timezone.make_aware(self.eDate, tz)
 
     def serialize(self):
         return {
