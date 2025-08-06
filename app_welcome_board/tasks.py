@@ -7,6 +7,7 @@ from app_welcome_board.views import broadCastAllGuests, broadCastWelcomeBoard
 
 def update_welcome_statuses():
     now = timezone.now()
+    # print(f"now : {now}")
     updated_count = 0
     # ✅ เปลี่ยนจาก Show → Showed ถ้าเลยเวลา
     expired: List[WelcomeBoardGuest] = WelcomeBoardGuest.objects.filter(
@@ -15,8 +16,7 @@ def update_welcome_statuses():
         isActive=True
     )
     for guest in expired:
-        print(f"guest s : {guest.sDate}")
-        print(f"guest e: {guest.eDate}")
+        
         guest.status = WelcomeBoardStatus.Showed.value
         guest.save()
         broadCastAllGuests()

@@ -3,6 +3,7 @@ import mongoengine as me
 from datetime import datetime
 from django.utils.timezone import localtime, make_aware, get_current_timezone
 import pytz
+import datetime
 
 from base_models.basemodel import BaseClass
 
@@ -44,8 +45,12 @@ class WelcomeBoard(BaseClass):
             "id": str(self.id),
             "title": self.title,
             "path": self.path,
-            "sDate": safe_localtime(self.sDate).isoformat() if self.sDate else None,
-            "eDate": safe_localtime(self.eDate).isoformat() if self.eDate else None,
+            # "sDate": safe_localtime(self.sDate).isoformat() if self.sDate else None,
+            # "eDate": safe_localtime(self.eDate).isoformat() if self.eDate else None,
+            # "sDate": str(self.sDate) if self.sDate else None,
+            # "eDate": str(self.eDate) if self.eDate else None,
+            "sDate": self.sDate.astimezone(datetime.timezone.utc).isoformat() if self.sDate else None,
+            "eDate": self.eDate.astimezone(datetime.timezone.utc).isoformat() if self.eDate else None,
             "note": self.note,
             "status": {
                 "name": self.status.name if self.status else None,

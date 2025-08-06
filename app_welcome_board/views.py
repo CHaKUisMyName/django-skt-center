@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.core.files.storage import FileSystemStorage
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+import pytz
 
 from app_user.models.user import User
 from app_user.utils import requiredLogin
@@ -44,11 +45,14 @@ def addGuest(request: HttpRequest):
                 return response
             print(img.name)
 
+            tz = pytz.timezone("Asia/Bangkok")
             sDate = request.POST.get("sdate")
             if sDate:
                 sDate = datetime.strptime(sDate, "%d/%m/%Y %H:%M")
-                sDate = timezone.make_aware(sDate, timezone.get_current_timezone())
-                print(f"date : {sDate}")
+                # sDate = timezone.make_aware(sDate, timezone.get_current_timezone())
+                sDate = tz.localize(sDate)
+                sDate = sDate.astimezone(pytz.utc)
+                print(f"Sdate : {sDate} {sDate.tzinfo}")
             else:
                 messages.error(request, "Start Job Date is required")
                 return response
@@ -56,8 +60,10 @@ def addGuest(request: HttpRequest):
             eDate = request.POST.get("edate")
             if eDate:
                 eDate = datetime.strptime(eDate, "%d/%m/%Y %H:%M")
-                eDate = timezone.make_aware(eDate, timezone.get_current_timezone())
-                print(f"date : {eDate}")
+                # eDate = timezone.make_aware(eDate, timezone.get_current_timezone())
+                eDate = tz.localize(eDate)
+                eDate = eDate.astimezone(pytz.utc)
+                print(f"Edate : {eDate} {eDate.tzinfo}")
             else:
                 messages.error(request, "End Job Date is required")
                 return response
@@ -231,48 +237,6 @@ def showWelcomeBoard(request: HttpRequest):
     broadCastWelcomeBoard()
     return render(request, 'welcome_board/show.html')
 
-# def broadCastWelcomeBoard():
-#     now = timezone.now()
-#     print(f"now : {now}")
-#     channel_layer = get_channel_layer()
-#     welcome: List[WelcomeBoardGuest] = WelcomeBoardGuest.objects.filter(
-#         status=WelcomeBoardStatus.Show,
-#         isActive=True,
-#         sDate__lte=now,
-#         eDate__gte=now
-#     )
-#     if welcome:
-#         wg = [ w.serialize() for w in welcome]
-#         # print(wg)
-#         payload = {
-#             "type": "send_welcome_board",
-#             "path": wg,
-#             "media_type": "image"
-#         }
-#     else:
-#         payload = {
-#             "type": "send_welcome_board",
-#             "path": [{"path":"guest-img/senikame-2.jpg"}],
-#             "media_type": "video"
-#         }
-#     async_to_sync(channel_layer.group_send)(
-#         "welcome_board",
-#         payload
-#     )
-
-# def broadCastAllGuests():
-#     print("broadCastAllGuests")
-#     channel_layer = get_channel_layer()
-#     welcome: List[WelcomeBoardGuest] = WelcomeBoardGuest.objects.filter(isActive=True)
-#     payload = {
-#         "type": "send_welcome_board",
-#         "path": [w.serialize() for w in welcome],
-#         "media_type": "image"
-#     }
-#     async_to_sync(channel_layer.group_send)(
-#         "welcome_board",
-#         payload
-#     )
 
 channel_layer = get_channel_layer()
 

@@ -142,9 +142,10 @@
             function updateGuestTable(guests) {
                 let tableBody = $("#tb tbody");
                 tableBody.empty(); // ล้างของเก่า
+                
 
                 guests.forEach((guest, index) => {
-                    console.log(guest.status);
+                    // console.log(guest.sDate);
                     let statusBadge = `<span class="badge text-bg-secondary fs-4">Unknown</span>`;
                     if (guest.status?.value === 1) {
                         statusBadge = `<span class="badge text-bg-warning fs-4">Waiting</span>`;
@@ -174,7 +175,7 @@
                                     <a href="/wb/gs/edit/${guest.id}" class="btn btn-info">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <button type="button" class="btn btn-danger delete" data-wgid="${guest.id}" onclick='kuy(this);'>
+                                    <button type="button" class="btn btn-danger delete" data-wgid="${guest.id}" onclick='delClick(this);'>
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
@@ -199,9 +200,24 @@
         });
         function formatDate(dateString) {
             const date = new Date(dateString);
-            return date.toLocaleString("th-TH", { timeZone: "Asia/Bangkok" });
+            const result = date.toLocaleString("th-TH", { 
+                timeZone: "Asia/Bangkok",
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+             });
+            // console.log("django serialize Date : "+dateString);
+            // console.log("new Date : "+date);
+            // console.log("now : "+ new Date());
+            // console.log("moment : "+moment(dateString).format("D/M/YYYY HH:mm"))
+            
+            // return moment.tz(dateString, "Asia/Bangkok").format("D/M/YYYY HH:mm");
+            return result;
         }
-        function kuy(el){
+        function delClick(el){
             console.log($(el));
             Swal.fire({
                 title: "Do you want to delete ?",
