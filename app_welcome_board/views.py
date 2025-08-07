@@ -110,7 +110,6 @@ def addGuest(request: HttpRequest):
         print(f"{Path(__file__).home()}/desktop/chaku-folder/skt-media")
         return render(request, 'welcome_board/guest/add.html')
     
-
 @requiredLogin
 def editGuest(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexWelcomeBoard'))
@@ -171,6 +170,7 @@ def editGuest(request: HttpRequest, id: str):
                 if uUpdate:
                     wg.updateBy = uUpdate
             wg.updateDate = timezone.now()
+            wg.status = WelcomeBoardStatus(int(1))
             wg.save()
             broadCastWelcomeBoard()
             # broadCastAllGuests()

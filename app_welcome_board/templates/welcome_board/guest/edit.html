@@ -170,7 +170,7 @@
                 endDate.dates.setValue(tempusDominus.DateTime.convert(new Date(eDate)));
             }
             // แสดงรูปเก่าและ init cropper ถ้ามี
-            const imgUrl = window.location.origin + '{{ mediaRoot }}{{ imgPath }}';
+            const imgUrl = window.location.origin + '{{ mediaRoot }}{{ imgPath }}' + '?t=' + new Date().getTime();
             $('#imageToCrop').attr('src', imgUrl);
             $('#imageToCrop').on('load', function(){
                 if(cropper) cropper.destroy();

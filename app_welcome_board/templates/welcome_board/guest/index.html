@@ -156,15 +156,14 @@
                     } else {
                         statusBadge = `<span class="badge text-bg-danger fs-4">Unknown</span>`;
                     }
-
-
+                    let img = `{{ mediaRoot }}${guest.path}`+"?t=" + new Date().getTime();
                     tableBody.append(`
                         <tr>
                             <td>${index + 1}</td>
                             <td>${guest.title}</td>
                             <td>
                                 <a href="#" class="g-img" data-img="{{ mediaRoot }}${guest.path}">
-                                    <img src="{{ mediaRoot }}${guest.path}" alt="..." class="img-fluid img-thumbnail w-50" />
+                                    <img src="${img}" alt="..." class="img-fluid img-thumbnail w-50" />
                                 </a>
                             </td>
                             <td>${strUTCDateToStrThaiDate(guest.sDate)}</td>
