@@ -24,10 +24,12 @@ class WelcomeBoardConsumer(AsyncWebsocketConsumer):
 
         action = data.get("action")
         if action == "filtered":
+            # --  สำหรับ หน้า show welcome board
             self.group_name = "filtered_guests"
             await self.channel_layer.group_add(self.group_name, self.channel_name)
             welcome_data = await get_filtered_welcome_data()
         else:
+            # --  สำหรับ หน้า index guest
             self.group_name = "all_guests"
             await self.channel_layer.group_add(self.group_name, self.channel_name)
             welcome_data = await get_all_welcome_data()

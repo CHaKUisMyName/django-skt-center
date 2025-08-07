@@ -99,7 +99,6 @@ def addGuest(request: HttpRequest):
             wg.createDate = timezone.now()
             wg.save()
             broadCastWelcomeBoard()
-            # broadCastAllGuests()
 
             messages.success(request, "Add success")
             return response
@@ -173,7 +172,6 @@ def editGuest(request: HttpRequest, id: str):
             wg.status = WelcomeBoardStatus(int(1))
             wg.save()
             broadCastWelcomeBoard()
-            # broadCastAllGuests()
 
             messages.success(request, "Update success")
             return response
@@ -206,21 +204,12 @@ def deleteGuest(request: HttpRequest, id: str):
         wg: WelcomeBoardGuest = WelcomeBoardGuest.objects.filter(id = ObjectId(id)).first()
         if not wg:
             return JsonResponse({'deleted': False, 'message': 'Guest not found'})
-        # currentUser: User = request.currentUser
-        # if currentUser:
-        #     uDelete = UserSnapshot().UserToSnapshot(currentUser)
-        #     if uDelete:
-        #         wg.updateBy = uDelete
-        #     wg.updateDate = timezone.now()
-        # wg.isActive = False
-        # wg.save()
 
         fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, uploadDir))
         fs.delete(os.path.join(settings.MEDIA_ROOT, wg.path))
         wg.delete()
         
         broadCastWelcomeBoard()
-        # broadCastAllGuests()
         returnData = {
             'deleted': True,
             'message': 'Delete success'
