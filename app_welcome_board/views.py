@@ -22,6 +22,7 @@ from app_welcome_board.utils import get_all_welcome_data, get_filtered_welcome_d
 from base_models.basemodel import UserSnapshot
 
 uploadDir = 'guest-img'
+tz = pytz.timezone("Asia/Bangkok")
 # -- welcome board guest URL : http://127.0.0.1:8000/wb/gs/show
 
 # Create your views here.
@@ -45,11 +46,9 @@ def addGuest(request: HttpRequest):
                 return response
             print(img.name)
 
-            tz = pytz.timezone("Asia/Bangkok")
             sDate = request.POST.get("sdate")
             if sDate:
                 sDate = datetime.strptime(sDate, "%d/%m/%Y %H:%M")
-                # sDate = timezone.make_aware(sDate, timezone.get_current_timezone())
                 sDate = tz.localize(sDate)
                 sDate = sDate.astimezone(pytz.utc)
                 print(f"Sdate : {sDate} {sDate.tzinfo}")
@@ -60,7 +59,6 @@ def addGuest(request: HttpRequest):
             eDate = request.POST.get("edate")
             if eDate:
                 eDate = datetime.strptime(eDate, "%d/%m/%Y %H:%M")
-                # eDate = timezone.make_aware(eDate, timezone.get_current_timezone())
                 eDate = tz.localize(eDate)
                 eDate = eDate.astimezone(pytz.utc)
                 print(f"Edate : {eDate} {eDate.tzinfo}")
@@ -103,7 +101,7 @@ def addGuest(request: HttpRequest):
             broadCastWelcomeBoard()
             # broadCastAllGuests()
 
-            messages.success(request, "Upload success")
+            messages.success(request, "Add success")
             return response
         except Exception as e:
             messages.error(request, str(e))
@@ -135,7 +133,8 @@ def editGuest(request: HttpRequest, id: str):
             sDate = request.POST.get("sdate")
             if sDate:
                 sDate = datetime.strptime(sDate, "%d/%m/%Y %H:%M")
-                sDate = timezone.make_aware(sDate, timezone.get_current_timezone())
+                sDate = tz.localize(sDate)
+                sDate = sDate.astimezone(pytz.utc)
                 print(f"date : {sDate}")
             else:
                 messages.error(request, "Start Job Date is required")
@@ -144,12 +143,16 @@ def editGuest(request: HttpRequest, id: str):
             eDate = request.POST.get("edate")
             if eDate:
                 eDate = datetime.strptime(eDate, "%d/%m/%Y %H:%M")
-                eDate = timezone.make_aware(eDate, timezone.get_current_timezone())
+                eDate = tz.localize(eDate)
+                eDate = eDate.astimezone(pytz.utc)
                 print(f"date : {eDate}")
             else:
                 messages.error(request, "End Job Date is required")
                 return response
-            messages.success(request, "Upload success")
+            if sDate >= eDate:
+                messages.error(request, 'Start date must be before end date.')
+                return response
+            
             wg.title = request.POST.get('title') if request.POST.get("title") else wg.title
             wg.note = request.POST.get("note") if request.POST.get("note") else wg.note
             wg.sDate = sDate
@@ -164,17 +167,15 @@ def editGuest(request: HttpRequest, id: str):
             wg.path = file_path
             currentUser: User = request.currentUser
             if currentUser:
-                uCreate = UserSnapshot().UserToSnapshot(currentUser)
-                if uCreate:
-                    wg.createBy = uCreate
+                uUpdate= UserSnapshot().UserToSnapshot(currentUser)
+                if uUpdate:
+                    wg.updateBy = uUpdate
             wg.updateDate = timezone.now()
             wg.save()
             broadCastWelcomeBoard()
             # broadCastAllGuests()
 
-            if sDate >= eDate:
-                messages.error(request, 'Start date must be before end date.')
-                return response
+            messages.success(request, "Update success")
             return response
         except Exception as e:
             messages.error(request, str(e))

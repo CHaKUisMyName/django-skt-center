@@ -174,3 +174,17 @@ const createTableRole = (pos, orgs, seletedPos = null, seletedOrg = null) => {
     table.append(tr);
   }
 };
+
+function strUTCDateToStrThaiDate(dateString) {
+  const date = new Date(dateString);
+  const result = date.toLocaleString("th-TH", {
+    timeZone: "Asia/Bangkok",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  return result;
+}

@@ -160,8 +160,9 @@
             ActiveMenu("welguest");
             var startDate = initialDateTimePk(document.getElementById("sdate"));
             var endDate = initialDateTimePk(document.getElementById("edate"));
-            let sDate = "{{ guest.sDate|date:'c' }}";// e.g. 1992-09-21T00:00:00+00:00
-            let eDate = "{{ guest.eDate|date:'c' }}";
+            let sDate = "{{ guest.sDate|date:'r' }}";// RFC 5322 formatted date.
+            let eDate = "{{ guest.eDate|date:'r' }}";// RFC 5322 formatted date.
+            
             if(sDate){
                 startDate.dates.setValue(tempusDominus.DateTime.convert(new Date(sDate)));
             }
