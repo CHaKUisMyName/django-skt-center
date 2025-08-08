@@ -42,6 +42,7 @@
                                 <th>#</th>
                                 <th>Title</th>
                                 <th>Images</th>
+                                <th>By SKT Employee</th>
                                 <th>Start Date</th>
                                 <th>End Date</th>
                                 <th>Status</th>
@@ -59,6 +60,11 @@
                                     </a>
                                     
                                 </td>
+                                {% if guest.updateBy %}
+                                <td>{{ guest.updateBy.fullNameEN }}</td>
+                                {% else %}
+                                <td>{{ guest.createBy.fullNameEN }}</td>
+                                {% endif %}
                                 <td>{{ guest.sDate|date:"d-m-Y H:i" }}</td>
                                 <td>{{ guest.eDate|date:"d-m-Y H:i" }}</td>
                                 <td>
@@ -112,12 +118,13 @@
             $('#tb').DataTable({
                 columnDefs: [
                     { width: '5%', targets: 0 },
-                    { width: '30%', targets: 1 },
+                    { width: '20%', targets: 1 },
                     { width: '20%', targets: 2 },
                     { width: '10%', targets: 3 },
                     { width: '10%', targets: 4 },
-                    { width: '5%', targets: 5 },
-                    { width: '10%', targets: 6 },
+                    { width: '10%', targets: 5 },
+                    { width: '5%', targets: 6 },
+                    { width: '10%', targets: 7 },
                 ]
             });
 
@@ -157,6 +164,7 @@
                         statusBadge = `<span class="badge text-bg-danger fs-4">Unknown</span>`;
                     }
                     let img = `{{ mediaRoot }}${guest.path}`+"?t=" + new Date().getTime();
+                    fullName = guest.updateBy ? guest.updateBy.fullNameEN : guest.createBy.fullNameEN;
                     tableBody.append(`
                         <tr>
                             <td>${index + 1}</td>
@@ -166,6 +174,7 @@
                                     <img src="${img}" alt="..." class="img-fluid img-thumbnail w-50" />
                                 </a>
                             </td>
+                            <td>${fullName}</td>
                             <td>${strUTCDateToStrThaiDate(guest.sDate)}</td>
                             <td>${strUTCDateToStrThaiDate(guest.eDate)}</td>
                             <td>${statusBadge}</td>

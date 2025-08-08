@@ -1,3 +1,4 @@
+import datetime
 import mongoengine as me
 from django.utils import timezone
 
@@ -22,6 +23,14 @@ class UserSnapshot(me.EmbeddedDocument):
         except Exception as e:
             print(e)
             return None
+    def serialize(self):
+        return {
+            "uesrId": str(self.uesrId),
+            "code": self.code,
+            "fullNameTH": self.fullNameTH,
+            "fullNameEN": self.fullNameEN,
+            "email": self.email,
+        }
 
 class BaseClass(me.Document):
     createDate = me.DateTimeField(default = timezone.now)

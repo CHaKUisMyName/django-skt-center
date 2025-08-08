@@ -45,10 +45,6 @@ class WelcomeBoard(BaseClass):
             "id": str(self.id),
             "title": self.title,
             "path": self.path,
-            # "sDate": safe_localtime(self.sDate).isoformat() if self.sDate else None,
-            # "eDate": safe_localtime(self.eDate).isoformat() if self.eDate else None,
-            # "sDate": str(self.sDate) if self.sDate else None,
-            # "eDate": str(self.eDate) if self.eDate else None,
             "sDate": self.sDate.astimezone(datetime.timezone.utc).isoformat() if self.sDate else None,
             "eDate": self.eDate.astimezone(datetime.timezone.utc).isoformat() if self.eDate else None,
             "note": self.note,
@@ -57,7 +53,10 @@ class WelcomeBoard(BaseClass):
                 "value": self.status.value if self.status else None,
             },
             "isActive": self.isActive,
-        
+            "createDate": self.createDate.astimezone(datetime.timezone.utc).isoformat() if self.createDate else None,
+            "createBy":self.createBy.serialize() if self.createBy else None,
+            "updateDate": self.updateDate.astimezone(datetime.timezone.utc).isoformat() if self.updateDate else None,
+            "updateBy": self.updateBy.serialize() if self.updateBy else None,
         }
     
 def safe_localtime(dt):
