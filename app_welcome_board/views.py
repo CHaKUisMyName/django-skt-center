@@ -16,16 +16,20 @@ import pytz
 
 from app_user.models.user import User
 from app_user.utils import requiredLogin
+from app_welcome_board.models.welcome_default import WelcomeBoardDefault
 from app_welcome_board.models.welcome_guest import WelcomeBoardGuest
 from app_welcome_board.models.welcomeboard import WelcomeBoardStatus
 from app_welcome_board.utils import get_all_welcome_data, get_filtered_welcome_data
 from base_models.basemodel import UserSnapshot
 
 uploadDir = 'guest-img'
+videoUploadDir = 'default-video'
 tz = pytz.timezone("Asia/Bangkok")
 # -- welcome board guest URL : http://127.0.0.1:8000/wb/gs/show
 
-# Create your views here.
+# --------------------------------------------------------------------------------
+# ----------------------------- welcome guest ------------------------------------
+# --------------------------------------------------------------------------------
 @requiredLogin
 def index(request: HttpRequest):
     welcomeGuests = WelcomeBoardGuest.objects.filter(isActive=True)
@@ -223,6 +227,51 @@ def deleteGuest(request: HttpRequest, id: str):
         }
         return JsonResponse(returnData)
     
+# --------------------------------------------------------------------------------
+# ----------------------------- welcome default ----------------------------------
+# --------------------------------------------------------------------------------
+
+@requiredLogin
+def addDefault(request: HttpRequest):
+    response = HttpResponseRedirect(reverse('addDefaultWelcomeBoard'))
+    if request.method == "POST":
+        try:
+            inputVideo = request.FILES.get("inputVideo")
+            if not inputVideo:
+                messages.error(request, "Video is required")
+                return response
+            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, videoUploadDir))
+            oldWd: WelcomeBoardDefault = WelcomeBoardDefault.objects.filter(isActive=True).first()
+            if oldWd:
+                fs.delete(os.path.join(settings.MEDIA_ROOT, oldWd.path))# -- delete old image
+                oldWd.delete()
+            fileName = fs.save(inputVideo.name, inputVideo)
+            file_path = os.path.join(videoUploadDir, fileName)
+            if not file_path:
+                messages.error(request, "Upload failed")
+                return response
+            wd = WelcomeBoardDefault()
+            wd.path = file_path
+            wd.isActive = True
+            currentUser: User = request.currentUser
+            if currentUser:
+                uCreate = UserSnapshot().UserToSnapshot(currentUser)
+                if uCreate:
+                    wd.createBy = uCreate
+            wd.createDate = timezone.now()
+            wd.save()
+            messages.success(request, "Add success")
+            return response
+        except Exception as e:
+            messages.error(request, str(e))
+            return response
+    else:
+        return render(request, 'welcome_board/default/add.html')
+
+# --------------------------------------------------------------------------------
+# -------------------------------- welcome show ----------------------------------
+# --------------------------------------------------------------------------------
+
 def showWelcomeBoard(request: HttpRequest):
     broadCastWelcomeBoard()
     return render(request, 'welcome_board/show.html')

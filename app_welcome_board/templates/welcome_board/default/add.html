@@ -1,0 +1,73 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Welcome Board Default</title>{% endblock %}
+{% block css %}
+    <link href="{% static 'css/sweetalert2.min.css' %}" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet">
+    <!-- Tempus Dominus Styles -->
+     <link rel="stylesheet" href="{% static 'css/tempus-dominus.css' %}" />
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-sm-12 col-lg-10 mx-auto">
+        <div class="card">
+            <form id="fm"
+            method="post"
+            class="card-body mb-3 needs-validation"
+            enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                <h3 class="display-6 fw-bold">Add Welcome Board Default</h3>
+                <p class="text-sm">create new welcome board default data</p>
+                <div class="row mb-5">
+                    <div class="col-sm-12 col-lg-8">
+                        <label for="inputVideo" class="form-label fw-bold text-dark-emphasis">Video</label>
+                        <input type="file" id="inputVideo" name="inputVideo" accept="video/*" class="form-control mb-3" required>
+                        <div class="invalid-feedback">Please upload video</div>
+                    </div>
+                </div>
+                <div class="row mb-3 float-end">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
+    <!-- Popperjs -->
+     <script src="{% static 'js/popper.min.js' %}"></script>
+    <!-- Tempus Dominus JavaScript -->
+    <script src="{% static 'js/tempus-dominus.js' %}"></script>
+    {% if messages %}
+        {% for message in messages %}
+        <script type="text/javascript">
+            $(document).ready(function(){
+                const mssTag = "{{message.tags}}";
+                const mssMsg = "{{message}}";
+                PopMessage(mssMsg, mssTag);
+            });
+        </script>
+        {% endfor %}
+    {% endif %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            ActiveMenu("weldafault");
+        });
+        $("#fm").submit(function(e){
+            Loading(true);
+            e.preventDefault()
+            e.stopPropagation();
+            if (!this.checkValidity()) {
+                Loading(false);
+                this.classList.add('was-validated');
+                return false;
+            }
+            this.classList.add('was-validated');
+            this.submit();
+        });
+    </script>
+{% endblock %}

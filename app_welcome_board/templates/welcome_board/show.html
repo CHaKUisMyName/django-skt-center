@@ -17,19 +17,21 @@
          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
          <link href="{% static 'css/sweetalert2.min.css' %}" rel="stylesheet">
         <style>
-            .body{
+            html, body {
+                margin: 0;
+                padding: 0;
                 height: 100%;
+                overflow: hidden; /* ป้องกัน scroll bar */
             }
-            .bg-image{
-                background-image: url("{% static 'images/dragon-bg.jpg' %}");
-                /* background-image: url("https://www.sanyo-kasei.co.th/images/banner/banner_sanyo_3.jpg"); */
-                background-repeat: round;
-            }
-            img{
-                display:block;
-                width:100%; 
-                height:100%;
+
+            .video, #img {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
                 object-fit: cover;
+                z-index: -1;
             }
         </style>
     </head>
@@ -37,6 +39,7 @@
         <div>
             <!-- <img src="{% static 'images/dragon-bg.jpg' %}" alt="..." /> -->
             <img id="img" src="" alt="..." />
+            <video id="video" class="video" src="" autoplay loop></video>
         </div>
         
         <!-- <script src="{% static 'js/bootstrap.min.js' %}"></script> -->
@@ -66,22 +69,35 @@
                 socket.onmessage = function(event){
                     const data = JSON.parse(event.data);
                     paths = data.path;
+                    mediaType = data.media_type
                     console.log(paths);
-                    currentIndex = 0;
-                    // เริ่ม interval ใหม่ทุกครั้งที่มีข้อมูลใหม่
-                    if (intervalId) clearInterval(intervalId);
-                    if (paths.length > 0) {
-                        intervalId = setInterval(function () {
-                            const v = paths[currentIndex];
-                            console.log("กำลังแสดงรูป:", v.path);
+                    if(mediaType == "image"){
+                        $("#img").removeClass("d-none");
+                        $("#video").addClass("d-none");
+                        $("#video").attr("src", "");
+                        currentIndex = 0;
+                        // เริ่ม interval ใหม่ทุกครั้งที่มีข้อมูลใหม่
+                        if (intervalId) clearInterval(intervalId);
+                        if (paths.length > 1) {
+                            intervalId = setInterval(function () {
+                                const v = paths[currentIndex];
+                                console.log("กำลังแสดงรูป:", v.path);
 
-                            $("#img").attr("src", window.location.origin + "/media/" + v.path+ "?t=" + new Date().getTime());
+                                $("#img").attr("src", window.location.origin + "/media/" + v.path+ "?t=" + new Date().getTime());
 
-                            // ไปยัง index ถัดไป ถ้าครบรอบแล้วเริ่มที่ 0 ใหม่
-                            currentIndex = (currentIndex + 1) % paths.length;
-                        }, 3000); // เปลี่ยนภาพทุก 3 วินาที
+                                // ไปยัง index ถัดไป ถ้าครบรอบแล้วเริ่มที่ 0 ใหม่
+                                currentIndex = (currentIndex + 1) % paths.length;
+                            }, 3000); // เปลี่ยนภาพทุก 3 วินาที
+                        }
+                        if(paths.length == 1){
+                            $("#img").attr("src", window.location.origin + "/media/" + paths[0].path+ "?t=" + new Date().getTime());
+                        }
+                    }else if(mediaType == "video"){
+                        $("#img").addClass("d-none");
+                        $("#img").attr("src", "");
+                        $("#video").removeClass("d-none");
+                        $("#video").attr("src", window.location.origin + "/media/" + paths.path+ "?t=" + new Date().getTime());
                     }
-                    
                 };
                 socket.onopen = function() {
                     console.log('WebSocket connected!');

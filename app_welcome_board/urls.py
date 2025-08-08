@@ -9,5 +9,6 @@ urlpatterns = [
     path("gs/add", view=views.addGuest, name="addGuestWelcomeBoard"),
     path("gs/edit/<str:id>", view=views.editGuest, name="editGuestWelcomeBoard"),
     path("gs/delete/<str:id>", view=views.deleteGuest, name="deleteGuestWelcomeBoard"),
-    path("gs/show", view=views.showWelcomeBoard, name="showWelcomeBoard"),
+    path("show/", view=views.showWelcomeBoard, name="showWelcomeBoard"),
+    path("df/add", view=views.addDefault, name="addDefaultWelcomeBoard"),
 ]
