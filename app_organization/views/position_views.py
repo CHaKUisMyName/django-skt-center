@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.contrib import messages
 from django.utils import timezone
 
-from app_position.models import Position, PositionSnapShot
+from app_organization.models.position import Position, PositionSnapShot
 from app_user.models.user import User
 from app_user.utils import requiredLogin
 from base_models.basemodel import UserSnapshot

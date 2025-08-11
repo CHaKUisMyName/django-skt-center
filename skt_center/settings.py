@@ -48,8 +48,8 @@ INSTALLED_APPS = [
     'app_visitor',
     'app_user',
     'app_system_setting',
-    'app_organization',
-    'app_position',
+    'app_organization.apps.AppOrganizationConfig',
+    # 'app_organization',
     # 'app_welcome_board',
     'app_welcome_board.apps.AppWelcomeBoardConfig'
 ]

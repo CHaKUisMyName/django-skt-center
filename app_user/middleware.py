@@ -9,20 +9,17 @@ class UserInjectMiddleware:
 
     def __call__(self, request: HttpRequest):
         # Code to execute before the view is called
-        # For example, you could fetch user data and attach it to the request object
-        # request.user_data = fetch_user_data(request)
-        session = request.COOKIES.get("session")
-        authSesstion: AuthSession  =  AuthSession.objects.filter(session = session).first()
-        
-        if authSesstion:
-            if not authSesstion.IsExpired():
-                data = authSesstion.GetSessionData()
-                # print(data)
-                user = User.objects.filter(id = data["userId"]).first()
-                request.currentUser = user if user else None
-            else:
-                request.currentUser = None
-        else:
-            request.currentUser = None
+        request.currentUser = None
+        session_id = request.COOKIES.get("session")
+
+        if session_id:
+            auth_session = AuthSession.objects.filter(session=session_id).first()
+
+            if auth_session and not auth_session.IsExpired():
+                session_data = auth_session.GetSessionData()
+                user_id = session_data.get("userId")
+                if user_id:
+                    request.currentUser = User.objects.filter(id=user_id, isActive=True).first()
+
         response = self.get_response(request)
         return response

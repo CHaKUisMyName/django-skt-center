@@ -6,5 +6,6 @@ class AppOrganizationConfig(AppConfig):
     name = 'app_organization'
 
     def ready(self):
-        import app_organization.models
+        from .models import organization, position, level
+
         # return super().ready()
