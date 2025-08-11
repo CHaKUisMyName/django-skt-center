@@ -6,8 +6,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.contrib import messages
 
-from app_level.models import Level, LevelSnapShot
-from app_organization.models import Organization
+from app_organization.models.level import Level, LevelSnapShot
 from app_user.models.user import User
 from app_user.utils import requiredLogin
 from base_models.basemodel import UserSnapshot

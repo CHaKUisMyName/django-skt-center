@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     'app_dashboard',
     'app_visitor',
     'app_user',
-    'app_level',
     'app_system_setting',
     'app_organization',
     'app_position',

@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.contrib import messages
 from django.utils import timezone
 
-from app_organization.models import Organization
+from app_organization.models.organization import Organization
 from app_position.models import Position
 from app_user.models.auth_session import AuthSession
 from app_user.models.auth_user import AuthUser, VerifyPassword
