@@ -1,5 +1,6 @@
 {% load static %}
 {% load user_tags %}
+{% load org_tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -51,6 +52,10 @@
                             <span class="fw-bold">Home</span>
                         </a>
                     </li>
+                    {% has_menu_org request.currentUser "Level" as can_view_level %}
+                    {% has_menu_org request.currentUser "Organization" as can_view_org %}
+                    {% has_menu_org request.currentUser "Position" as can_view_pos %}
+                    {% if can_view_level or can_view_org or can_view_pos %}
                     <li class="sidebar-item my-2 mx-3">
                         <a data-bs-target="#mainorg" data-bs-toggle="collapse" class="sidebar-link">
                             <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
@@ -59,20 +64,30 @@
                             <span class="fw-bold">Ogranization</span>
                         </a>
                         <ul id="mainorg" class="parent-menu-collapse sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                            {% if can_view_level %}
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'indexLevel' %}" data-active="level">Level</a>
                             </li>
+                            {% endif %}
+                            {% if can_view_org %}
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'indexOrg' %}" data-active="org">Organization</a>
                             </li>
+                            {% endif %}
+                            {% if can_view_pos %}
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'indexPosition' %}" data-active="pos">Position</a>
                             </li>
+                            {% endif %}
+                            {% has_menu_org request.currentUser "SettingOrg" as can_view_sOrg %}
+                            {% if can_view_sOrg %}
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'indexSettingOrg' %}" data-active="settingorg">Settings</a>
                             </li>
+                            {% endif %}
                         </ul>
                     </li>
+                    {% endif %}
                     {% has_menu_user request.currentUser "User" as can_view_user %}
                     {% if can_view_user %}
                     <li class="sidebar-item my-2 mx-3">
