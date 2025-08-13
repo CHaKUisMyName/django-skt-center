@@ -144,7 +144,20 @@ def AddAlienUser(request: HttpRequest):
         user = User()
         user.fNameEN = 'CHaKU'
         user.lNameEN = 'CHaKU'
+        user.isAdmin = True
+        user.isActive = True
+        user.isRegister = True
+        user.isDelete = False
         user.save()
+
+        authUser = AuthUser()
+        authUser.refUser = user
+        authUser.userAuth = 'admin'
+        authUser.hashPassword("1234")
+        authUser.isActive = True
+        authUser.isDelete = False
+        authUser.save()
+
         data = {'status': True, "mss": 'success'}
         return JsonResponse(data)
     except Exception as e:

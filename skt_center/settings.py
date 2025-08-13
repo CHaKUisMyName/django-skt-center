@@ -175,4 +175,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 
 # -- เป็น path บนเครื่อง (filesystem) ที่ Django จะใช้เก็บ ไฟล์ที่ผู้ใช้ upload เข้ามา
-MEDIA_ROOT = Path.home() / 'desktop/chaku-folder/skt-media/media'
+MEDIA_ROOT = Path.home() / 'desktop/skt-media/media'
