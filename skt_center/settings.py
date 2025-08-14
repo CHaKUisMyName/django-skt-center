@@ -178,3 +178,7 @@ MEDIA_URL = '/media/'
 
 # -- เป็น path บนเครื่อง (filesystem) ที่ Django จะใช้เก็บ ไฟล์ที่ผู้ใช้ upload เข้ามา
 MEDIA_ROOT = BASE_DIR / 'media'
+
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 50 MB
