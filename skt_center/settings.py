@@ -30,9 +30,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 
 # Application definition
@@ -92,7 +92,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("localhost", 6379)],
+            "hosts": [("127.0.0.1", 6379)],
         },
     },
 }
@@ -160,6 +160,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+STATIC_ROOT = BASE_DIR / "staticfiles"  # collectstatic จะเก็บที่นี่
+
 # ระบุ path ของ static files (optional หากไม่ได้ใช้ default directory)
 STATICFILES_DIRS = [
     BASE_DIR / "static",  # ชี้ไปยังโฟลเดอร์ static ใน root directory
@@ -175,4 +177,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 
 # -- เป็น path บนเครื่อง (filesystem) ที่ Django จะใช้เก็บ ไฟล์ที่ผู้ใช้ upload เข้ามา
-MEDIA_ROOT = Path.home() / 'desktop/skt-media/media'
+MEDIA_ROOT = BASE_DIR / 'media'
