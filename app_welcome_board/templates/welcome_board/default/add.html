@@ -57,6 +57,15 @@
         $(document).ready(function(){
             ActiveMenu("weldafault");
         });
+        $("#inputVideo").on('change', function(e){
+            const file = e.target.files[0];
+            if(!file) return;
+            if(file.size > 50 * 1024 * 1024){
+                alert("File size must be <= 50 MB");
+                $(this).val(""); // clear input
+                return;
+            }
+        });
         $("#fm").submit(function(e){
             Loading(true);
             e.preventDefault()

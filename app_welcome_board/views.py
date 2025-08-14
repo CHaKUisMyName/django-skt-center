@@ -25,6 +25,7 @@ from base_models.basemodel import UserSnapshot
 uploadDir = 'guest-img'
 videoUploadDir = 'default-video'
 tz = pytz.timezone("Asia/Bangkok")
+MAX_UPLOAD_SIZE = 50 * 1024 * 1024  # 50 MB
 # -- welcome board guest URL : http://127.0.0.1:8000/wb/gs/show
 
 # --------------------------------------------------------------------------------
@@ -49,6 +50,9 @@ def addGuest(request: HttpRequest):
                 messages.error(request, "Image is required")
                 return response
             print(img.name)
+            if img.size > MAX_UPLOAD_SIZE:
+                messages.error(request, "Image size is too large exceeds 50 MB")
+                return response
 
             sDate = request.POST.get("sdate")
             if sDate:
@@ -110,7 +114,6 @@ def addGuest(request: HttpRequest):
             messages.error(request, str(e))
             return response
     else:
-        print(f"{Path(__file__).home()}/desktop/chaku-folder/skt-media")
         return render(request, 'welcome_board/guest/add.html')
     
 @requiredLogin
@@ -132,6 +135,9 @@ def editGuest(request: HttpRequest, id: str):
                 messages.error(request, "Image is required")
                 return response
             print(img.name)
+            if img.size > MAX_UPLOAD_SIZE:
+                messages.error(request, "Image size is too large exceeds 50 MB")
+                return response
             sDate = request.POST.get("sdate")
             if sDate:
                 sDate = datetime.strptime(sDate, "%d/%m/%Y %H:%M")
@@ -240,6 +246,10 @@ def addDefault(request: HttpRequest):
             if not inputVideo:
                 messages.error(request, "Video is required")
                 return response
+            if inputVideo.size > MAX_UPLOAD_SIZE:
+                messages.error(request, "Video size is too large exceeds 50 MB")
+                return response
+            print(inputVideo.name)
             fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, videoUploadDir))
             oldWd: WelcomeBoardDefault = WelcomeBoardDefault.objects.filter(isActive=True).first()
             if oldWd:
