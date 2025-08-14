@@ -48,8 +48,8 @@
     <body class="">
         <div>
             <!-- <img src="{% static 'images/dragon-bg.jpg' %}" alt="..." /> -->
-            <img id="img" src="" alt="..." />
-            <video id="video" class="video" src="" autoplay loop></video>
+            <img id="img" class="d-none" alt="..." />
+            <video id="video" class="video d-none" autoplay loop muted></video>
         </div>
         
         <!-- <script src="{% static 'js/bootstrap.min.js' %}"></script> -->
@@ -71,8 +71,8 @@
         {% endif %}
         <script type="text/javascript">
             $(document).ready(function(){
-                
-                const socket = new WebSocket("ws://"+window.location.host+"/ws/wb/welcome/");
+                let ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+                let socket = new WebSocket(ws_scheme+"://"+window.location.host+"/ws/wb/welcome/");
                 let paths = [];
                 let currentIndex = 0;
                 let intervalId;
@@ -84,7 +84,6 @@
                     if(mediaType == "image"){
                         $("#img").removeClass("d-none");
                         $("#video").addClass("d-none");
-                        $("#video").attr("src", "");
                         currentIndex = 0;
                         // เริ่ม interval ใหม่ทุกครั้งที่มีข้อมูลใหม่
                         if (intervalId) clearInterval(intervalId);
@@ -92,21 +91,20 @@
                             intervalId = setInterval(function () {
                                 const v = paths[currentIndex];
                                 console.log("กำลังแสดงรูป:", v.path);
-
-                                $("#img").attr("src", window.location.origin + "/media/" + v.path+ "?t=" + new Date().getTime());
+                                // ใช้ v.path ที่ได้มาโดยตรง เพราะตอนนี้มี /media/ แล้ว
+                                $("#img").attr("src", v.path+ "?t=" + new Date().getTime());
 
                                 // ไปยัง index ถัดไป ถ้าครบรอบแล้วเริ่มที่ 0 ใหม่
                                 currentIndex = (currentIndex + 1) % paths.length;
                             }, 3000); // เปลี่ยนภาพทุก 3 วินาที
                         }
                         if(paths.length == 1){
-                            $("#img").attr("src", window.location.origin + "/media/" + paths[0].path+ "?t=" + new Date().getTime());
+                            $("#img").attr("src", paths[0].path+ "?t=" + new Date().getTime());
                         }
                     }else if(mediaType == "video"){
                         $("#img").addClass("d-none");
-                        $("#img").attr("src", "");
                         $("#video").removeClass("d-none");
-                        $("#video").attr("src", window.location.origin + "/media/" + paths.path+ "?t=" + new Date().getTime());
+                        $("#video").attr("src", paths.path+ "?t=" + new Date().getTime());
                     }
                 };
                 socket.onopen = function() {
