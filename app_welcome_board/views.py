@@ -1,4 +1,5 @@
 from datetime import datetime
+from urllib.parse import urljoin
 from django.utils import timezone
 import os
 from pathlib import Path
@@ -19,7 +20,7 @@ from app_user.utils import requiredLogin
 from app_welcome_board.models.welcome_default import WelcomeBoardDefault
 from app_welcome_board.models.welcome_guest import WelcomeBoardGuest
 from app_welcome_board.models.welcomeboard import WelcomeBoardStatus
-from app_welcome_board.utils import get_all_welcome_data, get_filtered_welcome_data
+from app_welcome_board.utils import get_all_welcome_data, get_filtered_welcome_data, sanitize_filename
 from base_models.basemodel import UserSnapshot
 
 uploadDir = 'guest-img'
@@ -84,7 +85,8 @@ def addGuest(request: HttpRequest):
                 return response
             
             fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, uploadDir))
-            filename = fs.save(img.name, img)  # จะเก็บไฟล์และ return filename
+            safeName = sanitize_filename(img.name)
+            filename = fs.save(safeName, img)  # จะเก็บไฟล์และ return filename
             file_path = os.path.join(uploadDir, filename)  # เช่น welcome_board/xxx.jpg
             if not file_path:
                 messages.error(request, "Upload failed")
@@ -167,7 +169,8 @@ def editGuest(request: HttpRequest, id: str):
             wg.eDate = eDate
             fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, uploadDir))
             fs.delete(os.path.join(settings.MEDIA_ROOT, wg.path))# -- delete old image
-            filename = fs.save(img.name, img)  # จะเก็บไฟล์และ return filename
+            safeName = sanitize_filename(img.name)
+            filename = fs.save(safeName, img)  # จะเก็บไฟล์และ return filename
             file_path = os.path.join(uploadDir, filename)  # เช่น welcome_board/xxx.jpg
             if not file_path:
                 messages.error(request, "Upload failed")
@@ -255,7 +258,8 @@ def addDefault(request: HttpRequest):
             if oldWd:
                 fs.delete(os.path.join(settings.MEDIA_ROOT, oldWd.path))# -- delete old image
                 oldWd.delete()
-            fileName = fs.save(inputVideo.name, inputVideo)
+            safeName = sanitize_filename(inputVideo.name)
+            fileName = fs.save(safeName, inputVideo)
             file_path = os.path.join(videoUploadDir, fileName)
             if not file_path:
                 messages.error(request, "Upload failed")
@@ -297,7 +301,7 @@ def broadCastWelcomeBoard():
             {
                 "type": "send_welcome_board",
                 "media_type": data["media_type"],
-                "path": data["path"],
+                "path": data["path"]
             }
         )
     async_to_sync(send_message)()
@@ -310,7 +314,7 @@ def broadCastAllGuests():
             {
                 "type": "send_welcome_board",
                 "media_type": data["media_type"],
-                "path": data["path"],
+                "path": data["path"]
             }
         )
     async_to_sync(send_message)()
