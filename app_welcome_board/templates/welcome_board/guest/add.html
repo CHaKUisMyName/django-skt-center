@@ -90,6 +90,7 @@
         }
         
         $("#fm").submit(async function(e){
+            Loading(true);
             event.preventDefault(); // ❗ ต้องหยุดไว้ก่อน เพื่อรอ crop ให้เสร็จก่อน
             event.stopPropagation();
             let isValid = true;
