@@ -58,6 +58,7 @@ INSTALLED_APPS = [
 INSTALLED_APPS += ["channels"]
 
 MIDDLEWARE = [
+    'skt_center.middleware.RemoveCOOPHeadersMiddleware',
     'app_user.middleware.UserInjectMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
