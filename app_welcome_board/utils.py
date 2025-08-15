@@ -56,7 +56,7 @@ def get_filtered_welcome_data():
 
 def sanitize_filename(filename: str) -> str:
     # แทนช่องว่างด้วย -
-    filename = filename.replace(' ', '-')
+    filename = filename.replace(' ', '_')
     # เอาอักขระที่ไม่ปลอดภัยออก (ยกเว้น .-_)
     filename = re.sub(r'[^A-Za-z0-9\.\-_]', '', filename)
     return filename
