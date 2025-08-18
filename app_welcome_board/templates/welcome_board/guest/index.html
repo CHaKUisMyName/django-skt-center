@@ -78,9 +78,11 @@
                                 </td>
                                 <td>
                                     <div>
+                                        {% if guest.status.value != 3 %}
                                         <a href="{% url 'editGuestWelcomeBoard' guest.id %}" class="btn btn-info">
                                             <i class="bi bi-pencil"></i>
                                         </a>
+                                        {% endif %}
                                         <button type="button" class="btn btn-danger delete" data-wgid="{{guest.id}}">
                                             <i class="bi bi-trash"></i>
                                         </button>
@@ -153,11 +155,18 @@
 
                 guests.forEach((guest, index) => {
                     // console.log(guest.sDate);
+                    let editBtn = "";
                     let statusBadge = `<span class="badge text-bg-secondary fs-4">Unknown</span>`;
                     if (guest.status?.value === 1) {
                         statusBadge = `<span class="badge text-bg-warning fs-4">Waiting</span>`;
+                        editBtn = `<a href="/wb/gs/edit/${guest.id}" class="btn btn-info">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>`;
                     } else if (guest.status?.value === 2) {
                         statusBadge = `<span class="badge text-bg-success text-white fs-4">Show</span>`;
+                        editBtn = `<a href="/wb/gs/edit/${guest.id}" class="btn btn-info">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>`;
                     } else if (guest.status?.value === 3) {
                         statusBadge = `<span class="badge text-bg-secondary fs-4">Showed</span>`;
                     } else {
@@ -180,9 +189,7 @@
                             <td>${statusBadge}</td>
                             <td>
                                 <div>
-                                    <a href="/wb/gs/edit/${guest.id}" class="btn btn-info">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
+                                    ${editBtn}
                                     <button type="button" class="btn btn-danger delete" data-wgid="${guest.id}" onclick='delClick(this);'>
                                         <i class="bi bi-trash"></i>
                                     </button>
