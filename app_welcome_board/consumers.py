@@ -1,3 +1,4 @@
+import asyncio
 from app_welcome_board.utils import get_all_welcome_data, get_filtered_welcome_data
 
 import json
@@ -8,6 +9,7 @@ class WelcomeBoardConsumer(AsyncWebsocketConsumer):
         # ยังไม่รู้ group รอรับ message แรกก่อน
         await self.accept()
         self.group_name = None
+        self.keepalive_task = asyncio.create_task(self.keepalive())  # 👈 เพิ่ม keepalive
 
     async def disconnect(self, close_code):
         if self.group_name:
@@ -43,3 +45,13 @@ class WelcomeBoardConsumer(AsyncWebsocketConsumer):
             "media_type": event["media_type"],
             'path': event['path']
         }))
+
+    async def keepalive(self):
+        """ส่ง ping ไปเรื่อยๆ ป้องกัน timeout"""
+        while True:
+            try:
+                await asyncio.sleep(30)  # ทุก 30 วิ
+                await self.send(text_data=json.dumps({"type": "ping"}))
+            except Exception as e:
+                print(f"Keepalive error: {e}")
+                break
