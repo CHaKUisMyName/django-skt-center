@@ -35,9 +35,10 @@ def addUser(request: HttpRequest):
         response = HttpResponseRedirect(reverse('indexUser'))
         try:
             isUserAdmin = isSettingUserAdmin(request.currentUser.id)
-            if not request.currentUser.isAdmin or isUserAdmin == False:
-                messages.error(request, "Not Permission")
-                return response
+            if not request.currentUser.isAdmin:
+                if isUserAdmin == False:
+                    messages.error(request, "Not Permission")
+                    return response
             code = request.POST.get("code")
             if not code:
                 messages.error(request, "Code is required")
@@ -176,9 +177,10 @@ def editUser(request: HttpRequest, id: str):
                 messages.error(request, "Not found id !")
                 return response
             if ObjectId(request.currentUser.id) != ObjectId(usId):
-                if not request.currentUser.isAdmin or isUserAdmin == False:
-                    messages.error(request, "Not Permission")
-                    return response
+                if not request.currentUser.isAdmin:
+                    if isUserAdmin == False:
+                        messages.error(request, "Not Permission")
+                        return response
             user: User = User.objects.filter(id = usId).first()
             if not user:
                 messages.error(request, "User not found")
@@ -425,8 +427,9 @@ def deleteUser(request: HttpRequest, id: str):
             return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
         if not id:
             return JsonResponse({'deleted': False, 'message': 'Not found id'})
-        if not request.currentUser.isAdmin or isUserAdmin == False:
-            return JsonResponse({'deleted': False, 'message': 'Not Permission'})
+        if not request.currentUser.isAdmin:
+            if isUserAdmin == False:
+                return JsonResponse({'deleted': False, 'message': 'Not Permission'})
         
         user: User = User.objects.filter(id = id).first()
         if not user:
@@ -535,9 +538,10 @@ def regisUser(request: HttpRequest, id:str):
         if not user:
             messages.error(request, "User not found")
             return HttpResponseRedirect(reverse('indexUser'))
-        if not request.currentUser.isAdmin or isUserAdmin == False:
-            messages.error(request, "Not Permission")
-            return HttpResponseRedirect(reverse('indexUser'))
+        if not request.currentUser.isAdmin:
+            if isUserAdmin == False:
+                messages.error(request, "Not Permission")
+                return HttpResponseRedirect(reverse('indexUser'))
         if request.method == "POST":
             username = request.POST.get("username")
             if not username:
@@ -580,9 +584,10 @@ def resetPassword(request: HttpRequest, id:str):
         if not user:
             messages.error(request, "User not found")
             return response
-        if not request.currentUser.isAdmin or isUserAdmin == False:
-            messages.error(request, "Not Permission")
-            return response
+        if not request.currentUser.isAdmin:
+            if isUserAdmin == False:
+                messages.error(request, "Not Permission")
+                return response
         
         if request.method == "POST":
             usid = request.POST.get("usid")

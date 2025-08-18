@@ -204,8 +204,8 @@
         if(sDate){
             startDate.dates.setValue(tempusDominus.DateTime.convert(new Date(sDate)));
         }
-        let pos = await getAPIData(window.location.origin + "/pos/api/list/?isactive=true&isdelete=false");
-        let orgs = await getAPIData(window.location.origin + "/org/api/list/?isactive=true&isdelete=false");
+        let pos = await getAPIData(window.location.origin + "/org/pos/api/list/?isactive=true&isdelete=false");
+        let orgs = await getAPIData(window.location.origin + "/org/og/api/list/?isactive=true&isdelete=false");
         
         const userRolesJson = JSON.parse(`{{userRolesJson|safe}}`);
         if(userRolesJson && userRolesJson.length > 0){

@@ -187,8 +187,8 @@
         $("#addRole").click(async (e)=>{
             e.preventDefault();
             Loading(true);
-            let pos = await getAPIData(window.location.origin + "/pos/api/list/?isactive=true&isdelete=false");
-            let orgs = await getAPIData(window.location.origin + "/org/api/list/?isactive=true&isdelete=false");
+            let pos = await getAPIData(window.location.origin + "/org/pos/api/list/?isactive=true&isdelete=false");
+            let orgs = await getAPIData(window.location.origin + "/org/og/api/list/?isactive=true&isdelete=false");
             if(pos != null && orgs != null){
                 createTableRole(pos, orgs);
                 $('.form-select').select2({
