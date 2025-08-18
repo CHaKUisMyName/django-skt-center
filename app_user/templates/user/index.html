@@ -58,7 +58,7 @@
                             {% for user in users %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td>{{ user.code }}</td>
+                                <td>{{ user.code|default:'-' }}</td>
                                 <td>{{ user.fNameEN }} {{ user.lNameEN }}</td>
                                 <td>
                                     {% if user.roles|length %}
@@ -71,7 +71,7 @@
                                         <p>-</p>
                                     {% endif %}
                                 </td>
-                                <td>{{ user.email }}</td>
+                                <td>{{ user.email|default:'-' }}</td>
                                 {% if isUserAdmin == True or request.currentUser.isAdmin == True %}
                                 <td>
                                     {% if user.isRegister == False %}

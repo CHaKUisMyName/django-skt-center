@@ -54,7 +54,7 @@
                             {% for user in userSettings %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td>{{ user.user.fNameEN }} {{ user.user.lNameEN }} ({{ user.user.code }})</td>
+                                <td>{{ user.user.fNameEN }} {{ user.user.lNameEN }} ({{ user.user.code|default:'-' }})</td>
                                 <td>
                                     {% for menu in user.menus %}
                                     <p>- {{ menu.name }}</p>
