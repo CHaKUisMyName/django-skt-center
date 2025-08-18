@@ -78,15 +78,23 @@
                 let intervalId;
                 socket.onmessage = function(event){
                     const data = JSON.parse(event.data);
+                    console.log(data);
+                    if(data.type === "ping"){
+                        // ป้องกัน log warning
+                        console.log("Ping received");
+                        return;
+                    }
                     paths = data.path;
                     mediaType = data.media_type
                     console.log(paths);
-                    if(mediaType == "image"){
+                    if(mediaType == "image"&& Array.isArray(paths) && paths.length > 0){
+                        
                         $("#img").removeClass("d-none");
                         $("#video").addClass("d-none");
                         $("#video").removeAttr("src");
                         currentIndex = 0;
                         // เริ่ม interval ใหม่ทุกครั้งที่มีข้อมูลใหม่
+                        console.log(intervalId);
                         if (intervalId) clearInterval(intervalId);
                         if (paths.length > 1) {
                             intervalId = setInterval(function () {
@@ -102,11 +110,18 @@
                         if(paths.length == 1){
                             $("#img").attr("src", paths[0].path+ "?t=" + new Date().getTime());
                         }
-                    }else if(mediaType == "video"){
+                    }else if(mediaType == "video"&& Array.isArray(paths) && paths.length > 0){
                         $("#img").addClass("d-none");
                         $("#img").removeAttr("src");
                         $("#video").removeClass("d-none");
-                        $("#video").attr("src", paths.path+ "?t=" + new Date().getTime());
+                        $("#video").attr("src", paths[0].path+ "?t=" + new Date().getTime());
+                        if (intervalId) clearInterval(intervalId);
+                    }else {
+                        // fallback ถ้าไม่มี data
+                        console.warn("No media data received");
+                        $("#img").addClass("d-none");
+                        $("#video").addClass("d-none");
+                        if(intervalId) clearInterval(intervalId);
                     }
                 };
                 socket.onopen = function() {
