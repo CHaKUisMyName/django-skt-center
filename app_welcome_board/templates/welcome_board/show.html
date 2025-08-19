@@ -72,68 +72,74 @@
         <script type="text/javascript">
             $(document).ready(function(){
                 let ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
-                let socket = new WebSocket(ws_scheme+"://"+window.location.host+"/ws/wb/welcome/");
+                
                 let paths = [];
                 let currentIndex = 0;
                 let intervalId;
-                socket.onmessage = function(event){
-                    const data = JSON.parse(event.data);
-                    console.log(data);
-                    if(data.type === "ping"){
-                        // ป้องกัน log warning
-                        console.log("Ping received");
-                        return;
-                    }
-                    paths = data.path;
-                    mediaType = data.media_type
-                    console.log(paths);
-                    if(mediaType == "image"&& Array.isArray(paths) && paths.length > 0){
-                        
-                        $("#img").removeClass("d-none");
-                        $("#video").addClass("d-none");
-                        $("#video").removeAttr("src");
-                        currentIndex = 0;
-                        // เริ่ม interval ใหม่ทุกครั้งที่มีข้อมูลใหม่
-                        console.log(intervalId);
-                        if (intervalId) clearInterval(intervalId);
-                        if (paths.length > 1) {
-                            intervalId = setInterval(function () {
-                                const v = paths[currentIndex];
-                                console.log("กำลังแสดงรูป:", v.path);
-                                // ใช้ v.path ที่ได้มาโดยตรง เพราะตอนนี้มี /media/ แล้ว
-                                $("#img").attr("src", v.path+ "?t=" + new Date().getTime());
-
-                                // ไปยัง index ถัดไป ถ้าครบรอบแล้วเริ่มที่ 0 ใหม่
-                                currentIndex = (currentIndex + 1) % paths.length;
-                            }, 3000); // เปลี่ยนภาพทุก 3 วินาที
+                function connectWebSocket(){
+                    let socket = new WebSocket(ws_scheme+"://"+window.location.host+"/ws/wb/welcome/");
+                    socket.onmessage = function(event){
+                        const data = JSON.parse(event.data);
+                        console.log(data);
+                        if(data.type === "ping"){
+                            // ป้องกัน log warning
+                            console.log("Ping received");
+                            socket.send(JSON.stringify({"type":"pong"})); // ตอบ pong กลับ server
+                            return;
                         }
-                        if(paths.length == 1){
-                            $("#img").attr("src", paths[0].path+ "?t=" + new Date().getTime());
-                        }
-                    }else if(mediaType == "video"&& Array.isArray(paths) && paths.length > 0){
-                        $("#img").addClass("d-none");
-                        $("#img").removeAttr("src");
-                        $("#video").removeClass("d-none");
-                        $("#video").attr("src", paths[0].path+ "?t=" + new Date().getTime());
-                        if (intervalId) clearInterval(intervalId);
-                    }else {
-                        // fallback ถ้าไม่มี data
-                        console.warn("No media data received");
-                        $("#img").addClass("d-none");
-                        $("#video").addClass("d-none");
-                        if(intervalId) clearInterval(intervalId);
-                    }
-                };
-                socket.onopen = function() {
-                    console.log('WebSocket connected!');
-                    // แจ้ง server ว่าอันนี้ show.html นะ ขอข้อมูลแบบมี sDate/eDate
-                    socket.send(JSON.stringify({ "action": "filtered" }));
-                };
+                        paths = data.path;
+                        mediaType = data.media_type
+                        console.log(paths);
+                        if(mediaType == "image"&& Array.isArray(paths) && paths.length > 0){
+                            
+                            $("#img").removeClass("d-none");
+                            $("#video").addClass("d-none");
+                            $("#video").removeAttr("src");
+                            currentIndex = 0;
+                            // เริ่ม interval ใหม่ทุกครั้งที่มีข้อมูลใหม่
+                            console.log(intervalId);
+                            if (intervalId) clearInterval(intervalId);
+                            if (paths.length > 1) {
+                                intervalId = setInterval(function () {
+                                    const v = paths[currentIndex];
+                                    console.log("กำลังแสดงรูป:", v.path);
+                                    // ใช้ v.path ที่ได้มาโดยตรง เพราะตอนนี้มี /media/ แล้ว
+                                    $("#img").attr("src", v.path+ "?t=" + new Date().getTime());
 
-                socket.onclose = function() {
-                    console.log('WebSocket disconnected');
-                    if (intervalId) clearInterval(intervalId);
-                };
+                                    // ไปยัง index ถัดไป ถ้าครบรอบแล้วเริ่มที่ 0 ใหม่
+                                    currentIndex = (currentIndex + 1) % paths.length;
+                                }, 3000); // เปลี่ยนภาพทุก 3 วินาที
+                            }
+                            if(paths.length == 1){
+                                $("#img").attr("src", paths[0].path+ "?t=" + new Date().getTime());
+                            }
+                        }else if(mediaType == "video"&& Array.isArray(paths) && paths.length > 0){
+                            $("#img").addClass("d-none");
+                            $("#img").removeAttr("src");
+                            $("#video").removeClass("d-none");
+                            $("#video").attr("src", paths[0].path+ "?t=" + new Date().getTime());
+                            if (intervalId) clearInterval(intervalId);
+                        }else {
+                            // fallback ถ้าไม่มี data
+                            console.warn("No media data received");
+                            $("#img").addClass("d-none");
+                            $("#video").addClass("d-none");
+                            if(intervalId) clearInterval(intervalId);
+                        }
+                    };
+                    socket.onopen = function() {
+                        console.log('WebSocket connected!');
+                        // แจ้ง server ว่าอันนี้ show.html นะ ขอข้อมูลแบบมี sDate/eDate
+                        socket.send(JSON.stringify({ "action": "filtered" }));
+                        setInterval(connectWebSocke,3000);
+                    };
+
+                    socket.onclose = function() {
+                        console.log('WebSocket disconnected');
+                        if (intervalId) clearInterval(intervalId);
+                    };
+                }
+                connectWebSocket();
             });
         </script>
     </body>

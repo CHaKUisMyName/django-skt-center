@@ -18,7 +18,8 @@ def get_all_welcome_data():
         item = w.serialize()
         # ทำให้ path เป็น URL เต็ม
         item["path"] = urljoin(settings.MEDIA_URL, item["path"])
-        serialized_paths.append({"path": item["path"]})
+        # serialized_paths.append({"path": item["path"]})
+        serialized_paths.append(item)
     return {
         "media_type": "image",
         "path": serialized_paths
@@ -41,7 +42,8 @@ def get_filtered_welcome_data():
         for w in welcome:
             item = w.serialize()
             item["path"] = urljoin(settings.MEDIA_URL, item["path"])
-            serialized_paths.append({"path": item["path"]})
+            # serialized_paths.append({"path": item["path"]})
+            serialized_paths.append(item)
         return {
             "media_type": "image",
             "path": serialized_paths
