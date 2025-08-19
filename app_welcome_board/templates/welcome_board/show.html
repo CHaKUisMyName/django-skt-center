@@ -131,12 +131,17 @@
                         console.log('WebSocket connected!');
                         // แจ้ง server ว่าอันนี้ show.html นะ ขอข้อมูลแบบมี sDate/eDate
                         socket.send(JSON.stringify({ "action": "filtered" }));
-                        setInterval(connectWebSocket,3000);
+                        
                     };
 
                     socket.onclose = function() {
                         console.log('WebSocket disconnected');
                         if (intervalId) clearInterval(intervalId);
+                        setInterval(connectWebSocket,3000);
+                    };
+                    socket.onerror = function(err){
+                        console.error('WebSocket error', err);
+                        socket.close(); // ปิดเพื่อให้ onclose ทำงาน
                     };
                 }
                 connectWebSocket();
