@@ -32,7 +32,7 @@ def get_filtered_welcome_data():
     # ถ้า MongoDB ใช้ UTC
     now_utc = now.astimezone(dt_timezone.utc)  # แปลงเป็น UTC
     welcome: List[WelcomeBoardGuest] = WelcomeBoardGuest.objects.filter(
-        status=WelcomeBoardStatus.Show,
+        status=WelcomeBoardStatus.Show.value,
         isActive=True,
         sDate__lte=now_utc,
         eDate__gte=now_utc

@@ -71,79 +71,81 @@
         {% endif %}
         <script type="text/javascript">
             $(document).ready(function(){
-                let ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
-                
-                let paths = [];
-                let currentIndex = 0;
-                let intervalId;
+                const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+                const ws_url = ws_scheme + "://" + window.location.host + "/ws/wb/welcome/";
+
+                let socket = null;
+                let reconnectTimer = null;
+                let slideshowInterval = null;
+
                 function connectWebSocket(){
-                    let socket = new WebSocket(ws_scheme+"://"+window.location.host+"/ws/wb/welcome/");
+                    socket = new WebSocket(ws_url);
+
+                    socket.onopen = function(){
+                        console.log("WebSocket connected!");
+                        // แจ้ง server ว่าอันนี้ show.html
+                        socket.send(JSON.stringify({ action: "filtered" }));
+                    };
+
                     socket.onmessage = function(event){
                         const data = JSON.parse(event.data);
-                        console.log(data);
                         if(data.type === "ping"){
-                            // ป้องกัน log warning
-                            console.log("Ping received");
-                            socket.send(JSON.stringify({"type":"pong"})); // ตอบ pong กลับ server
+                            // ตอบ pong กลับ server
+                            socket.send(JSON.stringify({ action: "filtered" }));
                             return;
                         }
-                        paths = data.path;
-                        mediaType = data.media_type
-                        console.log(paths);
-                        if(mediaType == "image"&& Array.isArray(paths) && paths.length > 0){
-                            
-                            $("#img").removeClass("d-none");
-                            $("#video").addClass("d-none");
-                            $("#video").removeAttr("src");
-                            currentIndex = 0;
-                            // เริ่ม interval ใหม่ทุกครั้งที่มีข้อมูลใหม่
-                            console.log(intervalId);
-                            if (intervalId) clearInterval(intervalId);
-                            if (paths.length > 1) {
-                                intervalId = setInterval(function () {
-                                    const v = paths[currentIndex];
-                                    console.log("กำลังแสดงรูป:", v.path);
-                                    // ใช้ v.path ที่ได้มาโดยตรง เพราะตอนนี้มี /media/ แล้ว
-                                    $("#img").attr("src", v.path+ "?t=" + new Date().getTime());
 
-                                    // ไปยัง index ถัดไป ถ้าครบรอบแล้วเริ่มที่ 0 ใหม่
-                                    currentIndex = (currentIndex + 1) % paths.length;
-                                }, 3000); // เปลี่ยนภาพทุก 3 วินาที
-                            }
-                            if(paths.length == 1){
-                                $("#img").attr("src", paths[0].path+ "?t=" + new Date().getTime());
-                            }
-                        }else if(mediaType == "video"&& Array.isArray(paths) && paths.length > 0){
-                            $("#img").addClass("d-none");
-                            $("#img").removeAttr("src");
-                            $("#video").removeClass("d-none");
-                            $("#video").attr("src", paths[0].path+ "?t=" + new Date().getTime());
-                            if (intervalId) clearInterval(intervalId);
-                        }else {
-                            // fallback ถ้าไม่มี data
-                            console.warn("No media data received");
-                            $("#img").addClass("d-none");
-                            $("#video").addClass("d-none");
-                            if(intervalId) clearInterval(intervalId);
+                        if(data.type === "send_welcome_board"){
+                            updateMedia(data.path, data.media_type);
                         }
                     };
-                    socket.onopen = function() {
-                        console.log('WebSocket connected!');
-                        // แจ้ง server ว่าอันนี้ show.html นะ ขอข้อมูลแบบมี sDate/eDate
-                        socket.send(JSON.stringify({ "action": "filtered" }));
-                        
+
+                    socket.onclose = function(){
+                        console.log("WebSocket disconnected");
+                        clearInterval(slideshowInterval); // clear slideshow
+                        slideshowInterval = null;
+
+                        // auto reconnect 3 วินาที
+                        if(!reconnectTimer){
+                            reconnectTimer = setTimeout(function(){
+                                reconnectTimer = null;
+                                connectWebSocket();
+                            }, 3000);
+                        }
                     };
 
-                    socket.onclose = function() {
-                        console.log('WebSocket disconnected');
-                        if (intervalId) clearInterval(intervalId);
-                        setInterval(connectWebSocket,3000);
-                    };
                     socket.onerror = function(err){
-                        console.error('WebSocket error', err);
-                        socket.close(); // ปิดเพื่อให้ onclose ทำงาน
+                        console.error("WebSocket error", err);
+                        socket.close();
                     };
                 }
+
+                function updateMedia(paths, mediaType){
+                    clearInterval(slideshowInterval);
+                    slideshowInterval = null;
+
+                    $("#img").addClass("d-none").removeAttr("src");
+                    $("#video").addClass("d-none").removeAttr("src");
+
+                    if(mediaType === "image" && Array.isArray(paths) && paths.length > 0){
+                        $("#img").removeClass("d-none");
+                        $("#img").attr("src", paths[0].path + "?t=" + new Date().getTime());
+
+                        if(paths.length > 1){
+                            let currentIndex = 1;
+                            slideshowInterval = setInterval(function(){
+                                $("#img").attr("src", paths[currentIndex].path + "?t=" + new Date().getTime());
+                                currentIndex = (currentIndex + 1) % paths.length;
+                            }, 3000);
+                        }
+                    } else if(mediaType === "video" && Array.isArray(paths) && paths.length > 0){
+                        $("#video").removeClass("d-none");
+                        $("#video").attr("src", paths[0].path + "?t=" + new Date().getTime());
+                    } else {
+                        console.warn("No media data received");
+                    }
+                }
+
                 connectWebSocket();
             });
         </script>

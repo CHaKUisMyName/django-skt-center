@@ -25,6 +25,8 @@ class WelcomeBoardConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
         action = data.get("action")
+        print(f"Action: {action}")
+
         if action == "filtered":
             # --  สำหรับ หน้า show welcome board
             self.group_name = "filtered_guests"

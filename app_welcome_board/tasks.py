@@ -13,7 +13,7 @@ def update_welcome_statuses():
 
     # เปลี่ยน Show → Showed
     expired = WelcomeBoardGuest.objects.filter(
-        status=WelcomeBoardStatus.Show,
+        status=WelcomeBoardStatus.Show.value,
         eDate__lt=now_utc,
         isActive=True
     )
@@ -24,7 +24,7 @@ def update_welcome_statuses():
 
     # เปลี่ยน Waiting → Show
     ready = WelcomeBoardGuest.objects.filter(
-        status=WelcomeBoardStatus.Waiting,
+        status=WelcomeBoardStatus.Waiting.value,
         sDate__lte=now_utc,
         eDate__gte=now_utc,
         isActive=True
