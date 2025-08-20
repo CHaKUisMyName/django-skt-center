@@ -12,7 +12,7 @@ from app_welcome_board.models.welcomeboard import WelcomeBoardStatus
 
 @sync_to_async
 def get_all_welcome_data():
-    welcome = WelcomeBoardGuest.objects.filter(isActive=True)
+    welcome = WelcomeBoardGuest.objects.filter(isActive=True).order_by('-sDate')
     serialized_paths = []
     for w in welcome:
         item = w.serialize()

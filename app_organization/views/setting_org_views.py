@@ -190,3 +190,7 @@ def deleteSettingOrg(request: HttpRequest, id: str):
         return JsonResponse({'deleted': True, 'message': 'Delete success'})
     except Exception as e:
         return JsonResponse({'deleted': False, 'message': str(e)})
+    
+@requiredLogin
+def importSettingOrg(request: HttpRequest):
+    return render(request, 'setting_org/importSetting.html')

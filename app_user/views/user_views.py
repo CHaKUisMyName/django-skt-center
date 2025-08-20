@@ -286,9 +286,10 @@ def editUser(request: HttpRequest, id: str):
                 messages.error(request, "Not found id !")
                 return response
             if ObjectId(request.currentUser.id) != ObjectId(id):
-                if not request.currentUser.isAdmin or isUserAdmin == False:
-                    messages.error(request, "Not Permission")
-                    return response
+                if not request.currentUser.isAdmin:
+                    if isUserAdmin == False:
+                        messages.error(request, "Not Permission")
+                        return response
             user = User.objects.filter(id = id).first()
             if not user:
                 messages.error(request, "User not found")

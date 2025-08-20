@@ -7,4 +7,5 @@ urlpatterns = [
     path('setting/add/', view = setting_org_views.addSettingOrg, name = 'addSettingOrg'),
     path('setting/edit/<str:id>/', view=setting_org_views.editSettingOrg, name='editSettingOrg'),
     path('setting/delete/<str:id>/', view=setting_org_views.deleteSettingOrg, name='deleteSettingOrg'),
+    path('setting/import/', view=setting_org_views.importSettingOrg, name='importSettingOrg'),
 ]
