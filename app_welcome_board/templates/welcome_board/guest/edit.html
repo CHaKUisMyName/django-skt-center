@@ -191,7 +191,24 @@
                             $('#preview').attr('src', canvas.toDataURL());
                             const imgName = "{{ imgPath }}";
                             const blob = await canvasToBlobAsync(canvas);
-                            const file = new File([blob], imgName.split("/")[1], { type: "image/png" });
+                            // const file = new File([blob], imgName.split("/")[1], { type: "image/png" });
+                            // --- สร้างชื่อไฟล์ใหม่เสมอ เพื่อแก้ปัญหา Cache ---
+                            const originalFile = $("#inputImage").prop("files")[0];
+                            let originalName = "cropped-image.png"; // ชื่อไฟล์สำรอง
+                            if (originalFile) {
+                                originalName = originalFile.name;
+                            }
+                            const nameParts = originalName.split('.');
+                            const extension = nameParts.length > 1 ? nameParts.pop() : 'png';
+                            const nameWithoutExt = nameParts.join('.');
+                            const uniqueName = `${nameWithoutExt}-${new Date().getTime()}.${extension}`;
+                            // --- จบส่วนสร้างชื่อไฟล์ใหม่ ---
+
+                            const file = new File(
+                                [blob],
+                                uniqueName, // ✅ ใช้ชื่อไฟล์ใหม่ที่สร้างขึ้น
+                                { type: "image/png" }
+                            );
 
                             const dt = new DataTransfer();
                             dt.items.add(file);

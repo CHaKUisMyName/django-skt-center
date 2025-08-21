@@ -274,6 +274,7 @@ def addDefault(request: HttpRequest):
                     wd.createBy = uCreate
             wd.createDate = timezone.now()
             wd.save()
+            broadCastWelcomeBoard()
             messages.success(request, "Add success")
             return response
         except Exception as e:

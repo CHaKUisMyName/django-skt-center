@@ -14,6 +14,8 @@ class WelcomeBoardConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         if self.group_name:
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
+        if hasattr(self, 'keepalive_task'):
+            self.keepalive_task.cancel()
 
     async def receive(self, text_data):
         print(f"Received raw data: {text_data}")
@@ -32,14 +34,20 @@ class WelcomeBoardConsumer(AsyncWebsocketConsumer):
             self.group_name = "filtered_guests"
             await self.channel_layer.group_add(self.group_name, self.channel_name)
             welcome_data = await get_filtered_welcome_data()
+            welcome_data["type"] = "send_welcome_board"
+            await self.send(text_data=json.dumps(welcome_data))
+        elif action == "pong":
+            print("Received pong")
         else:
             # --  สำหรับ หน้า index guest
             self.group_name = "all_guests"
             await self.channel_layer.group_add(self.group_name, self.channel_name)
             welcome_data = await get_all_welcome_data()
+            welcome_data["type"] = "send_welcome_board"
+            await self.send(text_data=json.dumps(welcome_data))
 
-        welcome_data["type"] = "send_welcome_board"
-        await self.send(text_data=json.dumps(welcome_data))
+        # welcome_data["type"] = "send_welcome_board"
+        # await self.send(text_data=json.dumps(welcome_data))
 
     async def send_welcome_board(self, event):
         await self.send(text_data=json.dumps({

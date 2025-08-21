@@ -56,7 +56,8 @@ INSTALLED_APPS = [
     'app_organization.apps.AppOrganizationConfig',
     # 'app_organization',
     # 'app_welcome_board',
-    'app_welcome_board.apps.AppWelcomeBoardConfig'
+    'app_welcome_board.apps.AppWelcomeBoardConfig',
+    'app_deploy',
 ]
 
 INSTALLED_APPS += ["channels"]

@@ -75,14 +75,25 @@
                 const ws_url = ws_scheme + "://" + window.location.host + "/ws/wb/welcome/";
 
                 let socket = null;
-                let reconnectTimer = null;
+                let reconnectTimer = null; // ตัวแปรสำหรับ setTimeout
+                let reconnectAttempts = 0; // ตัวนับจำนวนครั้งที่พยายามเชื่อมต่อใหม่
+                const maxReconnectAttempts = 10; // จำนวนครั้งสูงสุดที่จะพยายาม
                 let slideshowInterval = null;
 
                 function connectWebSocket(){
+                    if(socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)){
+                        console.log("Socket already open or connecting.");
+                        return;
+                    }
                     socket = new WebSocket(ws_url);
 
                     socket.onopen = function(){
                         console.log("WebSocket connected!");
+                        reconnectAttempts = 0; // ✅ รีเซ็ตตัวนับเมื่อเชื่อมต่อสำเร็จ
+                        if(reconnectTimer) {
+                            clearTimeout(reconnectTimer);
+                            reconnectTimer = null;
+                        }
                         // แจ้ง server ว่าอันนี้ show.html
                         socket.send(JSON.stringify({ action: "filtered" }));
                     };
@@ -91,7 +102,8 @@
                         const data = JSON.parse(event.data);
                         if(data.type === "ping"){
                             // ตอบ pong กลับ server
-                            socket.send(JSON.stringify({ action: "filtered" }));
+                            // socket.send(JSON.stringify({ action: "filtered" }));
+                            socket.send(JSON.stringify({ action: "pong" }));
                             return;
                         }
 
@@ -101,23 +113,24 @@
                     };
 
                     socket.onclose = function(){
-                        console.log("WebSocket disconnected");
+                        console.log("WebSocket disconnected.");
                         clearInterval(slideshowInterval); // clear slideshow
                         slideshowInterval = null;
 
-                        // auto reconnect 3 วินาที
-                        if(!reconnectTimer){
-                            reconnectTimer = setTimeout(function(){
-                                reconnectTimer = null;
+                        // ✅ พยายามเชื่อมต่อใหม่แบบ Exponential Backoff
+                        if (reconnectAttempts < maxReconnectAttempts) {
+                            let timeout = Math.pow(2, reconnectAttempts) * 1000; // 1s, 2s, 4s, 8s...
+                            console.log(`Attempting to reconnect in ${timeout / 1000} seconds...`);
+                            if(reconnectTimer) clearTimeout(reconnectTimer);
+                            reconnectTimer = setTimeout(function() {
                                 connectWebSocket();
-                            }, 3000);
+                            }, timeout);
+                            reconnectAttempts++;
+                        } else {
+                            console.error("Max reconnect attempts reached. Giving up.");
                         }
                     };
 
-                    socket.onerror = function(err){
-                        console.error("WebSocket error", err);
-                        socket.close();
-                    };
                 }
 
                 function updateMedia(paths, mediaType){
@@ -129,18 +142,21 @@
 
                     if(mediaType === "image" && Array.isArray(paths) && paths.length > 0){
                         $("#img").removeClass("d-none");
-                        $("#img").attr("src", paths[0].path + "?t=" + new Date().getTime());
+                        // $("#img").attr("src", paths[0].path + "?t=" + new Date().getTime());
+                        $("#img").attr("src", paths[0].path);
 
                         if(paths.length > 1){
                             let currentIndex = 1;
                             slideshowInterval = setInterval(function(){
-                                $("#img").attr("src", paths[currentIndex].path + "?t=" + new Date().getTime());
+                                // $("#img").attr("src", paths[currentIndex].path + "?t=" + new Date().getTime());
+                                $("#img").attr("src", paths[currentIndex].path);
                                 currentIndex = (currentIndex + 1) % paths.length;
                             }, 3000);
                         }
                     } else if(mediaType === "video" && Array.isArray(paths) && paths.length > 0){
                         $("#video").removeClass("d-none");
-                        $("#video").attr("src", paths[0].path + "?t=" + new Date().getTime());
+                        // $("#video").attr("src", paths[0].path + "?t=" + new Date().getTime());
+                        $("#video").attr("src", paths[0].path);
                     } else {
                         console.warn("No media data received");
                     }
