@@ -167,8 +167,11 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+
 # PyPI configuration file
 .pypirc
 
-media/default-video/*
-!media/default-video/.gitkeep
+# Django media and static files
+# commit gitignore
+/media/
+/staticfiles/
