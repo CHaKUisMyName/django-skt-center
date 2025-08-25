@@ -21,13 +21,17 @@ class WelcomeBoardConsumer(AsyncWebsocketConsumer):
         print(f"Received raw data: {text_data}")
         data = json.loads(text_data)
         print(f"Parsed data: {data}")
+        action = data.get("action")
+        print(f"Action: {action}")
+
+        # Handle keepalive pong messages first and do nothing else.
+        if action == "pong":
+            print("Received pong")
+            return
 
         # ลบ group เก่าถ้ามี เพื่อเปลี่ยน group
         if self.group_name:
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
-
-        action = data.get("action")
-        print(f"Action: {action}")
 
         if action == "filtered":
             # --  สำหรับ หน้า show welcome board
@@ -36,8 +40,6 @@ class WelcomeBoardConsumer(AsyncWebsocketConsumer):
             welcome_data = await get_filtered_welcome_data()
             welcome_data["type"] = "send_welcome_board"
             await self.send(text_data=json.dumps(welcome_data))
-        elif action == "pong":
-            print("Received pong")
         else:
             # --  สำหรับ หน้า index guest
             self.group_name = "all_guests"
@@ -45,9 +47,6 @@ class WelcomeBoardConsumer(AsyncWebsocketConsumer):
             welcome_data = await get_all_welcome_data()
             welcome_data["type"] = "send_welcome_board"
             await self.send(text_data=json.dumps(welcome_data))
-
-        # welcome_data["type"] = "send_welcome_board"
-        # await self.send(text_data=json.dumps(welcome_data))
 
     async def send_welcome_board(self, event):
         await self.send(text_data=json.dumps({

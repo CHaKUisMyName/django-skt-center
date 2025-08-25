@@ -98,7 +98,11 @@ def addGuest(request: HttpRequest):
             wg.sDate = sDate
             wg.eDate = eDate
             wg.isActive = True
-            wg.status = WelcomeBoardStatus(int(1))
+            now_utc = timezone.now()
+            if sDate <= now_utc < eDate:
+                wg.status = WelcomeBoardStatus.Show
+            else:
+                wg.status = WelcomeBoardStatus.Waiting
             wg.note = note
 
             currentUser: User = request.currentUser
@@ -108,6 +112,7 @@ def addGuest(request: HttpRequest):
                     wg.createBy = uCreate
             wg.createDate = timezone.now()
             wg.save()
+            broadCastAllGuests()
             broadCastWelcomeBoard()
 
             messages.success(request, "Add success")
@@ -182,8 +187,13 @@ def editGuest(request: HttpRequest, id: str):
                 if uUpdate:
                     wg.updateBy = uUpdate
             wg.updateDate = timezone.now()
-            wg.status = WelcomeBoardStatus(int(1))
+            now_utc = timezone.now()
+            if sDate <= now_utc < eDate:
+                wg.status = WelcomeBoardStatus.Show
+            else:
+                wg.status = WelcomeBoardStatus.Waiting
             wg.save()
+            broadCastAllGuests()
             broadCastWelcomeBoard()
 
             messages.success(request, "Update success")
@@ -222,6 +232,7 @@ def deleteGuest(request: HttpRequest, id: str):
         fs.delete(os.path.join(settings.MEDIA_ROOT, wg.path))
         wg.delete()
         
+        broadCastAllGuests()
         broadCastWelcomeBoard()
         returnData = {
             'deleted': True,
@@ -288,7 +299,6 @@ def addDefault(request: HttpRequest):
 # --------------------------------------------------------------------------------
 
 def showWelcomeBoard(request: HttpRequest):
-    broadCastWelcomeBoard()
     return render(request, 'welcome_board/show.html')
 
 
@@ -296,7 +306,9 @@ channel_layer = get_channel_layer()
 
 def broadCastWelcomeBoard():
     async def send_message():
+        print("kuy")
         data = await get_filtered_welcome_data()
+        print(data)
         await channel_layer.group_send(
             "filtered_guests",
             {

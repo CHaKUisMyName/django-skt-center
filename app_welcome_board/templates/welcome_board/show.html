@@ -100,14 +100,17 @@
 
                     socket.onmessage = function(event){
                         const data = JSON.parse(event.data);
+                        console.log("on message :"+data.type);
                         if(data.type === "ping"){
                             // ตอบ pong กลับ server
                             // socket.send(JSON.stringify({ action: "filtered" }));
+                            console.log("ตอบ pong กลับ server");
                             socket.send(JSON.stringify({ action: "pong" }));
                             return;
                         }
 
                         if(data.type === "send_welcome_board"){
+                            
                             updateMedia(data.path, data.media_type);
                         }
                     };
@@ -134,29 +137,47 @@
                 }
 
                 function updateMedia(paths, mediaType){
+                    console.log("update media : "+mediaType);
+                    const videoEl = document.getElementById('video');
+                    const imageEl = document.getElementById('img');
+
                     clearInterval(slideshowInterval);
                     slideshowInterval = null;
 
-                    $("#img").addClass("d-none").removeAttr("src");
-                    $("#video").addClass("d-none").removeAttr("src");
+                    // --- 1. หยุดและซ่อนวิดีโอก่อนเสมอ ---
+                    if (!videoEl.paused) {
+                        videoEl.pause();
+                    }
+                    videoEl.src = ""; // ล้าง source เพื่อให้ browser หยุดโหลด/แสดงผล
+                    $(videoEl).addClass("d-none");
 
-                    if(mediaType === "image" && Array.isArray(paths) && paths.length > 0){
-                        $("#img").removeClass("d-none");
-                        // $("#img").attr("src", paths[0].path + "?t=" + new Date().getTime());
-                        $("#img").attr("src", paths[0].path);
+                    // --- 2. ซ่อนรูปภาพ ---
+                    $(imageEl).addClass("d-none").removeAttr("src");
 
-                        if(paths.length > 1){
-                            let currentIndex = 1;
-                            slideshowInterval = setInterval(function(){
-                                // $("#img").attr("src", paths[currentIndex].path + "?t=" + new Date().getTime());
-                                $("#img").attr("src", paths[currentIndex].path);
-                                currentIndex = (currentIndex + 1) % paths.length;
-                            }, 3000);
+                    if (mediaType === "image" && Array.isArray(paths) && paths.length > 0) {
+                        let currentIndex = 0;
+                        const showNextImage = () => {
+                            $(imageEl).attr("src", paths[currentIndex].path);
+                            console.log("Showing image:", paths[currentIndex].path);
+                            currentIndex = (currentIndex + 1) % paths.length;
+                        };
+
+                        $(imageEl).removeClass("d-none");
+                        showNextImage(); // Show first image immediately
+
+                        if (paths.length > 1) {
+                            console.log("path > 1")
+                            slideshowInterval = setInterval(showNextImage, 3000);
                         }
-                    } else if(mediaType === "video" && Array.isArray(paths) && paths.length > 0){
-                        $("#video").removeClass("d-none");
-                        // $("#video").attr("src", paths[0].path + "?t=" + new Date().getTime());
-                        $("#video").attr("src", paths[0].path);
+                    } else if (mediaType === "video" && Array.isArray(paths) && paths.length > 0) {
+                        console.log("new path : "+paths[0].path);
+                        // 1. กำหนด source ของวิดีโอใหม่
+                        videoEl.src = paths[0].path;
+                        // 2. สั่งให้เบราว์เซอร์โหลดวิดีโอใหม่
+                        videoEl.load();
+                        // 3. สั่งให้เล่นวิดีโอ (หลังจากที่พร้อม)
+                        videoEl.play();
+                        $(videoEl).removeClass("d-none");
                     } else {
                         console.warn("No media data received");
                     }

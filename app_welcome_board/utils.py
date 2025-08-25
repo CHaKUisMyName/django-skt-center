@@ -28,9 +28,9 @@ def get_all_welcome_data():
 
 @sync_to_async
 def get_filtered_welcome_data():
-    now = timezone.now()
+    now_utc = timezone.now()
     # ถ้า MongoDB ใช้ UTC
-    now_utc = now.astimezone(dt_timezone.utc)  # แปลงเป็น UTC
+    # now_utc = now.astimezone(dt_timezone.utc)  # แปลงเป็น UTC
     welcome: List[WelcomeBoardGuest] = WelcomeBoardGuest.objects.filter(
         status=WelcomeBoardStatus.Show.value,
         isActive=True,
