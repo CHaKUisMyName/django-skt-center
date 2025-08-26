@@ -1,6 +1,6 @@
 from typing import List
 from bson import ObjectId
-from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from app_organization.models.org_setting import OrgSetting
@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.utils import timezone
 
 from base_models.basemodel import UserSnapshot
+from utilities.utility import CreateExcelTemplateSetting
 
 
 
@@ -194,3 +195,24 @@ def deleteSettingOrg(request: HttpRequest, id: str):
 @requiredLogin
 def importSettingOrg(request: HttpRequest):
     return render(request, 'setting_org/importSetting.html')
+
+@requiredLogin
+def exportExcelTemplate(request: HttpRequest):
+    try:
+        orgSettings = OrgSetting.objects.filter(isActive = True)
+        excel = CreateExcelTemplateSetting("Org Setting", "app_organization", orgSettings)
+        if excel:
+            # สร้าง response
+            response = HttpResponse(
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            )
+            response['Content-Disposition'] = 'attachment; filename="org-setting.xlsx"'
+            # save workbook ลง response
+            excel.save(response)
+            return response
+        messages.error(request, "excel template data not found")
+        return HttpResponseRedirect(reverse('indexSettingOrg'))
+    except Exception as e:
+        print(e)
+        messages.error(request, str(e))
+        return HttpResponseRedirect(reverse('indexSettingOrg'))

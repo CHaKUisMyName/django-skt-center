@@ -2,8 +2,6 @@ import datetime
 import mongoengine as me
 from django.utils import timezone
 
-from utilities.utility import CheckStrEmpty
-
 class UserSnapshot(me.EmbeddedDocument):
     uesrId = me.ObjectIdField()
     code = me.StringField()
@@ -14,10 +12,10 @@ class UserSnapshot(me.EmbeddedDocument):
     def UserToSnapshot(self, user):
         try:
             self.uesrId = user.id
-            self.code = CheckStrEmpty(user.code)
-            self.fullNameTH = CheckStrEmpty(user.fNameTH) + " " + CheckStrEmpty(user.lNameTH)
-            self.fullNameEN = CheckStrEmpty(user.fNameEN) + " " + CheckStrEmpty(user.lNameEN)
-            self.email = CheckStrEmpty(user.email)
+            self.code = user.code or ""
+            self.fullNameTH = f"{user.fNameTH or ''} {user.lNameTH or ''}".strip()
+            self.fullNameEN = f"{user.fNameEN or ''} {user.lNameEN or ''}".strip()
+            self.email = user.email or ""
             
             return self
         except Exception as e:

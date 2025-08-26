@@ -8,4 +8,5 @@ urlpatterns = [
     path('setting/edit/<str:id>/', view=setting_org_views.editSettingOrg, name='editSettingOrg'),
     path('setting/delete/<str:id>/', view=setting_org_views.deleteSettingOrg, name='deleteSettingOrg'),
     path('setting/import/', view=setting_org_views.importSettingOrg, name='importSettingOrg'),
+    path('setting/template/', view=setting_org_views.exportExcelTemplate, name='orgExcelTemplate'),
 ]
