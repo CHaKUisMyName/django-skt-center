@@ -16,3 +16,19 @@ def isSettingOrgAdmin(id):
     except Exception as e:
         print(e)
         return False
+    
+def HasOrgPermission(id: str, checkAdmin: bool = False):
+    try:
+        result = False
+        orgSetting: OrgSetting = OrgSetting.objects.filter(user = ObjectId(id)).first()
+        if orgSetting:
+            if checkAdmin == True:
+                if orgSetting.isAdmin == True and orgSetting.isActive == True:
+                    result = True
+            else:
+                if orgSetting.isActive == True:
+                    result = True
+        return result
+    except Exception as e:
+        print(e)
+        return False

@@ -15,17 +15,20 @@ from app_user.models.auth_session import AuthSession
 from app_user.models.auth_user import AuthUser, VerifyPassword
 from app_user.models.user import RoleUser, User, UserStatus
 from app_user.models.user_setting import UserSetting
-from app_user.utils import isSettingUserAdmin, requiredLogin
+from app_user.utils import HasUsPermission, requiredLogin
 from base_models.basemodel import UserSnapshot
 
 # Create your views here.
 @requiredLogin
 def index(request: HttpRequest):
     users = User.objects.filter(isActive = True)
-    isUserAdmin = isSettingUserAdmin(request.currentUser.id)
+    isUserAdmin = HasUsPermission(str(request.currentUser.id), True)
+    canModify = HasUsPermission(str(request.currentUser.id))
+    
     context = {
         "users": users,
-        "isUserAdmin": isUserAdmin
+        "isUserAdmin": isUserAdmin,
+        "canModify": canModify,
     }
     return render(request, 'user/index.html', context= context)
 
@@ -34,9 +37,9 @@ def addUser(request: HttpRequest):
     if request.method == "POST":
         response = HttpResponseRedirect(reverse('indexUser'))
         try:
-            isUserAdmin = isSettingUserAdmin(request.currentUser.id)
+            hasPermission = HasUsPermission(str(request.currentUser.id))
             if not request.currentUser.isAdmin:
-                if isUserAdmin == False:
+                if hasPermission == False:
                     messages.error(request, "Not Permission")
                     return response
             code = request.POST.get("code")
@@ -169,7 +172,7 @@ def AddAlienUser(request: HttpRequest):
 def editUser(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexUser'))
     try:
-        isUserAdmin = isSettingUserAdmin(request.currentUser.id)
+        hasPermission = HasUsPermission(str(request.currentUser.id))
         if request.method == "POST":
             
             usId = request.POST.get("usid")
@@ -178,7 +181,7 @@ def editUser(request: HttpRequest, id: str):
                 return response
             if ObjectId(request.currentUser.id) != ObjectId(usId):
                 if not request.currentUser.isAdmin:
-                    if isUserAdmin == False:
+                    if hasPermission == False:
                         messages.error(request, "Not Permission")
                         return response
             user: User = User.objects.filter(id = usId).first()
@@ -287,7 +290,7 @@ def editUser(request: HttpRequest, id: str):
                 return response
             if ObjectId(request.currentUser.id) != ObjectId(id):
                 if not request.currentUser.isAdmin:
-                    if isUserAdmin == False:
+                    if hasPermission == False:
                         messages.error(request, "Not Permission")
                         return response
             user = User.objects.filter(id = id).first()
@@ -296,11 +299,12 @@ def editUser(request: HttpRequest, id: str):
                 return response
             userStatus = [{"id":us.value, "name":us.name}for us in UserStatus]
             userRolesJson = json.dumps([role.serialize() for role in user.roles], ensure_ascii=False)
+            
             context = {
                 'userStatus': userStatus,
                 'user': user,
                 "userRolesJson": userRolesJson,
-                "isUserAdmin": isUserAdmin,
+                "hasPermission": hasPermission,
             }
             return render(request, 'user/edit.html', context= context)
     except Exception as e:
@@ -423,13 +427,13 @@ def updateUserRoles(user: User, new_roles: list[RoleUser]):
 @requiredLogin
 def deleteUser(request: HttpRequest, id: str):
     try:
-        isUserAdmin = isSettingUserAdmin(request.currentUser.id)
+        hasPermission = HasUsPermission(str(request.currentUser.id))
         if not request.method == "GET":
             return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
         if not id:
             return JsonResponse({'deleted': False, 'message': 'Not found id'})
         if not request.currentUser.isAdmin:
-            if isUserAdmin == False:
+            if hasPermission == False:
                 return JsonResponse({'deleted': False, 'message': 'Not Permission'})
         
         user: User = User.objects.filter(id = id).first()
@@ -485,7 +489,7 @@ def login(request: HttpRequest):
                 messages.error(request, "Password is required")
                 return HttpResponseRedirect(reverse('login'))
             
-            authUser: AuthUser = AuthUser.objects.filter(userAuth = username).first()
+            authUser: AuthUser = AuthUser.objects.filter(userAuth = username, isActive = True, isDelete = False).first()
             if not authUser:
                 messages.error(request, "Not Found User.")
                 return HttpResponseRedirect(reverse('login'))
@@ -534,13 +538,13 @@ def logout(request: HttpRequest):
 @requiredLogin
 def regisUser(request: HttpRequest, id:str):
     try:
-        isUserAdmin = isSettingUserAdmin(request.currentUser.id)
+        hasPermission = HasUsPermission(str(request.currentUser.id),True)
         user: User = User.objects.filter(id = id).first()
         if not user:
             messages.error(request, "User not found")
             return HttpResponseRedirect(reverse('indexUser'))
         if not request.currentUser.isAdmin:
-            if isUserAdmin == False:
+            if hasPermission == False:
                 messages.error(request, "Not Permission")
                 return HttpResponseRedirect(reverse('indexUser'))
         if request.method == "POST":
@@ -580,13 +584,13 @@ def regisUser(request: HttpRequest, id:str):
 def resetPassword(request: HttpRequest, id:str):
     response = HttpResponseRedirect(reverse('indexUser'))
     try:
-        isUserAdmin = isSettingUserAdmin(request.currentUser.id)
+        hasPerssion = HasUsPermission(str(request.currentUser.id), True)
         user: User = User.objects.filter(id = id).first()
         if not user:
             messages.error(request, "User not found")
             return response
         if not request.currentUser.isAdmin:
-            if isUserAdmin == False:
+            if hasPerssion == False:
                 messages.error(request, "Not Permission")
                 return response
         

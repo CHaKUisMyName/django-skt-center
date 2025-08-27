@@ -6,10 +6,10 @@ from django.shortcuts import render
 from django.urls import reverse
 from openpyxl import load_workbook
 from app_organization.models.org_setting import OrgSetting
-from app_organization.utils import isSettingOrgAdmin
+from app_organization.utils import HasOrgPermission, isSettingOrgAdmin
 from app_system_setting.models import SystemApp, SystemMenu
 from app_user.models.user import User
-from app_user.utils import isSettingUserAdmin, requiredLogin
+from app_user.utils import requiredLogin
 from django.contrib import messages
 from django.utils import timezone
 
@@ -21,9 +21,9 @@ from utilities.utility import CreateExcelTemplateSetting
 @requiredLogin
 def indexSettingOrg(request: HttpRequest):
     orgSettings = OrgSetting.objects.filter(isActive = True)
-    isOrgAdmin = isSettingOrgAdmin(request.currentUser.id)
+    hasPermission = HasOrgPermission(str(request.currentUser.id), True)
     if not request.currentUser.isAdmin:
-        if isOrgAdmin == False:
+        if hasPermission == False:
             messages.error(request, "Not Permission")
             return HttpResponseRedirect('/')
     context ={
@@ -34,9 +34,9 @@ def indexSettingOrg(request: HttpRequest):
 @requiredLogin
 def addSettingOrg(request: HttpRequest):
     response = HttpResponseRedirect(reverse('indexSettingOrg'))
-    isOrgAdmin = isSettingOrgAdmin(request.currentUser.id)
+    hasPermission = HasOrgPermission(str(request.currentUser.id), True)
     if not request.currentUser.isAdmin:
-        if isOrgAdmin == False:
+        if hasPermission == False:
             messages.error(request, "Not Permission")
             return HttpResponseRedirect('/')
     if request.method == "POST":
@@ -101,9 +101,9 @@ def addSettingOrg(request: HttpRequest):
 @requiredLogin
 def editSettingOrg(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexSettingOrg'))
-    isOrgAdmin = isSettingOrgAdmin(request.currentUser.id)
+    hasPermission = HasOrgPermission(str(request.currentUser.id), True)
     if not request.currentUser.isAdmin:
-        if isOrgAdmin == False:
+        if hasPermission == False:
             messages.error(request, "Not Permission")
             return HttpResponseRedirect('/')
     if request.method == "POST":
@@ -169,9 +169,9 @@ def editSettingOrg(request: HttpRequest, id: str):
 @requiredLogin
 def deleteSettingOrg(request: HttpRequest, id: str):
     try:
-        isOrgAdmin = isSettingOrgAdmin(request.currentUser.id)
+        hasPermission = HasOrgPermission(str(request.currentUser.id), True)
         if not request.currentUser.isAdmin:
-            if isOrgAdmin == False:
+            if hasPermission == False:
                 return JsonResponse({'deleted': False, 'message': 'Not Permission'})
         if not request.method == "GET":
             return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
@@ -196,9 +196,9 @@ def deleteSettingOrg(request: HttpRequest, id: str):
     
 @requiredLogin
 def importSettingOrg(request: HttpRequest):
-    isUserAdmin = isSettingUserAdmin(request.currentUser.id)
+    hasPermission = HasOrgPermission(str(request.currentUser.id), True)
     if not request.currentUser.isAdmin:
-        if isUserAdmin == False:
+        if hasPermission == False:
             messages.error(request, "Not Permission")
             return HttpResponseRedirect('/')
     if request.method == "POST":

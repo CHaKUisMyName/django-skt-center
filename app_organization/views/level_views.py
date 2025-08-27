@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.contrib import messages
 
 from app_organization.models.level import Level, LevelSnapShot
+from app_organization.utils import HasOrgPermission
 from app_user.models.user import User
 from app_user.utils import requiredLogin
 from base_models.basemodel import UserSnapshot
@@ -15,8 +16,12 @@ from base_models.basemodel import UserSnapshot
 @requiredLogin
 def index(request: HttpRequest):
     levels = Level.objects.filter(isDelete = False)
+    isOrgAdmin = HasOrgPermission(str(request.currentUser.id), True)
+    canModify = HasOrgPermission(str(request.currentUser.id))
     context = {
-        "levels": levels
+        "levels": levels,
+        "isOrgAdmin": isOrgAdmin,
+        "canModify": canModify,
     }
     return render(request, 'level/index.html', context= context)
 
@@ -25,6 +30,11 @@ def addLevel(request: HttpRequest):
     if request.method == "POST":
         response = HttpResponseRedirect(reverse('indexLevel'))
         try:
+            hasPermission = HasOrgPermission(str(request.currentUser.id))
+            if not request.currentUser.isAdmin:
+                if hasPermission == False:
+                    messages.error(request, "Not Permission")
+                    return response
             code = request.POST.get("code")
             if not code:
                 messages.error(request, "Code is required")
@@ -38,7 +48,6 @@ def addLevel(request: HttpRequest):
             isactive = True if request.POST.get("isactive") == 'on' else False
             note = request.POST.get("note")
 
-            print(code,nameth,nameen,parent,isactive)
             level = Level()
             level.code = code
             level.nameTH = nameth
@@ -73,6 +82,11 @@ def addLevel(request: HttpRequest):
 def editLevel(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexLevel'))
     try:
+        hasPermission = HasOrgPermission(str(request.currentUser.id))
+        if not request.currentUser.isAdmin:
+            if hasPermission == False:
+                messages.error(request, "Not Permission")
+                return response
         if request.method == "POST":
             lvId = request.POST.get("lvId")
             if not lvId:
@@ -168,6 +182,10 @@ def deleteLevel(request: HttpRequest, id: str):
             return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
         if not id:
             return JsonResponse({'deleted': False, 'message': 'Not found id'})
+        hasPermission = HasOrgPermission(str(request.currentUser.id))
+        if not request.currentUser.isAdmin:
+            if hasPermission == False:
+                return JsonResponse({'deleted': False, 'message': 'Not Permission'})
         level: Level = Level.objects.get(id = ObjectId(id))
         if not level:
             return JsonResponse({'deleted': False, 'message': 'Level not found'})

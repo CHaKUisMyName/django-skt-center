@@ -25,6 +25,7 @@
                             List of Level
                         </p>
                     </div>
+                    {% if isOrgAdmin == True or request.currentUser.isAdmin == True or canModify == True %}
                     <div class="ms-auto my-auto mt-lg-0 mt-4">
                         <div class="ms-auto my-auto">
                             <a href="{% url 'addLevel' %}" class="btn btn-primary">
@@ -33,6 +34,7 @@
                             </a>
                         </div>
                     </div>
+                    {% endif %}
                 </div>
             </div>
             <div class="card-body">
@@ -48,7 +50,9 @@
                                         <th>NameEN</th>
                                         <th>Parent</th>
                                         <th>Status</th>
+                                        {% if isOrgAdmin == True or request.currentUser.isAdmin == True or user.id == request.currentUser.id or canModify == True %}
                                         <th>Action</th>
+                                        {% endif %}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -66,6 +70,7 @@
                                             <span class="badge text-bg-danger text-white">Inactive</span>
                                             {% endif %}
                                         </td>
+                                        {% if isOrgAdmin == True or request.currentUser.isAdmin == True or user.id == request.currentUser.id or canModify == True %}
                                         <td>
                                             <div>
                                                 <a href="{% url 'editLevel' level.id %}" class="btn btn-info">
@@ -76,6 +81,7 @@
                                                 </button>
                                             </div>
                                         </td>
+                                        {% endif %}
                                     </tr>
                                     {% endfor %}
                                     

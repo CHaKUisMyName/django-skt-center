@@ -51,7 +51,7 @@
                             <label for="nickname" class="form-label fw-bold text-dark-emphasis">Nickname</label>
                             <input type="text" class="form-control" id="nickname" name="nickname" value="{{ user.nickName|default:'' }}" />
                         </div>
-                        {% if isUserAdmin == True or request.currentUser.isAdmin == True %}
+                        {% if hasPermission == True or request.currentUser.isAdmin == True %}
                         <div class="col-md-2 col-sm-12">
                             <label for="code" class="form-label fw-bold text-dark-emphasis">Employee Code</label>
                             <input type="text" class="form-control" id="code" name="code" value="{{ user.code|default:'' }}" required />
@@ -99,7 +99,7 @@
                             <textarea id="note" name="note" class="form-control" style="height: 100px;">{{ user.note }}</textarea>
                         </div>
                     </div>
-                    {% if isUserAdmin == True or request.currentUser.isAdmin == True %}
+                    {% if hasPermission == True or request.currentUser.isAdmin == True %}
                     <div class="row mb-4">
                         <div class="col-md-6 col-sm-12">
                             <label for="status" class="form-label fw-bold text-dark-emphasis">Status</label>
@@ -114,6 +114,7 @@
                             </select>
                         </div>
                     </div>
+                    {% if request.currentUser.isAdmin == True %}
                     <div class="row mb-4">
                         <div class="col-12">
                             <div class="form-check">
@@ -126,6 +127,7 @@
                             </div>
                         </div>
                     </div>
+                    {% endif %}
                     <div class="row mb-3 mt-6">
                         <div class="col-12">
                             <div class="d-flex">
@@ -225,8 +227,8 @@
     $("#addRole").click(async (e) => {
         e.preventDefault();
         Loading(true);
-        let pos = await getAPIData(window.location.origin + "/pos/api/list/?isactive=true&isdelete=false");
-        let orgs = await getAPIData(window.location.origin + "/org/api/list/?isactive=true&isdelete=false");
+        let pos = await getAPIData(window.location.origin + "/org/pos/api/list/?isactive=true&isdelete=false");
+        let orgs = await getAPIData(window.location.origin + "/org/og/api/list/?isactive=true&isdelete=false");
         if(pos != null && orgs != null){
             createTableRole(pos, orgs);
             $('.form-select').select2({

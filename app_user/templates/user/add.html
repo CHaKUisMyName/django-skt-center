@@ -105,6 +105,7 @@
                             </select>
                         </div>
                     </div>
+                    {% if request.currentUser.isAdmin == True %}
                     <div class="row mb-4">
                         <div class="col-12">
                             <div class="form-check">
@@ -113,6 +114,7 @@
                             </div>
                         </div>
                     </div>
+                    {% endif %}
                     <div class="row mb-3 mt-6">
                         <div class="col-12">
                             <div class="d-flex">

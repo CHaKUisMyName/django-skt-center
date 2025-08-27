@@ -58,3 +58,19 @@ def isSettingUserAdmin(id):
     except Exception as e:
         print(e)
         return False
+    
+def HasUsPermission(id: str, checkAdmin: bool = False):
+    try:
+        result = False
+        userSetting: UserSetting = UserSetting.objects.filter(user = ObjectId(id)).first()
+        if userSetting:
+            if checkAdmin == True:
+                if userSetting.isAdmin == True and userSetting.isActive == True:
+                    result = True
+            else:
+                if userSetting.isActive == True:
+                    result = True
+        return result
+    except Exception as e:
+        print(e)
+        return False
