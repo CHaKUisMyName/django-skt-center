@@ -59,7 +59,7 @@ def isSettingUserAdmin(id):
         print(e)
         return False
     
-def HasUsPermission(id: str, checkAdmin: bool = False):
+def HasUsPermission(id: str, menu: str = None, checkAdmin: bool = False):
     try:
         result = False
         userSetting: UserSetting = UserSetting.objects.filter(user = ObjectId(id)).first()
@@ -69,7 +69,8 @@ def HasUsPermission(id: str, checkAdmin: bool = False):
                     result = True
             else:
                 if userSetting.isActive == True:
-                    result = True
+                    if menu:
+                        result = any(m.name == menu for m in userSetting.menus)
         return result
     except Exception as e:
         print(e)

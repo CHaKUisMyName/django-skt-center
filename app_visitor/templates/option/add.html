@@ -1,16 +1,16 @@
 {% extends 'layout.html' %}
 {% load static %}
-{% block title %}<title>Visitor Option</title>{% endblock %}
+{% block title %}<title>Visitor</title>{% endblock %}
 {% block breadcrumb %}
 <div>
-    <span>Option /</span><span class="fw-bold">Add Option</span>
+    <span>Visitor / </span><span>Option /</span><span class="fw-bold">Add Option</span>
 </div>
 {% endblock %}
 {% block content %}
 <div class="row mb-3">
     <div class="col-lg-9 col-12 mx-auto">
         <div class="card">
-            <form method="post" class="card-body mb-3" novalidate>
+            <form action="{% url 'addOption' %}" method="post" class="card-body mb-3" novalidate>
                 <h3>Add Option</h3>
                 <p class="text-sm">create new option</p>
                 <!-- <hr /> -->
@@ -24,9 +24,15 @@
                         </div>
                         
                     </div>
+                    <div class="row mb-4">
+                        <div class="col-md-8 col-sm-12">
+                            <label for="note" class="form-label fw-bold text-dark-emphasis">Note</label>
+                            <textarea id="note" name="note" class="form-control" style="height: 100px;"></textarea>
+                        </div>
+                    </div>
                     <div class="row float-end">
                         <div class="col-12">
-                            <a href="{% url 'listOption' %}" class="btn btn-light">Cancel</a>
+                            <a href="{% url 'indexOption' %}" class="btn btn-light">Cancel</a>
                             <button type="submit" class="btn btn-primary ms-2">Submit</button>
                         </div>
                     </div>
@@ -39,6 +45,19 @@
 {% endblock %}
 {% block script %}
     <script type="text/javascript">
+        (function () {
+            'use strict';
+            document.querySelector('form').addEventListener('submit', function (event) {
+                Loading(true);
+                if (!this.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    Loading(false);
+                }
+                this.classList.add('was-validated');
+                
+            }, false);
+        })();
         $(document).ready(()=>{
             ActiveMenu("option");
         });

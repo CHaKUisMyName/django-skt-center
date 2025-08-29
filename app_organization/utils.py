@@ -17,7 +17,7 @@ def isSettingOrgAdmin(id):
         print(e)
         return False
     
-def HasOrgPermission(id: str, checkAdmin: bool = False):
+def HasOrgPermission(id: str, menu: str = None, checkAdmin: bool = False):
     try:
         result = False
         orgSetting: OrgSetting = OrgSetting.objects.filter(user = ObjectId(id)).first()
@@ -27,7 +27,8 @@ def HasOrgPermission(id: str, checkAdmin: bool = False):
                     result = True
             else:
                 if orgSetting.isActive == True:
-                    result = True
+                    if menu:
+                        result = any(m.name == menu for m in orgSetting.menus)
         return result
     except Exception as e:
         print(e)

@@ -1,6 +1,7 @@
 {% load static %}
 {% load user_tags %}
 {% load org_tags %}
+{% load visitor_tag %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -99,7 +100,7 @@
                         </ul>
                     </li>
                     
-                    <!-- <li class="sidebar-item my-2 mx-3">
+                    <li class="sidebar-item my-2 mx-3">
                         <a data-bs-target="#visitor" data-bs-toggle="collapse" class="sidebar-link">
                             <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
                                 <i class="bi bi-book-fill"></i>
@@ -110,20 +111,29 @@
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'indexVisitor' %}" data-active="visitor">Visitor</a>
                             </li>
+                            <!-- <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="#" data-active="listvisitor">List Visitor</a>
+                            </li> -->
+                            {% has_menu_vst request.currentUser "Option" as can_view_vstOption %}
+                            {% if can_view_vstOption %}
                             <li class="sidebar-item my-2">
-                                <a class="sidebar-link" href="{% url 'listVisitor' %}" data-active="listvisitor">List Visitor</a>
+                                <a class="sidebar-link" href="{% url 'indexOption' %}" data-active="option">Option</a>
                             </li>
+                            {% endif %}
+                            {% has_menu_vst request.currentUser "Room" as can_view_vstRoom %}
+                            {% if can_view_vstRoom %}
                             <li class="sidebar-item my-2">
-                                <a class="sidebar-link" href="{% url 'listOption' %}" data-active="option">Option</a>
+                                <a class="sidebar-link" href="{% url 'indexRoom' %}" data-active="room">Room</a>
                             </li>
+                            {% endif %}
+                            {% has_menu_vst request.currentUser "SettingVisitorOption" as can_view_vstSettingOption %}
+                            {% if can_view_vstSettingOption %}
                             <li class="sidebar-item my-2">
-                                <a class="sidebar-link" href="{% url 'listRoom' %}" data-active="room">Room</a>
+                                <a class="sidebar-link" href="{% url 'indexSettingVst' %}" data-active="settingvisitor">Settings</a>
                             </li>
-                            <li class="sidebar-item my-2">
-                                <a class="sidebar-link" href="#" data-active="st">Settings</a>
-                            </li>
+                            {% endif %}
                         </ul>
-                    </li> -->
+                    </li>
                     <li class="sidebar-item my-2 mx-3">
                         <a data-bs-target="#welcomeboard" data-bs-toggle="collapse" class="sidebar-link">
                             <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">

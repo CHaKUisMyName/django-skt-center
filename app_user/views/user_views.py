@@ -23,7 +23,7 @@ from base_models.basemodel import UserSnapshot
 def index(request: HttpRequest):
     users = User.objects.filter(isActive = True)
     isUserAdmin = HasUsPermission(str(request.currentUser.id), True)
-    canModify = HasUsPermission(str(request.currentUser.id))
+    canModify = HasUsPermission(str(request.currentUser.id), "User")
     
     context = {
         "users": users,
@@ -34,14 +34,14 @@ def index(request: HttpRequest):
 
 @requiredLogin
 def addUser(request: HttpRequest):
+    hasPermission = HasUsPermission(str(request.currentUser.id), "User")
+    if not request.currentUser.isAdmin:
+        if hasPermission == False:
+            messages.error(request, "Not Permission")
+            return HttpResponseRedirect(reverse('indexUser'))
     if request.method == "POST":
         response = HttpResponseRedirect(reverse('indexUser'))
         try:
-            hasPermission = HasUsPermission(str(request.currentUser.id))
-            if not request.currentUser.isAdmin:
-                if hasPermission == False:
-                    messages.error(request, "Not Permission")
-                    return response
             code = request.POST.get("code")
             if not code:
                 messages.error(request, "Code is required")
@@ -172,7 +172,7 @@ def AddAlienUser(request: HttpRequest):
 def editUser(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexUser'))
     try:
-        hasPermission = HasUsPermission(str(request.currentUser.id))
+        hasPermission = HasUsPermission(str(request.currentUser.id), "User")
         if request.method == "POST":
             
             usId = request.POST.get("usid")
@@ -427,7 +427,7 @@ def updateUserRoles(user: User, new_roles: list[RoleUser]):
 @requiredLogin
 def deleteUser(request: HttpRequest, id: str):
     try:
-        hasPermission = HasUsPermission(str(request.currentUser.id))
+        hasPermission = HasUsPermission(str(request.currentUser.id), "User")
         if not request.method == "GET":
             return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
         if not id:

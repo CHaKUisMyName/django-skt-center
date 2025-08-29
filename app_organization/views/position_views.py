@@ -17,7 +17,7 @@ from base_models.basemodel import UserSnapshot
 def index(request: HttpRequest):
     positions = Position.objects.filter(isDelete = False)
     isOrgAdmin = HasOrgPermission(str(request.currentUser.id), True)
-    canModify = HasOrgPermission(str(request.currentUser.id))
+    canModify = HasOrgPermission(str(request.currentUser.id), "Position")
     context = {
         "positions": positions,
         "isOrgAdmin": isOrgAdmin,
@@ -27,14 +27,14 @@ def index(request: HttpRequest):
 
 @requiredLogin
 def addPosition(request: HttpRequest):
+    hasPermission = HasOrgPermission(str(request.currentUser.id), "Position")
+    if not request.currentUser.isAdmin:
+        if hasPermission == False:
+            messages.error(request, "Not Permission")
+            return HttpResponseRedirect(reverse('indexPosition'))
     if request.method == "POST":
         response = HttpResponseRedirect(reverse('indexPosition'))
         try:
-            hasPermission = HasOrgPermission(str(request.currentUser.id))
-            if not request.currentUser.isAdmin:
-                if hasPermission == False:
-                    messages.error(request, "Not Permission")
-                    return response
             code = request.POST.get("code")
             if not code:
                 messages.error(request, "Code is required")
@@ -81,12 +81,12 @@ def addPosition(request: HttpRequest):
 @requiredLogin   
 def editPosition(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexPosition'))
+    hasPermission = HasOrgPermission(str(request.currentUser.id), "Position")
+    if not request.currentUser.isAdmin:
+        if hasPermission == False:
+            messages.error(request, "Not Permission")
+            return response
     try:
-        hasPermission = HasOrgPermission(str(request.currentUser.id))
-        if not request.currentUser.isAdmin:
-            if hasPermission == False:
-                messages.error(request, "Not Permission")
-                return response
         if request.method == "POST":
             posId = request.POST.get("posId")
             if not posId:
@@ -186,7 +186,7 @@ def deletePosition(request: HttpRequest, id: str):
             return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
         if not id:
             return JsonResponse({'deleted': False, 'message': 'Not found id'})
-        hasPermission = HasOrgPermission(str(request.currentUser.id))
+        hasPermission = HasOrgPermission(str(request.currentUser.id), "Position")
         if not request.currentUser.isAdmin:
             if hasPermission == False:
                 return JsonResponse({'deleted': False, 'message': 'Not Permission'})

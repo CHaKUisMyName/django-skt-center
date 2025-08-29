@@ -1,0 +1,65 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Visitor</title>{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>Visitor / </span><span>Room /</span><span class="fw-bold">Add Room</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-lg-9 col-12 mx-auto">
+        <div class="card">
+            <form action="{% url 'addRoom' %}" method="post" class="card-body mb-3" novalidate>
+                <h3>Add Room</h3>
+                <p class="text-sm">create new room</p>
+                <!-- <hr /> -->
+                {% csrf_token %}
+                <div class="col-12">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <label for="name" class="form-label fw-bold text-dark-emphasis">Room</label>
+                            <input type="text" class="form-control" id="name" name="name" required />
+                            <div class="invalid-feedback">Please input data</div>
+                        </div>
+                        
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-8 col-sm-12">
+                            <label for="note" class="form-label fw-bold text-dark-emphasis">Note</label>
+                            <textarea id="note" name="note" class="form-control" style="height: 100px;"></textarea>
+                        </div>
+                    </div>
+                    <div class="row float-end">
+                        <div class="col-12">
+                            <a href="{% url 'indexRoom' %}" class="btn btn-light">Cancel</a>
+                            <button type="submit" class="btn btn-primary ms-2">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block script %}
+    <script type="text/javascript">
+        (function () {
+            'use strict';
+            document.querySelector('form').addEventListener('submit', function (event) {
+                Loading(true);
+                if (!this.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    Loading(false);
+                }
+                this.classList.add('was-validated');
+                
+            }, false);
+        })();
+        $(document).ready(()=>{
+            ActiveMenu("room");
+        });
+    </script>
+{% endblock %}
