@@ -137,9 +137,9 @@
                 }
             });
             calendar.render();
-            // setInterval(function() {
-            //     calendar.refetchEvents();
-            // }, 10000);
+            setInterval(function() {
+                calendar.refetchEvents();
+            }, 10000);
 
         });
         const showDetailModal = async (info) => {
