@@ -1,0 +1,188 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Visitor</title>{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>Visitor / </span><span class="fw-bold">Add</span>
+</div>
+{% endblock %}
+{% block css %}
+<!-- Tempus Dominus Styles -->
+     <link rel="stylesheet" href="{% static 'css/tempus-dominus.css' %}" />
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-lg-9 col-12 mx-auto">
+    <div class="card">
+        <form id="fm" method="post" class="card-body mb-3" novalidate>
+            <h3>Add Visitor</h3>
+            <p class="text-sm">create new visitor</p>
+            <!-- <hr /> -->
+            {% csrf_token %}
+            <div class="col-12">
+                <div class="row mb-3">
+                    <div class="col-sm-12 col-md-6">
+                        <label for="topic" class="form-label fw-bold text-dark-emphasis">Topic</label>
+                        <input type="text" class="form-control" id="topic" name="topic" required />
+                        <div class="invalid-feedback">Please input data</div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6 col-sm-12">
+                        <label for="sdate" class="form-label fw-bold text-dark-emphasis">Start Date</label>
+                        <input type="text" id="sdate" name="sdate" class="form-control" required/>
+                        <div id="sdate-error" class="invalid-feedback">Please input date format (DD/MM/YYYY)</div>
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        <label for="edate" class="form-label fw-bold text-dark-emphasis">End Date</label>
+                        <input type="text" id="edate" name="edate" class="form-control" required/>
+                        <div id="edate-error" class="invalid-feedback">Please input date format (DD/MM/YYYY)</div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-12 col-md-6">
+                        <label for="guestCompany" class="form-label fw-bold text-dark-emphasis">Guest Company</label>
+                        <input type="text" class="form-control" id="guestCompany" name="guestCompany" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-12 col-md-6">
+                        <label for="guestName" class="form-label fw-bold text-dark-emphasis">Guest Name</label>
+                        <input type="text" class="form-control" id="GuestName" name="guestName" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-12 col-md-6">
+                        <label for="member" class="form-label fw-bold text-dark-emphasis">SKT Member</label>
+                        <input type="text" class="form-control" id="member" name="member" />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6 col-sm-12">
+                        <label for="room" class="form-label fw-bold text-dark-emphasis">Room</label>
+                        <select id="room" name="room" class="form-select" required>
+                            <option value=""></option>
+                            {% for room in rooms %}
+                            <option value="{{ room.id }}">{{ room.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">Please select data</div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-8 col-sm-12">
+                        <label for="note" class="form-label fw-bold text-dark-emphasis">Note</label>
+                        <textarea id="note" name="note" class="form-control" style="height: 100px;"></textarea>
+                    </div>
+                </div>
+                <div class="row mt-5 mb-5">
+                    <div class="col-12">
+                        <p class="display-6">Options</p>
+                        {# เปิด row แรก #}
+                        <div class="row">
+                        {% for option in options %}
+                            <div class="col-3">
+                            <div class="form-check mb-3 text-break">
+                                <input class="form-check-input" type="checkbox" name="options[]" value="{{ option.id }}" id="{{ option.id }}">
+                                <label class="form-check-label" for="{{ option.id }}">
+                                {{ option.name }}
+                                </label>
+                            </div>
+                            </div>
+
+                            {# ทุก ๆ 12 อันให้ปิด row แล้วเปิด row ใหม่ #}
+                            {% if forloop.counter|divisibleby:4 and not forloop.last %}
+                            </div><div class="row">
+                            {% endif %}
+                        {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3 float-end">
+                    <div class="col-12">
+                        <a href="{% url 'indexVisitor' %}" class="btn btn-light">Cancel</a>
+                        <button type="submit" class="btn btn-primary ms-2">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    <!-- Popperjs -->
+     <script src="{% static 'js/popper.min.js' %}"></script>
+    <script src="{% static 'js/tempus-dominus.js' %}"></script>
+    <script type="text/javascript">
+        var startDate =null;
+        $(document).ready(()=>{
+            ActiveMenu("visitor");
+            $('.form-select').select2({
+                theme: 'bootstrap-5',
+            });
+            var startDate = initialDateTimePk(document.getElementById("sdate"));
+            var endDate = initialDateTimePk(document.getElementById("edate"));
+            datePkSetMinDate(startDate, new Date(new Date().setHours(0, 0, 0, 0)));
+            datePkSetMinDate(endDate, new Date(new Date().setHours(0, 0, 0, 0)));
+
+            let qDate = "{{ qDate }}";
+            if(qDate){
+                let datePart = new Date(qDate);
+                let now = new Date();
+                datePart.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+                startDate.dates.setValue(tempusDominus.DateTime.convert(datePart));
+            }
+        });
+        
+        $("#fm").submit(function(e){
+            Loading(true);
+            event.preventDefault(); // ❗ ต้องหยุดไว้ก่อน เพื่อรอ crop ให้เสร็จก่อน
+            event.stopPropagation();
+            let isValid = true;
+            const sDateEl = document.getElementById("sdate");
+            const eDateEl = document.getElementById("edate");
+            const sVal = sDateEl.value;
+            const eVal = eDateEl.value;
+            // reset error
+            sDateEl.setCustomValidity("");
+            eDateEl.setCustomValidity("");
+            if(sVal && eVal){
+                const sDate = dateTimeStrToDateTime(sVal);
+                const eDate = dateTimeStrToDateTime(eVal);
+                if (sDate && eDate) {
+                    if (sDate >= eDate) {
+                        // ตั้ง error
+                        sDateEl.setCustomValidity("Start date must be before end date.");
+                        eDateEl.setCustomValidity("End date must be after start date.");
+
+                        // ✅ เปลี่ยนข้อความใน .invalid-feedback
+                        document.getElementById("sdate-error").textContent = "Start date must be before end date.";
+                        document.getElementById("edate-error").textContent = "End date must be after start date.";
+                    } else {
+                        // ✅ ล้างข้อความถ้า valid แล้ว
+                        sDateEl.setCustomValidity("");
+                        eDateEl.setCustomValidity("");
+                        document.getElementById("sdate-error").textContent = "Please input date format (DD/MM/YYYY)";
+                        document.getElementById("edate-error").textContent = "Please input date format (DD/MM/YYYY)";
+                    }
+                }
+            }
+            if (!this.checkValidity()) {
+                this.classList.add('was-validated');
+                Loading(false);
+                return false;
+            }
+            this.classList.add('was-validated');
+            // return false;
+            this.submit(); // ✅ ส่ง form manual
+            
+        });
+        const dateTimeStrToDateTime = (str) => {
+            if(str){
+                const parts = str.match(/(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})/);
+                return Date.UTC(+parts[3], parts[2]-1, +parts[1], +parts[4], +parts[5]);
+            }
+        }
+    </script>
+{% endblock %}

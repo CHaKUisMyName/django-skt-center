@@ -7,6 +7,7 @@ class Room(BaseClass):
     id = me.ObjectIdField(primary_key=True, default=lambda: ObjectId())
     name = me.StringField(null= True, required= False, default = None)
     note = me.StringField(null= True, required= False, default = None)
+    color = me.StringField(null= True, required= False, default = None)
     isActive = me.BooleanField()
 
     meta = {

@@ -88,6 +88,13 @@ const initialDateTimePk = (element) => {
   });
   return dp;
 };
+function datePkSetMinDate(el, date) {
+  el.updateOptions({
+    restrictions: {
+      minDate: date,
+    },
+  });
+}
 const getAPIData = async (url) => {
   let returnData = null;
   const settings = {

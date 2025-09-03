@@ -3,7 +3,7 @@ import mongoengine as me
 from django.utils import timezone
 
 class UserSnapshot(me.EmbeddedDocument):
-    uesrId = me.ObjectIdField()
+    userId = me.ObjectIdField()
     code = me.StringField()
     fullNameTH = me.StringField()
     fullNameEN = me.StringField()
@@ -11,7 +11,7 @@ class UserSnapshot(me.EmbeddedDocument):
 
     def UserToSnapshot(self, user):
         try:
-            self.uesrId = user.id
+            self.userId = user.id
             self.code = user.code or ""
             self.fullNameTH = f"{user.fNameTH or ''} {user.lNameTH or ''}".strip()
             self.fullNameEN = f"{user.fNameEN or ''} {user.lNameEN or ''}".strip()
@@ -23,7 +23,7 @@ class UserSnapshot(me.EmbeddedDocument):
             return None
     def serialize(self):
         return {
-            "uesrId": str(self.uesrId),
+            "userId": str(self.userId),
             "code": self.code,
             "fullNameTH": self.fullNameTH,
             "fullNameEN": self.fullNameEN,

@@ -38,10 +38,12 @@ def add(request: HttpRequest):
                 messages.error(request, "Name is required")
                 return response
             note = request.POST.get('note')
+            color = request.POST.get('color')
 
             room: Room = Room()
             room.name = name
             room.note = note
+            room.color = color
             room.isActive = True
             currentUser: User = request.currentUser
             if currentUser:
@@ -80,6 +82,9 @@ def edit(request: HttpRequest, id: str):
             if not room:
                 messages.error(request, "Room not found")
                 return response
+            color = request.POST.get('color')
+            if color:
+                room.color = color
             room.name = name
             room.note = note
             room.updateDate = timezone.now()

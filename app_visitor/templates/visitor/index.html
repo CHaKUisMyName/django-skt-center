@@ -1,6 +1,14 @@
 {% extends 'layout.html' %}
 {% load static %}
 {% block title %}<title>Visitor</title>{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span class="fw-bold">Visitor</span>
+</div>
+{% endblock %}
+{% block css %}
+<link href="{% static 'css/sweetalert2.min.css' %}" rel="stylesheet">
+{% endblock %}
 {% block content %}
 <div class="row">
     <div class="col-12">
@@ -14,14 +22,71 @@
         </div>
     </div>
 </div>
+<div id="detail" class="card d-none">
+    <div class="card-body row mb-3">
+        <div class="col-12">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <span id="sdate"></span>
+                    <span class="mx-2">-</span>
+                    <span id="edate"></span>    
+                </div>
+            </div>
+            <hr>
+            <div class="row mb-3">
+                <div class="col-sm-12 col-md-6">
+                    <p class="fs-6 fst-italic fw-bold text-muted">Room</p>
+                    <p id="room" class="fs-2 fw-light"></p>
+                </div>
+                <div class="col-sm-12 col-md-6">
+                    <p class="fs-6 fst-italic fw-bold text-muted">SKT Employee</p>
+                    <p id="member" class="fs-2 fw-light"></p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <p class="fs-6 fst-italic fw-bold text-muted">Guest</p>
+                    <p id="gcom" class="fs-2 fw-light pb-0"></p>
+                    <p id="gname" class="fs-2 fw-light"></p>
+                </div>
+            </div>
+            <div id="rowEdit" class="row mb-3">
+                <div class="col-12">
+                    <a href="#" id="edit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-pencil-square"></i>
+                        <span class="ms-2">Edit</span>
+                    </a>
+                    <button type="button" id="delete" class="btn btn-secondary btn-lg delete" data-vstid="" onclick="deleteClick(this);">
+                        <i class="bi bi-trash"></i>
+                        <span class="ms-2">Delete</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 {% block script %}
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js'></script>
+    <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+    {% if messages %}
+        {% for message in messages %}
+        <script type="text/javascript">
+            $(document).ready(function(){
+                const mssTag = "{{message.tags}}";
+                const mssMsg = "{{message}}";
+                PopMessage(mssMsg, mssTag);
+            });
+        </script>
+        {% endfor %}
+    {% endif %}
     <script type="text/javascript">
+        var calendarEl;
+        var calendar;
         $(document).ready(()=>{
             ActiveMenu("visitor");
-            var calendarEl = document.getElementById('calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
+            calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 headerToolbar: {
                     left: "prev,next today",
@@ -31,13 +96,128 @@
                 eventDisplay: "block",
                 height: "auto",
                 aspectRatio: 2,
-                dateClick: function(info){
-                    console.log(info);
-                    window.location.href = window.location.origin + window.location.pathname + "add";
+                eventTimeFormat:{
+                    hour12: false,
+                    hour: "2-digit",
+                    minute: "2-digit",
                 },
+                events: async function (info, successCallback, failureCallback) {
+                    const url = window.location.origin + window.location.pathname+"api/listjs/?sdate="+moment(info.start).format().split("T")[0]+"&edate="+moment(info.end).format().split("T")[0];
+                    const apiData = await getAPIData(url);
+                    if(apiData.length > 0){
+                        const newArr = apiData.map((item)=>{
+                            const newItem = {
+                                id: item.id,
+                                title: item.topic,
+                                start: item.sDate,
+                                end: item.eDate,
+                                color: item.roomColor,
+                                room: item.roomName,
+                                member: item.sktMember ? item.sktMember : "-",
+                                gcom: item.guestCompany,
+                                gname: item.guestMember ? item.guestMember : "-",
+                                link: window.location.origin + window.location.pathname + "edit/" + item.id,
+                                canEdit: canEdit(item),
+                            }
+                            return newItem
+                        });
+                        successCallback(newArr);
+                    }
+                },
+                dateClick: function(info){
+                    if(info.dateStr >= new Date().toISOString().split("T")[0]){
+                        window.location.href = window.location.origin + window.location.pathname + "add?d=" + info.dateStr;
+                    }
+                },
+                eventClick: function(info){
+                    showDetailModal(info);
+                },
+                eventContent: function(arg) {
+                    return { html: '<b class="me-1">(' + arg.event.extendedProps.room + ')</b>' + arg.timeText + ' ' + arg.event.title };
+                }
             });
             calendar.render();
+            // setInterval(function() {
+            //     calendar.refetchEvents();
+            // }, 10000);
 
         });
+        const showDetailModal = async (info) => {
+            
+            await initialDetailToHTML(info);
+            Swal.fire({
+                title: `<p class="display-4">${info.event.title}</p>`,
+                icon: "info",
+                imageWidth: 400,
+                imageHeight: 200,
+                html: $("#detail").html(),
+                showCloseButton: true,
+                showCancelButton: false,
+                showConfirmButton: false,
+                focusConfirm: false,
+                width:'40rem',
+            });
+            
+        }
+        const initialDetailToHTML = async (info) =>{
+            console.log(window.location.origin + window.location.pathname);
+            $("#sdate").text(strUTCDateToStrThaiDate(info.event.start));
+            $("#edate").text(strUTCDateToStrThaiDate(info.event.end));
+            $("#room").text(info.event.extendedProps.room);
+            $("#member").text(info.event.extendedProps.member);
+            $('#gcom').text(info.event.extendedProps.gcom);
+            $('#gname').text("("+info.event.extendedProps.gname+")");
+
+            if(info.event.extendedProps.canEdit == false){
+                $("#rowEdit").addClass("d-none");
+                $("#edit").attr("href", "#");
+                $("#delete").attr("data-vstid", "");
+            }else{
+                $("#rowEdit").removeClass("d-none");
+                $("#edit").attr("href", info.event.extendedProps.link);
+                $("#delete").attr("data-vstid", info.event.id);
+            }
+
+            
+        }
+        
+        const deleteClick = (e) => {
+            console.log($(e).data('vstid'));
+            Loading(true);
+            const settings = {
+                url: window.location.origin + window.location.pathname + "delete/" + $(e).data('vstid'),
+                method: "GET",
+            }
+            $.ajax(settings).done((response) => {
+                Loading(false);
+                if(response.deleted == true){
+                    PopMessage("Delete success", "success",true);
+                }else{
+                    PopMessage(response.message, "error");
+                }
+                // calendar.refetchEvents();
+            }).fail((xjr, status, error) => {
+                Loading(false);
+                PopMessage(error, "error");
+                // calendar.refetchEvents();
+            });
+            
+        }
+        const canEdit = (info) => {
+            const isSuperAdmin = "{{request.currentUser.isAdmin}}" === "True";
+            const createById = info.createBy?.userId ? info.createBy.userId : "";
+            const updateById = info.updateBy?.userId ? info.updateBy.userId : "";
+            const userId = "{{request.currentUser.id}}";
+            const isSettingAdmin = "{{isSettingAdmin}}" === "True";
+            // console.log(createById);
+            if(
+                isSuperAdmin == true 
+                || isSettingAdmin == true
+                || (createById == userId || updateById == userId)
+            ){
+                return true;
+            }
+            return false;
+        }
     </script>
 {% endblock %}

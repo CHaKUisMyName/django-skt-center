@@ -17,12 +17,20 @@
                 {% csrf_token %}
                 <div class="col-12">
                     <div class="row mb-3">
-                        <div class="col-6">
+                        <div class="col-md-6 col-sm-12">
                             <label for="name" class="form-label fw-bold text-dark-emphasis">Room</label>
                             <input type="text" class="form-control" id="name" name="name" required />
                             <div class="invalid-feedback">Please input data</div>
                         </div>
-                        
+                        <div class="col-sm-12 col-md-2">
+                            <label for="color" class="form-label fw-bold text-dark-emphasis">Color</label>
+                            <input
+                                type="color"
+                                name="color"
+                                id="color"
+                                class="form-control form-control-color"
+                            />
+                        </div>
                     </div>
                     <div class="row mb-4">
                         <div class="col-md-8 col-sm-12">
