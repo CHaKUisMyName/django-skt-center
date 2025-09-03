@@ -3,6 +3,7 @@ import mongoengine as me
 import pytz
 import datetime
 
+from app_visitor.models.option import Option
 from app_visitor.models.room import Room
 from base_models.basemodel import BaseClass
 
@@ -27,17 +28,43 @@ class Visitor(BaseClass):
         if self.eDate and self.eDate.tzinfo is None:
             self.eDate = self.eDate.replace(tzinfo=utc)
     def serialize(self):
+        # room
+        room_data = None
+        if self.room:
+            if isinstance(self.room, Room):  # ถ้าเป็น document
+                room_data = self.room.serialize()
+            else:  # ถ้าเป็น ObjectId
+                check: Room = Room.objects.filter(id=self.room).first()
+                if check:
+                    room_data = check.serialize()
+
+        # options
+        options_data = None
+        if self.options:
+            options_data = []
+            for opt in self.options:
+                if isinstance(opt, Option):  # ถ้าเป็น document
+                    options_data.append(opt.serialize())
+                else:  # ถ้าเป็น ObjectId
+                    check = Option.objects.filter(id=opt).first()
+                    if check:
+                        options_data.append(check.serialize())
+
         return {
-            "id": str(self.id),
+            "id": str(self.id) if self.id else "",
             "topic": self.topic,
             "sDate": self.sDate.astimezone(datetime.timezone.utc).isoformat() if self.sDate else None,
             "eDate": self.eDate.astimezone(datetime.timezone.utc).isoformat() if self.eDate else None,
+            # "sDate": self.sDate if self.sDate else None,
+            # "eDate": self.eDate if self.eDate else None,
             "guestCompany": self.guestCompany,
             "guestMember": self.guestMember,
             "sktMember": self.sktMember,
-            "roomId": str(self.room.id) if self.room else ",",
-            "roomName": self.room.name if self.room else "",
-            "roomColor": self.room.color if self.room else "",
+            "room": room_data,
+            "options": options_data,
+            # "roomId": str(self.room.id) if self.room else ",",
+            # "roomName": self.room.name if self.room else "",
+            # "roomColor": self.room.color if self.room else "",
             "note": self.note,
             "isActive": self.isActive,
             "createDate": self.createDate.astimezone(datetime.timezone.utc).isoformat() if self.createDate else None,

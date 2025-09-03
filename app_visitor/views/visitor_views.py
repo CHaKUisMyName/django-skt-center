@@ -1,5 +1,7 @@
 from datetime import datetime
+import os
 from bson import ObjectId
+from dotenv import load_dotenv
 import pytz
 from typing import List
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
@@ -7,6 +9,9 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.contrib import messages
 from django.utils import timezone
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
+from django.utils.dateparse import parse_datetime
 
 from app_user.models.user import User
 from app_user.utils import requiredLogin
@@ -16,6 +21,10 @@ from app_visitor.models.visitor import Visitor
 from app_visitor.models.visitor_setting import VisitorSetting
 from base_models.basemodel import UserSnapshot
 
+load_dotenv()
+
+mail_it = os.getenv('MAIL_IT')
+mail_ga = os.getenv('MAIL_GA')
 
 tz = pytz.timezone("Asia/Bangkok")
 
@@ -121,6 +130,7 @@ def add(request: HttpRequest):
                 if uCreate:
                     visitor.createBy = uCreate
             visitor.save()
+            sendMailBooking(visitor)
             messages.success(request, 'Save Success')
             return response
         except Exception as e:
@@ -269,3 +279,23 @@ def delete(request: HttpRequest, id: str):
     except Exception as e:
         print(e)
         return JsonResponse({'deleted': False, 'message': str(e)})
+
+def sendMailBooking(visitor: Visitor):
+    subject = 'Booking Visitor Data'
+    from_email = 'Visitor System <it.report@sanyo-kasei.co.th>'
+    to_email = [str(mail_ga)]
+    cc = [str(mail_it)]
+    vst = visitor.serialize()
+    context = {
+        "vst": vst,
+        "sDate": parse_datetime(vst["sDate"]).astimezone(tz).strftime("%d/%m/%Y %H:%M"),
+        "eDate": parse_datetime(vst["eDate"]).astimezone(tz).strftime("%d/%m/%Y %H:%M"),
+    }
+    html_content = render_to_string("email/booking.html", context)
+    # เผื่อ fallback เป็น text
+    text_content = "Visitor Booking This is an alternative message in plain text."
+    # สร้าง object email
+    email = EmailMultiAlternatives(subject, text_content, from_email, to_email, cc= cc)
+    email.attach_alternative(html_content, "text/html")
+    email.send()
+        

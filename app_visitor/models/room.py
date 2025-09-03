@@ -13,3 +13,13 @@ class Room(BaseClass):
     meta = {
         'collection': 'visitorRoom'  # 👈 ชื่อ collection ที่กำหนดเอง
     }
+
+    def serialize(self):
+        return {
+            "id": str(self.id) if self.id else "",
+            "name": self.name,
+            "note": self.note,
+            "color": self.color,
+            "isActive": self.isActive,
+        }
+    

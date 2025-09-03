@@ -12,3 +12,11 @@ class Option(BaseClass):
     meta = {
         'collection': 'visitorOption'  # 👈 ชื่อ collection ที่กำหนดเอง
     }
+
+    def serialize(self):
+        return {
+            "id": str(self.id) if self.id else "",
+            "name": self.name,
+            "note": self.note,
+            "isActive": self.isActive,
+        }
