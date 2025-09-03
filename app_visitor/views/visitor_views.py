@@ -1,7 +1,5 @@
 from datetime import datetime
-import os
 from bson import ObjectId
-from dotenv import load_dotenv
 import pytz
 from typing import List
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
@@ -12,6 +10,7 @@ from django.utils import timezone
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.utils.dateparse import parse_datetime
+from django.conf import settings
 
 from app_user.models.user import User
 from app_user.utils import requiredLogin
@@ -21,10 +20,8 @@ from app_visitor.models.visitor import Visitor
 from app_visitor.models.visitor_setting import VisitorSetting
 from base_models.basemodel import UserSnapshot
 
-load_dotenv()
-
-mail_it = os.getenv('MAIL_IT')
-mail_ga = os.getenv('MAIL_GA')
+mail_it = settings.MAIL_IT
+mail_ga = settings.MAIL_GA
 
 tz = pytz.timezone("Asia/Bangkok")
 
@@ -283,6 +280,7 @@ def delete(request: HttpRequest, id: str):
 def sendMailBooking(visitor: Visitor):
     subject = 'Booking Visitor Data'
     from_email = 'Visitor System <it.report@sanyo-kasei.co.th>'
+    # to_email = [str(settings.MAIL_CHAKU)]
     to_email = [str(mail_ga)]
     cc = [str(mail_it)]
     vst = visitor.serialize()
@@ -296,6 +294,7 @@ def sendMailBooking(visitor: Visitor):
     text_content = "Visitor Booking This is an alternative message in plain text."
     # สร้าง object email
     email = EmailMultiAlternatives(subject, text_content, from_email, to_email, cc= cc)
+    # email = EmailMultiAlternatives(subject, text_content, from_email, to_email)
     email.attach_alternative(html_content, "text/html")
     email.send()
         
