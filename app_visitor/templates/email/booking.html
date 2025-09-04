@@ -64,13 +64,17 @@
                     {% if vst.options %}
                     <li style="margin-bottom: 0.5rem;">
                         <span style="margin-bottom: 0.5rem;">ความต้องการเพิ่มเติม :</span>
-                        <ul>
+                        <ul style="margin-top: 0.5rem;">
                             {% for opt in vst.options %}
                             <li style="margin-bottom: 0.5rem;">{{ opt.name }}</li>
                             {% endfor %}                        
                         </ul>
                     </li>
                     {% endif %}
+                    <li style="margin-bottom: 0.5rem;">
+                        <span style="margin-right: 1rem;">ผู้บันทึกข้อมูล :</span>
+                        <span>{{ vst.createBy.fullNameEN|default:"-" }}</span>
+                    </li>
                 </ul>
             </div>
         </div>
