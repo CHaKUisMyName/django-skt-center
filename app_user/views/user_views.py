@@ -13,7 +13,7 @@ from app_organization.models.organization import Organization
 from app_organization.models.position import Position
 from app_user.models.auth_session import AuthSession
 from app_user.models.auth_user import AuthUser, VerifyPassword
-from app_user.models.user import RoleUser, User, UserStatus
+from app_user.models.user import EmpNation, RoleUser, User, UserStatus
 from app_user.models.user_setting import UserSetting
 from app_user.utils import HasUsPermission, requiredLogin
 from base_models.basemodel import UserSnapshot
@@ -58,6 +58,9 @@ def addUser(request: HttpRequest):
                 return response
             nickName = request.POST.get("nickname")
             nation = request.POST.get("nation")
+            if not nation:
+                messages.error(request, "Nation is required")
+                return response
             email = request.POST.get("email")
             phone = request.POST.get("phone")
             address = request.POST.get("address")
@@ -69,9 +72,9 @@ def addUser(request: HttpRequest):
                 birthday = None
             sDate = request.POST.get("sdate")
             if not sDate:
-                messages.error(request, "Start Job Date is required")
-                return response
-            sDate = datetime.strptime(sDate, "%d/%m/%Y")
+                sDate = None
+            else:
+                sDate = datetime.strptime(sDate, "%d/%m/%Y")
 
             status = request.POST.get("status")
             isadmin = True if request.POST.get("isadmin") == 'on' else False
@@ -109,7 +112,8 @@ def addUser(request: HttpRequest):
             user.fNameEN = fNameEN
             user.lNameEN = lNameEN
             user.nickName = nickName
-            user.nation = nation
+            # user.nation = nation
+            user.nation = EmpNation(int(nation))
             user.email = email
             user.phone = phone
             user.address = address
@@ -138,8 +142,10 @@ def addUser(request: HttpRequest):
             return response
     else:
         userStatus = [{"id":us.value, "name":us.name}for us in UserStatus]
+        userNation = [{"id":us.value, "name":us.name}for us in EmpNation]
         context = {
             'userStatus': userStatus,
+            'userNation': userNation,
         }
         return render(request, 'user/add.html', context= context)
 
@@ -204,6 +210,9 @@ def editUser(request: HttpRequest, id: str):
                 return response
             nickName = request.POST.get("nickname")
             nation = request.POST.get("nation")
+            if not nation:
+                messages.error(request, "Nation is required")
+                return response
             birthday = request.POST.get("birthday")
             if birthday:
                 birthday = datetime.strptime(birthday, "%d/%m/%Y")
@@ -211,10 +220,9 @@ def editUser(request: HttpRequest, id: str):
                 birthday = None
             sDate = request.POST.get("sdate")
             if not sDate:
-                messages.error(request, "Start Job Date is required")
-                return response
-            
-            sDate = datetime.strptime(sDate, "%d/%m/%Y")
+                sDate = None
+            else:
+                sDate = datetime.strptime(sDate, "%d/%m/%Y")
             email = request.POST.get("email")
             phone = request.POST.get("phone")
             address = request.POST.get("address")
@@ -229,7 +237,8 @@ def editUser(request: HttpRequest, id: str):
             user.fNameEN = fNameEN
             user.lNameEN = lNameEN
             user.nickName = nickName
-            user.nation = nation
+            # user.nation = nation
+            user.nation = EmpNation(int(nation))
             user.email = email
             user.phone = phone
             user.address = address
@@ -298,6 +307,7 @@ def editUser(request: HttpRequest, id: str):
                 messages.error(request, "User not found")
                 return response
             userStatus = [{"id":us.value, "name":us.name}for us in UserStatus]
+            userNation = [{"id":us.value, "name":us.name}for us in EmpNation]
             userRolesJson = json.dumps([role.serialize() for role in user.roles], ensure_ascii=False)
             
             context = {
@@ -305,6 +315,7 @@ def editUser(request: HttpRequest, id: str):
                 'user': user,
                 "userRolesJson": userRolesJson,
                 "hasPermission": hasPermission,
+                "userNation": userNation,
             }
             return render(request, 'user/edit.html', context= context)
     except Exception as e:

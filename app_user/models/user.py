@@ -12,6 +12,14 @@ class UserStatus(Enum):
     Retired = 4
     LayOff = 5
 
+class EmpNation(Enum):
+    Thai = 1
+    Japan = 2
+    China = 3
+    Korea = 4
+    Vietnam = 5
+
+
 class RoleUser(BaseEmbedded):
     # -- เก็บ id เวลา load ทำการ lazy loading org จาก db
     # -- แต่เวลา python load ขั้นมาจะเป็น object
@@ -45,7 +53,8 @@ class User(BaseClass):
     fNameEN = me.StringField()
     lNameEN = me.StringField()
     nickName = me.StringField(null= True, required= False, default = None)
-    nation = me.StringField(null= True, required= False, default = None)
+    # nation = me.StringField(null= True, required= False, default = None)
+    nation = me.EnumField(EmpNation)
     email = me.StringField(null= True, required= False, default = None)
     phone = me.StringField(null= True, required= False, default = None)
     birthDay = me.DateTimeField(null= True, required= False, default = None)
@@ -72,7 +81,7 @@ class User(BaseClass):
             "fNameEN": self.fNameEN,
             "lNameEN": self.lNameEN,
             "nickName": self.nickName,
-            "nation": self.nation,
+            "nation": self.nation.name if self.nation else None,
             "email": self.email,
             "phone": self.phone,
             "birthDay": self.birthDay.strftime("%Y-%m-%d") if self.birthDay else None,
