@@ -9,4 +9,5 @@ urlpatterns = [
     path('edit/<str:id>', view=visitor_views.edit, name='editVisitor'),
     path('delete/<str:id>', view=visitor_views.delete, name='deleteVisitor'),
     path('api/listjs/', view=visitor_views.listVisitorsJson, name='listVisitorsJson'),
+    path('show', view= visitor_views.show, name= 'showVisitor'),
 ]

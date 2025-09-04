@@ -297,4 +297,11 @@ def sendMailBooking(visitor: Visitor):
     # email = EmailMultiAlternatives(subject, text_content, from_email, to_email)
     email.attach_alternative(html_content, "text/html")
     email.send()
+
+def show(request: HttpRequest):
+    rooms = Room.objects.filter(isActive = True)
+    context = {
+        "rooms": rooms
+    }
+    return render(request, 'visitor/show.html', context)
         

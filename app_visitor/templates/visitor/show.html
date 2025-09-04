@@ -1,0 +1,160 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link href="{% static 'css/app.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/fontawesome/css/fontawesome.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/fontawesome/css/brands.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/fontawesome/css/solid.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/custom.css' %}" rel="stylesheet" />
+    <title>Document</title>
+    
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row my-2">
+            <div class="col-12">
+                {% for room in rooms %}
+                <button class="btn auto-contrast" data-color="{{ room.color }}">
+                    {{ room.name }}
+                </button>
+
+                {% endfor %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
+    <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+    <script src="{% static 'js/popper.min.js' %}"></script>
+    <script src="{% static 'js/app.js'%}"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js'></script>
+    <script src="{% static 'js/moment.js' %}"></script>
+    <script src="{% static 'js/moment-timezone-with-data.js' %}"></script>
+    <script src="{% static 'js/custom.js'%}"></script>
+    <script type="text/javascript">
+        var calendarEl;
+        var calendar;
+        $(document).ready(() => {
+            calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: "prev,next today",
+                    center: "title",
+                    right: "dayGridMonth,timeGridWeek,timeGridDay,listYear",
+                },
+                eventDisplay: "block",
+                height: "auto",
+                aspectRatio: 2,
+                eventTimeFormat:{
+                    hour12: false,
+                    hour: "2-digit",
+                    minute: "2-digit",
+                },
+                events: async function (info, successCallback, failureCallback) {
+                    const url = window.location.origin + "/vst/api/listjs/?sdate="+moment(info.start).format().split("T")[0]+"&edate="+moment(info.end).format().split("T")[0];
+                    const apiData = await getVisitorAPI(url);
+                    if(Array.isArray(apiData) && apiData.length > 0){
+                        const newArr = apiData.map((item)=>{
+                            const newItem = {
+                                id: item.id,
+                                title: item.topic,
+                                start: item.sDate,
+                                end: item.eDate,
+                                color: item.room.color,
+                                room: item.room.name,
+                                member: item.sktMember ? item.sktMember : "-",
+                                gcom: item.guestCompany,
+                                gname: item.guestMember ? item.guestMember : "-",
+                                link: window.location.origin + window.location.pathname + "edit/" + item.id,
+                            }
+                            return newItem
+                        });
+                        successCallback(newArr);
+                    }else{
+                        successCallback([]);
+                    }
+                },
+                eventContent: function(arg) {
+                    return { html: '<b class="me-1">(' + arg.event.extendedProps.room + ')</b>' + arg.timeText + ' ' + arg.event.title };
+                },
+                dayCellDidMount: function(info) {
+                    // เสาร์ (6) อาทิตย์ (0)
+                    if (info.date.getDay() === 0 || info.date.getDay() === 6) {
+                        info.el.style.backgroundColor = "#f0f0f0"; // เทาอ่อน
+                    }
+                }
+
+            });
+            calendar.render();
+            setInterval(function() {
+                calendar.refetchEvents();
+            }, 10000);
+        });
+        const getVisitorAPI = async (url) => {
+            let returnData = null;
+            const settings = {
+                url: url,
+                method: "GET",
+            };
+            await $.ajax(settings)
+                .done((data) => {
+                    // console.log(data);
+                    if (data.success == true) {
+                        returnData = data.data;
+                    }
+                })
+                .fail((xhr, status, error) => {
+                    console.log(xhr.responseText);
+                });
+            return returnData;
+        }
+        // ฟังก์ชันคำนวณ luminance จาก rgb()
+        function getLuminance(r, g, b) {
+            const a = [r, g, b].map(function (v) {
+                v /= 255;
+                return v <= 0.03928
+                    ? v / 12.92
+                    : Math.pow((v + 0.055) / 1.055, 2.4);
+            });
+            return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+        }
+
+        // ฟังก์ชันเลือกสีตัวอักษร (ดำ/ขาว)
+        function getContrastYIQ(hexcolor) {
+            // แปลง HEX → RGB
+            let c = hexcolor.substring(1); // ตัด #
+            let bigint = parseInt(c, 16);
+            let r = (bigint >> 16) & 255;
+            let g = (bigint >> 8) & 255;
+            let b = bigint & 255;
+
+            let luminance = getLuminance(r, g, b);
+            return luminance > 0.5 ? "#000000" : "#FFFFFF";
+        }
+
+        // apply ให้ปุ่มทุกปุ่ม
+        document.querySelectorAll(".btn.auto-contrast").forEach(btn => {
+            let color = btn.dataset.color || "#007bff";
+            btn.style.backgroundColor = color;
+
+            // ตั้งสีตัวอักษรอัตโนมัติ
+            let rgb = color.startsWith('#') 
+                ? color.match(/\w\w/g).map(h => parseInt(h, 16)) 
+                : [0,0,0];
+            let luminance = getLuminance(...rgb);
+            btn.style.color = luminance > 0.5 ? "#000" : "#fff";
+        });
+
+
+    </script>
+</body>
+</html>
