@@ -69,9 +69,9 @@
                             <option value="none">None</option>
                             {% for orga in orgs %}
                                 {% if orga.id == org.parent.id %}
-                                <option value="{{ orga.id }}" selected>{{ org.level.nameEN }} - {{ orga.nameEN }} ({{ orga.shortName }})</option>
+                                <option value="{{ orga.id }}" selected>{{ orga.level.nameEN }} - {{ orga.nameEN }} ({{ orga.shortName }})</option>
                                 {% else %}
-                                <option value="{{ orga.id }}">{{ org.level.nameEN }} - {{ orga.nameEN }} ({{ orga.shortName }})</option>
+                                <option value="{{ orga.id }}">{{ orga.level.nameEN }} - {{ orga.nameEN }} ({{ orga.shortName }})</option>
                                 {% endif %}
                             {% endfor %}
                         </select>
