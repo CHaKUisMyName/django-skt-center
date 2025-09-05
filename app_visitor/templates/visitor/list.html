@@ -1,0 +1,271 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Visitor</title>{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>Visitor / </span><span class="fw-bold">List</span>
+</div>
+{% endblock %}
+{% block css %}
+    <link href="{% static 'css/sweetalert2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/datatables.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/dataTables.bootstrap5.css' %}" rel="stylesheet">
+    <link href="{% static 'css/custom.css' %}" rel="stylesheet">
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">List Visitor</h3>
+                        <p class="text-sm mb-0">
+                            List of Visitor
+                        </p>
+                    </div>
+                    <div class="ms-auto my-auto mt-lg-0 mt-4">
+                        <div class="ms-auto my-auto">
+                            <a href="{% url 'addVisitor' %}" class="btn btn-primary">
+                                <i class="bi bi-plus"></i>
+                                <span>Add Visitor</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table id="tb" class="table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
+                                        <th>Room</th>
+                                        <th>SKT Member</th>
+                                        <th>Book By</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for visitor in visitors %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ visitor.sDate_local }}</td>
+                                        <td>{{ visitor.eDate_local }}</td>
+                                        <td>{{ visitor.room.name|default:"-" }}</td>
+                                        <td>{{ visitor.sktMember|default:"-" }}</td>
+                                        <td>{{ visitor.createBy.fullNameEN|default:"-" }}</td>
+                                        <td>
+                                            <div>
+                                                <button type="button" class="btn btn-secondary m-1 btnView" data-vstid="{{ visitor.id }}">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                {% if request.currentUser.isAdmin == True or isSettingAdmin == True or visitor.createBy.userId == request.currentUser.id or visitor.updateBy.userId == request.currentUser.id %}
+                                                <a href="{% url 'editVisitor' visitor.id %}" class="btn btn-info m-1">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-danger delete m-1" data-vstid="{{ visitor.id }}">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="detail" class="card d-none">
+    <div class="card-body row mb-3">
+        <div class="col-12">
+            <div class="row mb-3">
+                <div class="col-lg-4 col-sm-12 mb-3 mb-lg-0 text-start">
+                    <span class="fw-bold">Topic</span>
+                </div>
+                <div class="col-lg-8 col-sm-12 text-lg-end text-start">
+                    <span id="topic"></span>
+                </div>
+            </div>
+            <hr>
+            <div class="row mb-3">
+                <div class="col-lg-4 col-sm-12 text-start mb-3 mb-lg-0">
+                    <span class="fw-bold">Start Date</span>
+                </div>
+                <div class="col-lg-8 col-sm-12 text-lg-end text-start">
+                    <span id="sdate"></span>
+                </div>
+            </div>
+            <hr>
+            <div class="row mb-3">
+                <div class="col-lg-4 col-sm-12 text-start mb-3 mb-lg-0">
+                    <span class="fw-bold">End Date</span>
+                </div>
+                <div class="col-lg-8 col-sm-12 text-lg-end text-start">
+                    <span id="edate"></span>
+                </div>
+            </div>
+            <hr>
+            <div class="row mb-3">
+                <div class="col-lg-4 col-sm-12 text-start mb-3 mb-lg-0">
+                    <span class="fw-bold">Location</span>
+                </div>
+                <div class="col-lg-8 col-sm-12 text-lg-end text-start">
+                    <span id="room"></span>
+                </div>
+            </div>
+            <hr>
+            <div class="row mb-3">
+                <div class="col-lg-4 col-sm-12 text-start mb-3 mb-lg-0">
+                    <span class="fw-bold">Guest Company</span>
+                </div>
+                <div class="col-lg-8 col-sm-12 text-lg-end text-start">
+                    <span id="gcom"></span>
+                </div>
+            </div>
+            <hr>
+            <div class="row mb-3">
+                <div class="col-lg-4 col-sm-12 text-start mb-3 mb-lg-0">
+                    <span class="fw-bold">Guest Name</span>
+                </div>
+                <div class="col-lg-8 col-sm-12 text-lg-end text-start">
+                    <span id="gname"></span>
+                </div>
+            </div>
+            <hr>
+            <div class="row mb-3">
+                <div class="col-lg-4 col-sm-12 text-start mb-3 mb-lg-0">
+                    <span class="fw-bold">SKT Member</span>
+                </div>
+                <div class="col-lg-8 col-sm-12 text-lg-end text-start">
+                    <span id="member"></span>
+                </div>
+            </div>
+            <hr>
+            <div class="row mb-3">
+                <div class="col-lg-4 col-sm-12 text-start mb-3 mb-lg-0">
+                    <span class="fw-bold">Options</span>
+                </div>
+                <div id="ops" class="col-lg-8 col-sm-12 text-lg-end text-start">
+                </div>
+            </div>
+            <hr>
+            <div class="row mb-3">
+                <div class="col-lg-4 col-sm-12 text-start mb-3 mb-lg-0">
+                    <span class="fw-bold">Booking By</span>
+                </div>
+                <div class="col-lg-8 col-sm-12 text-lg-end text-start">
+                    <span id="bookby"></span>
+                </div>
+            </div>
+            <hr>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/datatables.min.js' %}"></script>
+    <script src="{% static 'js/dataTables.bootstrap5.js' %}"></script>
+    <script type="text/javascript">
+        $(document).ready(() => {
+            ActiveMenu("vstlist");
+            $('#tb').DataTable({
+                columnDefs: [
+                    // { width: '10%', targets: 0 },
+                ]
+            });
+        });
+        $('.delete').click(function(e){
+            e.preventDefault();
+            
+            Swal.fire({
+                title: "Do you want to delete ?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#f97316",
+                confirmButtonText: "Delete",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if(result.isConfirmed){
+                    const vstid = $(this).data('vstid');
+                    Loading(true);
+                    const settings = {
+                        url: window.location.origin  + "/vst/delete/" + vstid,
+                        method: "GET",
+                    }
+                    $.ajax(settings).done((response) => {
+                        Loading(false);
+                        if(response.deleted == true){
+                            PopMessage("Delete success", "success",true);
+                        }else{
+                            PopMessage(response.message, "error");
+                        }
+                        // calendar.refetchEvents();
+                    }).fail((xjr, status, error) => {
+                        Loading(false);
+                        PopMessage(error, "error");
+                        // calendar.refetchEvents();
+                    });
+                }
+            });
+            
+        });
+        $('.btnView').click(async function(e){
+            e.preventDefault();
+
+            const vstid = $(this).data('vstid');
+            const url = window.location.origin + "/vst/api/get/" + vstid;
+            const apiData = await getAPIData(url);
+            console.log(apiData);
+            if(apiData){
+                await initialDetailToHTML(apiData);
+                Swal.fire({
+                    title: `<p class="display-6">Visitor Booking Data</p>`,
+                    // icon: "info",
+                    imageWidth: 400,
+                    imageHeight: 200,
+                    html: $("#detail").html(),
+                    showCloseButton: true,
+                    showCancelButton: false,
+                    showConfirmButton: false,
+                    focusConfirm: false,
+                    width:'40rem',
+                });
+            }
+            
+        });
+        const initialDetailToHTML = async (info) =>{
+            $("#topic").text(info.topic);
+            $("#sdate").text(strUTCDateToStrThaiDate(info.sDate));
+            $("#edate").text(strUTCDateToStrThaiDate(info.eDate));
+            $("#room").text(info.room.name);
+            $("#gcom").text(info.guestCompany ? info.guestCompany : "-");
+            $("#gname").text(info.guestMember ? info.guestMember : "-");
+            $("#member").text(info.sktMember ? info.sktMember : "-");
+            $("#bookby").text(info.createBy.fullNameEN);
+            $("#ops").empty();
+            if(info.options && info.options.length > 0){
+                const ops = info.options;
+                $.each(ops, function(index, value){
+                    if(index === (ops.length -1)){
+                        $("#ops").append(`<span>${value.name}</span>`);
+                    }else{
+                        $("#ops").append(`<span>${value.name}, </span>`);
+                    }
+                });
+            }else{
+                $("#ops").append(`<span>-</span>`);
+            }
+        }
+    </script>
+{% endblock %}

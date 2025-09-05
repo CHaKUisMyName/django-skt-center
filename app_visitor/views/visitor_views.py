@@ -11,6 +11,7 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.utils.dateparse import parse_datetime
 from django.conf import settings
+from django.utils.timezone import localtime, make_aware, get_current_timezone
 
 from app_user.models.user import User
 from app_user.utils import requiredLogin
@@ -55,6 +56,22 @@ def listVisitorsJson(request: HttpRequest):
         return JsonResponse({'success': True, 'data': visitors, 'message': 'Success'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)})
+    
+def getVisitorJson(request: HttpRequest, id: str):
+    try:
+        if not request.method == "GET":
+            return JsonResponse({'success': False, 'message': 'Method not allowed'})
+        if not id:
+            return JsonResponse({'success': False, 'message': 'Not found id'})
+        visitor: Visitor = Visitor.objects.filter(id = ObjectId(id)).first()
+        if not visitor:
+            return JsonResponse({'success': False, 'message': 'Visitor not found'})
+        vst = visitor.serialize()
+        return JsonResponse({'success': True, 'data': vst, 'message': 'Success'})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
 
 @requiredLogin
 def add(request: HttpRequest):
@@ -127,7 +144,7 @@ def add(request: HttpRequest):
                 if uCreate:
                     visitor.createBy = uCreate
             visitor.save()
-            sendMailBooking(visitor)
+            # sendMailBooking(visitor)
             messages.success(request, 'Save Success')
             return response
         except Exception as e:
@@ -304,4 +321,16 @@ def show(request: HttpRequest):
         "rooms": rooms
     }
     return render(request, 'visitor/show.html', context)
-        
+
+@requiredLogin
+def listPage(request: HttpRequest):
+    visitors = Visitor.objects.filter(isActive=True)
+    checkCurUserSettingAdmin = VisitorSetting.objects.filter(user = request.currentUser.id, isAdmin = True, isActive = True).first()
+    isSettingAdmin = False
+    if checkCurUserSettingAdmin:
+        isSettingAdmin = True
+    context = {
+        "visitors": visitors,
+        "isSettingAdmin": isSettingAdmin,
+    }
+    return render(request, 'visitor/list.html', context)

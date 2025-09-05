@@ -207,3 +207,5 @@ EMAIL_HOST_PASSWORD = "Man12944"
 MAIL_IT = "it_skt@sanyo-chemical.group"
 MAIL_GA = "ga_skt@sanyo-chemical.group"
 MAIL_CHAKU = "chanon@sanyo-chemical.group"
+
+# USE_L10N = False

@@ -2,10 +2,20 @@ from bson import ObjectId
 import mongoengine as me
 import pytz
 import datetime
+from django.utils.timezone import make_aware
 
 from app_visitor.models.option import Option
 from app_visitor.models.room import Room
 from base_models.basemodel import BaseClass
+
+tz = pytz.timezone("Asia/Bangkok")
+
+def to_local(dt):
+    if not dt:
+        return ""
+    if dt.tzinfo is None:
+        dt = make_aware(dt, pytz.UTC)
+    return dt.astimezone(tz).strftime("%d-%m-%Y %H:%M")
 
 class Visitor(BaseClass):
     id = me.ObjectIdField(primary_key=True, default=lambda: ObjectId())
@@ -21,12 +31,27 @@ class Visitor(BaseClass):
 
     isActive = me.BooleanField()
 
+    meta = {
+        'collection': 'visitor'  # 👈 ชื่อ collection ที่กำหนดเอง
+    }
+
+    
+    
+    @property
+    def sDate_local(self):
+        return to_local(self.sDate)
+
+    @property
+    def eDate_local(self):
+        return to_local(self.eDate)
+
     def clean(self):
         utc = pytz.UTC
         if self.sDate and self.sDate.tzinfo is None:
             self.sDate = self.sDate.replace(tzinfo=utc)
         if self.eDate and self.eDate.tzinfo is None:
             self.eDate = self.eDate.replace(tzinfo=utc)
+
     def serialize(self):
         # room
         room_data = None
@@ -72,6 +97,4 @@ class Visitor(BaseClass):
             "updateDate": self.updateDate.astimezone(datetime.timezone.utc).isoformat() if self.updateDate else None,
             "updateBy": self.updateBy.serialize() if self.updateBy else None,
         }
-    meta = {
-        'collection': 'visitor'  # 👈 ชื่อ collection ที่กำหนดเอง
-    }
+    
