@@ -37,9 +37,6 @@ def addLevel(request: HttpRequest):
         try:
             
             code = request.POST.get("code")
-            if not code:
-                messages.error(request, "Code is required")
-                return response
             nameth = request.POST.get("nameth")
             nameen = request.POST.get("nameen")
             if not nameen:
@@ -98,9 +95,6 @@ def editLevel(request: HttpRequest, id: str):
                 messages.error(request, "Level not found")
                 return response
             code = request.POST.get("code")
-            if not code:
-                messages.error(request, "Code is required")
-                return response
             nameth = request.POST.get("nameth")
             nameen = request.POST.get("nameen")
             if not nameen:

@@ -36,9 +36,6 @@ def addOrg(request: HttpRequest):
         response = HttpResponseRedirect(reverse('indexOrg'))
         try:
             code = request.POST.get("code")
-            if not code:
-                messages.error(request, "Code is required")
-                return response
             nameth = request.POST.get("nameth")
             nameen = request.POST.get("nameen")
             if not nameen:
@@ -100,9 +97,6 @@ def editOrg(request: HttpRequest, id: str):
                 messages.error(request, "Organization not found")
                 return response
             code = request.POST.get("code")
-            if not code:
-                messages.error(request, "Code is required")
-                return response
             nameth = request.POST.get("nameth")
             nameen = request.POST.get("nameen")
             if not nameen:
