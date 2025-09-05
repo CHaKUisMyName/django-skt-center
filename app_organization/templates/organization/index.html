@@ -56,7 +56,7 @@
                                     {% for org in orgs %}
                                     <tr>
                                         <td>{{ forloop.counter }}</td>
-                                        <td>{{ org.code|default:'' }}</td>
+                                        <td>{{ org.code|default:'-' }}</td>
                                         <td>{{ org.nameEN }} ({{ org.shortName|default:"-" }})</td>
                                         <td>{{ org.parent.nameEN|default:"-" }}</td>
                                         <td>{{ org.level.nameEN|default:"-" }}</td>

@@ -56,7 +56,7 @@
                                     {% for pos in positions %}
                                     <tr>
                                         <td>{{ forloop.counter }}</td>
-                                        <td>{{ pos.code|default:'' }}</td>
+                                        <td>{{ pos.code|default:'-' }}</td>
                                         <td>{{ pos.nameTH|default:'-' }}</td>
                                         <td>{{ pos.nameEN }} ({{pos.shortName|default:'-'}})</td>
                                         <td>{{ pos.parent.nameEN|default:"-" }}</td>
