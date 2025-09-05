@@ -63,7 +63,7 @@
                         <select id="parent" name="parent" class="form-select">
                             <option value="none">None</option>
                             {% for org in orgs %}
-                            <option value="{{ org.id }}">({{ org.code }}) {{ org.nameEN }}</option>
+                            <option value="{{ org.id }}">({{ org.level.nameEN }}) {{ org.nameEN }}</option>
                             {% endfor %}
                         </select>
                     </div>

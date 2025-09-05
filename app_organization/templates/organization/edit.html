@@ -54,9 +54,9 @@
                             <option value="none">None</option>
                             {% for level in levels %}
                                 {% if level.id == org.level.id %}
-                                <option value="{{ level.id }}" selected>({{ level.code }}) {{ level.nameEN }}</option>
+                                <option value="{{ level.id }}" selected>({{ org.level.nameEN }}) {{ level.nameEN }}</option>
                                 {% else %}
-                                <option value="{{ level.id }}">({{ level.code }}) {{ level.nameEN }}</option>
+                                <option value="{{ level.id }}">({{ org.level.nameEN }}) {{ level.nameEN }}</option>
                                 {% endif %}
                             {% endfor %}
                         </select>
