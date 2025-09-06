@@ -133,11 +133,19 @@ const createDropdown = (data, name, selectedId = null) => {
   $.each(data, (index, value) => {
     const option = $("<option>");
     option.val(value.id);
-    option.text(
-      (value.code ? "(" + value.code + ") " : "") +
-        value.nameEN +
-        (value.shortName ? " (" + value.shortName + ")" : "")
-    );
+    if (name == "org") {
+      option.text(
+        (value.level ? "(" + value.level.nameEN + ") " : "") +
+          value.nameEN +
+          (value.shortName ? " (" + value.shortName + ")" : "")
+      );
+    } else {
+      option.text(
+        (value.code ? "(" + value.code + ") " : "") +
+          value.nameEN +
+          (value.shortName ? " (" + value.shortName + ")" : "")
+      );
+    }
     if (selectedId == value.id) {
       option.prop("selected", true);
     }
