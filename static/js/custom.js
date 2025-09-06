@@ -135,7 +135,7 @@ const createDropdown = (data, name, selectedId = null) => {
     option.val(value.id);
     if (name == "org") {
       option.text(
-        (value.level ? "(" + value.level.nameEN + ") " : "") +
+        (value.levelNameEN ? "(" + value.levelNameEN + ") " : "") +
           value.nameEN +
           (value.shortName ? " (" + value.shortName + ")" : "")
       );
