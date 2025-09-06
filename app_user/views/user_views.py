@@ -21,7 +21,7 @@ from base_models.basemodel import UserSnapshot
 # Create your views here.
 @requiredLogin
 def index(request: HttpRequest):
-    users = User.objects.filter(isActive = True)
+    users = User.objects.filter(isActive = True).order_by('-code')
     isUserAdmin = HasUsPermission(str(request.currentUser.id), True)
     canModify = HasUsPermission(str(request.currentUser.id), "User")
     
