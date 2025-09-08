@@ -144,7 +144,7 @@ def add(request: HttpRequest):
                 if uCreate:
                     visitor.createBy = uCreate
             visitor.save()
-            # sendMailBooking(visitor)
+            sendMailBooking(visitor)
             messages.success(request, 'Save Success')
             return response
         except Exception as e:
