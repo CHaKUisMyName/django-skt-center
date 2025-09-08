@@ -13,7 +13,7 @@ from base_models.basemodel import UserSnapshot
 @requiredLogin
 def index(request: HttpRequest):
     options = Option.objects.filter(isActive = True)
-    hasPermission = HasVstPermission(str(request.currentUser.id), "Option")
+    hasPermission = HasVstPermission(id = str(request.currentUser.id), nemu = "Option")
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")
@@ -25,7 +25,7 @@ def index(request: HttpRequest):
 
 @requiredLogin
 def add(request: HttpRequest):
-    hasPermission = HasVstPermission(str(request.currentUser.id), "Option")
+    hasPermission = HasVstPermission(id = str(request.currentUser.id), nemu = "Option")
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")
@@ -60,7 +60,7 @@ def add(request: HttpRequest):
     
 @requiredLogin
 def edit(request: HttpRequest, id: str):
-    hasPermission = HasVstPermission(str(request.currentUser.id), "Option")
+    hasPermission = HasVstPermission(id = str(request.currentUser.id), nemu = "Option")
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")
@@ -114,7 +114,7 @@ def delete(request: HttpRequest, id: str):
     try:
         if not request.method == "GET":
             return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
-        hasPermission = HasVstPermission(str(request.currentUser.id), "Option")
+        hasPermission = HasVstPermission(id = str(request.currentUser.id), nemu = "Option")
         if not request.currentUser.isAdmin:
             if hasPermission == False:
                 messages.error(request, "Not Permission")

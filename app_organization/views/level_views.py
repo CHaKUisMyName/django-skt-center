@@ -16,8 +16,8 @@ from base_models.basemodel import UserSnapshot
 @requiredLogin
 def index(request: HttpRequest):
     levels = Level.objects.filter(isDelete = False)
-    isOrgAdmin = HasOrgPermission(str(request.currentUser.id), True)
-    canModify = HasOrgPermission(str(request.currentUser.id), "Level")
+    isOrgAdmin = HasOrgPermission(id = str(request.currentUser.id), checkAdmin = True)
+    canModify = HasOrgPermission(id = str(request.currentUser.id), menu = "Level")
     context = {
         "levels": levels,
         "isOrgAdmin": isOrgAdmin,
@@ -27,7 +27,7 @@ def index(request: HttpRequest):
 
 @requiredLogin
 def addLevel(request: HttpRequest):
-    hasPermission = HasOrgPermission(str(request.currentUser.id), "Level")
+    hasPermission = HasOrgPermission(id = str(request.currentUser.id), menu = "Level")
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")
@@ -79,7 +79,7 @@ def addLevel(request: HttpRequest):
 @requiredLogin
 def editLevel(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexLevel'))
-    hasPermission = HasOrgPermission(str(request.currentUser.id), "Level")
+    hasPermission = HasOrgPermission(id = str(request.currentUser.id), menu = "Level")
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")
@@ -177,7 +177,7 @@ def deleteLevel(request: HttpRequest, id: str):
             return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
         if not id:
             return JsonResponse({'deleted': False, 'message': 'Not found id'})
-        hasPermission = HasOrgPermission(str(request.currentUser.id), "Level")
+        hasPermission = HasOrgPermission(id = str(request.currentUser.id), menu = "Level")
         if not request.currentUser.isAdmin:
             if hasPermission == False:
                 return JsonResponse({'deleted': False, 'message': 'Not Permission'})

@@ -21,8 +21,9 @@ from utilities.utility import CreateExcelTemplateSetting
 @requiredLogin
 def indexSettingOrg(request: HttpRequest):
     orgSettings = OrgSetting.objects.filter(isActive = True)
-    hasPermission = HasOrgPermission(str(request.currentUser.id), True)
+    hasPermission = HasOrgPermission(id = str(request.currentUser.id), checkAdmin = True)
     if not request.currentUser.isAdmin:
+        print(f"has : {hasPermission}")
         if hasPermission == False:
             messages.error(request, "Not Permission")
             return HttpResponseRedirect('/')
@@ -34,7 +35,7 @@ def indexSettingOrg(request: HttpRequest):
 @requiredLogin
 def addSettingOrg(request: HttpRequest):
     response = HttpResponseRedirect(reverse('indexSettingOrg'))
-    hasPermission = HasOrgPermission(str(request.currentUser.id), True)
+    hasPermission = HasOrgPermission(id = str(request.currentUser.id), checkAdmin = True)
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")
@@ -101,7 +102,7 @@ def addSettingOrg(request: HttpRequest):
 @requiredLogin
 def editSettingOrg(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexSettingOrg'))
-    hasPermission = HasOrgPermission(str(request.currentUser.id), True)
+    hasPermission = HasOrgPermission(id = str(request.currentUser.id), checkAdmin = True)
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")
@@ -169,7 +170,7 @@ def editSettingOrg(request: HttpRequest, id: str):
 @requiredLogin
 def deleteSettingOrg(request: HttpRequest, id: str):
     try:
-        hasPermission = HasOrgPermission(str(request.currentUser.id), True)
+        hasPermission = HasOrgPermission(id = str(request.currentUser.id), checkAdmin = True)
         if not request.currentUser.isAdmin:
             if hasPermission == False:
                 return JsonResponse({'deleted': False, 'message': 'Not Permission'})
@@ -196,7 +197,7 @@ def deleteSettingOrg(request: HttpRequest, id: str):
     
 @requiredLogin
 def importSettingOrg(request: HttpRequest):
-    hasPermission = HasOrgPermission(str(request.currentUser.id), True)
+    hasPermission = HasOrgPermission(id = str(request.currentUser.id), checkAdmin = True)
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")

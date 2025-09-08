@@ -16,8 +16,8 @@ from base_models.basemodel import UserSnapshot
 @requiredLogin
 def index(request: HttpRequest):
     positions = Position.objects.filter(isDelete = False)
-    isOrgAdmin = HasOrgPermission(str(request.currentUser.id), True)
-    canModify = HasOrgPermission(str(request.currentUser.id), "Position")
+    isOrgAdmin = HasOrgPermission(id = str(request.currentUser.id), checkAdmin = True)
+    canModify = HasOrgPermission(id = str(request.currentUser.id), menu = "Position")
     context = {
         "positions": positions,
         "isOrgAdmin": isOrgAdmin,
@@ -27,7 +27,7 @@ def index(request: HttpRequest):
 
 @requiredLogin
 def addPosition(request: HttpRequest):
-    hasPermission = HasOrgPermission(str(request.currentUser.id), "Position")
+    hasPermission = HasOrgPermission(id = str(request.currentUser.id), menu = "Position")
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")
@@ -78,7 +78,7 @@ def addPosition(request: HttpRequest):
 @requiredLogin   
 def editPosition(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexPosition'))
-    hasPermission = HasOrgPermission(str(request.currentUser.id), "Position")
+    hasPermission = HasOrgPermission(id = str(request.currentUser.id), menu = "Position")
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")
@@ -180,7 +180,7 @@ def deletePosition(request: HttpRequest, id: str):
             return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
         if not id:
             return JsonResponse({'deleted': False, 'message': 'Not found id'})
-        hasPermission = HasOrgPermission(str(request.currentUser.id), "Position")
+        hasPermission = HasOrgPermission(id = str(request.currentUser.id), menu = "Position")
         if not request.currentUser.isAdmin:
             if hasPermission == False:
                 return JsonResponse({'deleted': False, 'message': 'Not Permission'})

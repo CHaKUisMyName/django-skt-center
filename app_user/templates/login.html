@@ -27,7 +27,11 @@
             .bg-image{
                 background-image: url("{% static 'images/dragon-bg.jpg' %}");
                 /* background-image: url("https://www.sanyo-kasei.co.th/images/banner/banner_sanyo_3.jpg"); */
-                background-repeat: round;
+                /* background-repeat: round; */
+                background-repeat: no-repeat;
+                background-size: cover;           /* เต็มจอ */
+                background-position: center center;
+                background-attachment: fixed;     /* ภาพไม่เลื่อนตาม scroll */
             }
             .glass{
                 /* From https://css.glass */
@@ -68,7 +72,7 @@
                                    placeholder="Password">
                             <label for="password">Password</label>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100 my-3">
+                        <button id="loginBtn" type="submit" class="btn btn-primary w-100 my-3">
                             <span>LOGIN</span>
                         </button>
                     </form>
@@ -89,6 +93,9 @@
                 const mssTag = "{{message.tags}}";
                 const mssMsg = "{{message}}";
                 PopMessage(mssMsg, mssTag);
+            });
+            $("#loginBtn").click(function(){
+                Loading(true);
             });
         </script>
         {% endfor %}

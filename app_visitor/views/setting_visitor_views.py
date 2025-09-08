@@ -19,7 +19,7 @@ from utilities.utility import CreateExcelTemplateSetting
 @requiredLogin
 def index(request: HttpRequest):
     vstSettings = VisitorSetting.objects.filter(isActive = True)
-    hasPermission = HasVstPermission(str(request.currentUser.id), True)
+    hasPermission = HasVstPermission(id = str(request.currentUser.id), checkAdmin = True)
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")
@@ -32,7 +32,7 @@ def index(request: HttpRequest):
 @requiredLogin
 def add(request: HttpRequest):
     response = HttpResponseRedirect(reverse('indexSettingVst'))
-    hasPermission = HasVstPermission(str(request.currentUser.id), True)
+    hasPermission = HasVstPermission(id = str(request.currentUser.id), checkAdmin = True)
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")
@@ -99,7 +99,7 @@ def add(request: HttpRequest):
 @requiredLogin
 def edit(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexSettingVst'))
-    hasPermission = HasVstPermission(str(request.currentUser.id), True)
+    hasPermission = HasVstPermission(id = str(request.currentUser.id), checkAdmin = True)
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")
@@ -169,7 +169,7 @@ def delete(request: HttpRequest, id: str):
     try:
         if not request.method == "GET":
             return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
-        hasPermission = HasVstPermission(str(request.currentUser.id), True)
+        hasPermission = HasVstPermission(id = str(request.currentUser.id), checkAdmin = True)
         if not request.currentUser.isAdmin:
             if hasPermission == False:
                 return JsonResponse({'deleted': False, 'message': 'Not Permission'})
@@ -193,7 +193,7 @@ def delete(request: HttpRequest, id: str):
     
 @requiredLogin
 def importSettingVst(request: HttpRequest):
-    hasPermission = HasVstPermission(str(request.currentUser.id), True)
+    hasPermission = HasVstPermission(id = str(request.currentUser.id), checkAdmin = True)
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")

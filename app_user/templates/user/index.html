@@ -46,7 +46,7 @@
                                 <th>Code</th>
                                 <th>Name</th>
                                 <th>Role</th>
-                                <th>Super Admin</th>
+                                <th>Phone</th>
                                 <th>Email</th>
                                 {% if isUserAdmin == True or request.currentUser.isAdmin == True or user.id == request.currentUser.id %}
                                 <th>Register</th>
@@ -60,7 +60,7 @@
                             <tr>
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{ user.code|default:'-' }}</td>
-                                <td>{{ user.fNameEN }} {{ user.lNameEN }}</td>
+                                <td>{{ user.fNameEN }} {{ user.lNameEN }} {% if user.isAdmin == True %}<span class="ms-1 badge text-bg-success text-white">Super Admin</span>{% endif %}</td>
                                 <td>
                                     {% if user.roles|length %}
                                         {% for role in user.roles %}
@@ -72,14 +72,7 @@
                                         <p>-</p>
                                     {% endif %}
                                 </td>
-                                <td>
-                                    {% if user.isAdmin == True %}
-                                    <span class="badge text-bg-success text-white">Admin</span>
-                                    {% else %}
-                                    <!-- <span class="badge text-bg-secondary text-white">User</span> -->
-                                     <span>-</span>
-                                    {% endif %}
-                                </td>
+                                <td>{{ user.phone|default:'-' }}</td>
                                 <td>{{ user.email|default:'-' }}</td>
                                 {% if isUserAdmin == True or request.currentUser.isAdmin == True %}
                                 <td>
@@ -111,9 +104,10 @@
                                     </div>
                                     {% else %}
                                     <div>
-                                        <button type="button" class="btn btn-secondary">
+                                        <!-- <button type="button" class="btn btn-secondary">
                                             <i class="bi bi-eye"></i>
-                                        </button>
+                                        </button> -->
+                                        <span>-</span>
                                     </div>
                                     {% endif %}
                                 </td>

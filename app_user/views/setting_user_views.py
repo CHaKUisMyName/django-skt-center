@@ -20,7 +20,7 @@ from utilities.utility import CreateExcelTemplateSetting
 @requiredLogin
 def indexSettingUser(request: HttpRequest):
     userSettings = UserSetting.objects.filter(isActive = True)
-    hasPermission = HasUsPermission(str(request.currentUser.id), True)
+    hasPermission = HasUsPermission(id = str(request.currentUser.id), checkAdmin = True)
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")
@@ -33,7 +33,7 @@ def indexSettingUser(request: HttpRequest):
 @requiredLogin
 def addSettingUser(request: HttpRequest):
     response = HttpResponseRedirect(reverse('indexSettingUser'))
-    hasPermission = HasUsPermission(str(request.currentUser.id),True)
+    hasPermission = HasUsPermission(id = str(request.currentUser.id), checkAdmin = True)
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")
@@ -102,7 +102,7 @@ def addSettingUser(request: HttpRequest):
 @requiredLogin
 def editSettingUser(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexSettingUser'))
-    hasPermission = HasUsPermission(str(request.currentUser.id), True)
+    hasPermission = HasUsPermission(id = str(request.currentUser.id), checkAdmin = True)
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")
@@ -173,7 +173,7 @@ def editSettingUser(request: HttpRequest, id: str):
 @requiredLogin
 def deleteSettingUser(request: HttpRequest, id: str):
     try:
-        hasPermission = HasUsPermission(str(request.currentUser.id), True)
+        hasPermission = HasUsPermission(id = str(request.currentUser.id), checkAdmin = True)
         if not request.currentUser.isAdmin:
             if hasPermission == False:
                 return JsonResponse({'deleted': False, 'message': 'Not Permission'})
@@ -193,7 +193,7 @@ def deleteSettingUser(request: HttpRequest, id: str):
     
 @requiredLogin
 def importSettingUser(request: HttpRequest):
-    hasPermission = HasUsPermission(str(request.currentUser.id), True)
+    hasPermission = HasUsPermission(id = str(request.currentUser.id), checkAdmin = True)
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")

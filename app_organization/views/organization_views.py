@@ -10,14 +10,14 @@ from app_organization.models.level import Level
 from app_organization.models.organization import Organization, OrganizationSnapShot
 from app_organization.utils import HasOrgPermission
 from app_user.models.user import User
-from app_user.utils import HasUsPermission, requiredLogin
+from app_user.utils import requiredLogin
 from base_models.basemodel import UserSnapshot
 
 @requiredLogin
 def index(request: HttpRequest):
     orgs = Organization.objects.filter(isDelete = False)
-    isOrgAdmin = HasUsPermission(str(request.currentUser.id), True)
-    canModify = HasUsPermission(str(request.currentUser.id), "Organization")
+    isOrgAdmin = HasOrgPermission(id = str(request.currentUser.id), checkAdmin = True)
+    canModify = HasOrgPermission(id = str(request.currentUser.id), menu = "Organization")
     context = {
         "orgs": orgs,
         "isOrgAdmin": isOrgAdmin,
@@ -27,7 +27,7 @@ def index(request: HttpRequest):
 
 @requiredLogin
 def addOrg(request: HttpRequest):
-    hasPermission = HasOrgPermission(str(request.currentUser.id), "Organization")
+    hasPermission = HasOrgPermission(id = str(request.currentUser.id), menu = "Organization")
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")
@@ -81,7 +81,7 @@ def addOrg(request: HttpRequest):
 @requiredLogin 
 def editOrg(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexOrg'))
-    hasPermission = HasOrgPermission(str(request.currentUser.id), "Organization")
+    hasPermission = HasOrgPermission(id = str(request.currentUser.id), menu = "Organization")
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")
@@ -184,7 +184,7 @@ def deleteOrg(request: HttpRequest, id: str):
             return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
         if not id:
             return JsonResponse({'deleted': False, 'message': 'Not found id'})
-        hasPermission = HasOrgPermission(str(request.currentUser.id), "Organization")
+        hasPermission = HasOrgPermission(id = str(request.currentUser.id), menu = "Organization")
         if not request.currentUser.isAdmin:
             if hasPermission == False:
                 return JsonResponse({'deleted': False, 'message': 'Not Permission'})

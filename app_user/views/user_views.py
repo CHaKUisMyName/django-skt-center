@@ -22,8 +22,8 @@ from base_models.basemodel import UserSnapshot
 @requiredLogin
 def index(request: HttpRequest):
     users = User.objects.filter(isActive = True).order_by('code')
-    isUserAdmin = HasUsPermission(str(request.currentUser.id), True)
-    canModify = HasUsPermission(str(request.currentUser.id), "User")
+    isUserAdmin = HasUsPermission(id = str(request.currentUser.id), checkAdmin = True)
+    canModify = HasUsPermission(id = str(request.currentUser.id), menu = "User")
     
     context = {
         "users": users,
@@ -34,7 +34,7 @@ def index(request: HttpRequest):
 
 @requiredLogin
 def addUser(request: HttpRequest):
-    hasPermission = HasUsPermission(str(request.currentUser.id), "User")
+    hasPermission = HasUsPermission(id = str(request.currentUser.id), menu = "User")
     if not request.currentUser.isAdmin:
         if hasPermission == False:
             messages.error(request, "Not Permission")
@@ -178,7 +178,7 @@ def AddAlienUser(request: HttpRequest):
 def editUser(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexUser'))
     try:
-        hasPermission = HasUsPermission(str(request.currentUser.id), "User")
+        hasPermission = HasUsPermission(id = str(request.currentUser.id), menu = "User")
         if request.method == "POST":
             
             usId = request.POST.get("usid")
@@ -438,7 +438,7 @@ def updateUserRoles(user: User, new_roles: list[RoleUser]):
 @requiredLogin
 def deleteUser(request: HttpRequest, id: str):
     try:
-        hasPermission = HasUsPermission(str(request.currentUser.id), "User")
+        hasPermission = HasUsPermission(id = str(request.currentUser.id), menu = "User")
         if not request.method == "GET":
             return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
         if not id:
@@ -549,7 +549,7 @@ def logout(request: HttpRequest):
 @requiredLogin
 def regisUser(request: HttpRequest, id:str):
     try:
-        hasPermission = HasUsPermission(str(request.currentUser.id),True)
+        hasPermission = HasUsPermission(id = str(request.currentUser.id), checkAdmin = True)
         user: User = User.objects.filter(id = id).first()
         if not user:
             messages.error(request, "User not found")
@@ -595,7 +595,7 @@ def regisUser(request: HttpRequest, id:str):
 def resetPassword(request: HttpRequest, id:str):
     response = HttpResponseRedirect(reverse('indexUser'))
     try:
-        hasPerssion = HasUsPermission(str(request.currentUser.id), True)
+        hasPerssion = HasUsPermission(id = str(request.currentUser.id), checkAdmin = True)
         user: User = User.objects.filter(id = id).first()
         if not user:
             messages.error(request, "User not found")

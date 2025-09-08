@@ -24,6 +24,7 @@ def HasOrgPermission(id: str, menu: str = None, checkAdmin: bool = False):
         if orgSetting:
             if checkAdmin == True:
                 if orgSetting.isAdmin == True and orgSetting.isActive == True:
+                    
                     result = True
             else:
                 if orgSetting.isActive == True:
