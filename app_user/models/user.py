@@ -19,6 +19,11 @@ class EmpNation(Enum):
     Korea = 4
     Vietnam = 5
 
+class UserType(Enum):
+    Employee = 1
+    SubContract = 2
+    Intern = 3
+
 
 class RoleUser(BaseEmbedded):
     # -- เก็บ id เวลา load ทำการ lazy loading org จาก db
@@ -60,6 +65,7 @@ class User(BaseClass):
     birthDay = me.DateTimeField(null= True, required= False, default = None)
     startJobDate = me.DateTimeField()
     status = me.EnumField(UserStatus)
+    userType = me.EnumField(UserType)
     isAdmin = me.BooleanField()
     isActive = me.BooleanField()
     isDelete = me.BooleanField(null= True, required= False, default = None)
@@ -87,6 +93,7 @@ class User(BaseClass):
             "birthDay": self.birthDay.strftime("%Y-%m-%d") if self.birthDay else None,
             "startJobDate": self.startJobDate.strftime("%Y-%m-%d") if self.startJobDate else None,
             "status": self.status.name if self.status else None,  # <-- แปลง Enum เป็น string
+            "userType": self.userType.name if self.userType else None,  # <-- แปลง Enum เป็น string
             "isAdmin": self.isAdmin,
             "isActive": self.isActive,
             "isDelete": self.isDelete,

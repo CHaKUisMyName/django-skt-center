@@ -96,6 +96,20 @@
                             <input type="text" id="sdate" name="sdate" class="form-control"/>
                             <div class="invalid-feedback">Please input date format (DD/MM/YYYY)</div>
                         </div>
+                        <div class="col-md-6 col-sm-12">
+                            <label for="usertype" class="form-label fw-bold text-dark-emphasis">User Type</label>
+                            <select id="usertype" name="usertype" class="form-select" required>
+                                <option value=""></option>
+                                {% for us in userType %}
+                                    {% if us.id == user.userType.value %}
+                                    <option value="{{ us.id }}" selected>{{ us.name }}</option>
+                                    {% else %}
+                                    <option value="{{ us.id }}">{{ us.name }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">Please select Data</div>
+                        </div>
                     </div>
                     <div class="row mb-4">
                         <div class="col-md-8 col-sm-12">

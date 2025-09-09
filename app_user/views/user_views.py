@@ -13,7 +13,7 @@ from app_organization.models.organization import Organization
 from app_organization.models.position import Position
 from app_user.models.auth_session import AuthSession
 from app_user.models.auth_user import AuthUser, VerifyPassword
-from app_user.models.user import EmpNation, RoleUser, User, UserStatus
+from app_user.models.user import EmpNation, RoleUser, User, UserStatus, UserType
 from app_user.models.user_setting import UserSetting
 from app_user.utils import HasUsPermission, requiredLogin
 from base_models.basemodel import UserSnapshot
@@ -75,7 +75,10 @@ def addUser(request: HttpRequest):
                 sDate = None
             else:
                 sDate = datetime.strptime(sDate, "%d/%m/%Y")
-
+            userType = request.POST.get("usertype")
+            if not userType:
+                messages.error(request, "User Type is required")
+                return response
             status = request.POST.get("status")
             isadmin = True if request.POST.get("isadmin") == 'on' else False
 
@@ -121,6 +124,7 @@ def addUser(request: HttpRequest):
             user.birthDay = birthday
             user.startJobDate = sDate
             user.status = UserStatus(int(status))
+            user.userType = UserType(int(userType))
             user.isAdmin = isadmin
             user.isActive = True
             user.isRegister = False
@@ -143,9 +147,11 @@ def addUser(request: HttpRequest):
     else:
         userStatus = [{"id":us.value, "name":us.name}for us in UserStatus]
         userNation = [{"id":us.value, "name":us.name}for us in EmpNation]
+        userType = [{"id":us.value, "name":us.name}for us in UserType]
         context = {
             'userStatus': userStatus,
             'userNation': userNation,
+            'userType': userType,
         }
         return render(request, 'user/add.html', context= context)
 
@@ -223,6 +229,11 @@ def editUser(request: HttpRequest, id: str):
                 sDate = None
             else:
                 sDate = datetime.strptime(sDate, "%d/%m/%Y")
+
+            userType = request.POST.get("usertype")
+            if not userType:
+                messages.error(request, "User Type is required")
+                return response
             email = request.POST.get("email")
             phone = request.POST.get("phone")
             address = request.POST.get("address")
@@ -246,6 +257,7 @@ def editUser(request: HttpRequest, id: str):
             user.birthDay = birthday
             user.startJobDate = sDate
             user.status = UserStatus(int(status))
+            user.userType = UserType(int(userType))
             user.isAdmin = isadmin
             currentUser: User = request.currentUser
             if currentUser:
@@ -308,6 +320,7 @@ def editUser(request: HttpRequest, id: str):
                 return response
             userStatus = [{"id":us.value, "name":us.name}for us in UserStatus]
             userNation = [{"id":us.value, "name":us.name}for us in EmpNation]
+            userType = [{"id":us.value, "name":us.name}for us in UserType]
             userRolesJson = json.dumps([role.serialize() for role in user.roles], ensure_ascii=False)
             
             context = {
@@ -316,6 +329,7 @@ def editUser(request: HttpRequest, id: str):
                 "userRolesJson": userRolesJson,
                 "hasPermission": hasPermission,
                 "userNation": userNation,
+                "userType": userType,
             }
             return render(request, 'user/edit.html', context= context)
     except Exception as e:
