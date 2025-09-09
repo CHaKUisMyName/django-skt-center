@@ -146,7 +146,6 @@ const createDropdown = (data, name, selectedId = null) => {
           (value.shortName ? " (" + value.shortName + ")" : "")
       );
     }
-
     if (selectedId == value.id) {
       option.prop("selected", true);
     }
