@@ -48,10 +48,7 @@
                                 <th>Role</th>
                                 <th>Phone</th>
                                 <th>Email</th>
-                                {% if isUserAdmin == True or request.currentUser.isAdmin == True or user.id == request.currentUser.id %}
                                 <th>Register</th>
-                                <th>Repassword</th>
-                                {% endif %}
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -77,19 +74,21 @@
                                 {% if isUserAdmin == True or request.currentUser.isAdmin == True %}
                                 <td>
                                     {% if user.isRegister == False %}
-                                    <a href="{% url 'regisUser' user.id %}" class="btn btn-warning">Register</a>
-                                    {% else %}
-                                    <button type="button" class="btn btn-secondary disabled">Registered</button>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if user.isRegister == False %}
-                                    <button type="button" class="btn btn-secondary disabled">No Account</button>
+                                    <a href="{% url 'regisUser' user.id %}" class="btn btn-dark">Register</a>
                                     {% else %}
                                     <a href="{% url 'rePassUser' user.id %}" class="btn btn-warning">Reset Password</a>
                                     {% endif %}
                                 </td>
+                                {% else %}
+                                    {% if user.id == request.currentUser.id  %}
+                                    <td>
+                                        <a href="{% url 'rePassUser' user.id %}" class="btn btn-warning">Reset Password</a>
+                                    </td>
+                                    {% else %}
+                                    <td>-</td>
+                                    {% endif %}
                                 {% endif %}
+                                
                                 <td>
                                     {% if isUserAdmin == True or request.currentUser.isAdmin == True or user.id == request.currentUser.id or canModify == True %}
                                     <div class="">

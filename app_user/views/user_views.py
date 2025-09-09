@@ -596,20 +596,16 @@ def resetPassword(request: HttpRequest, id:str):
     response = HttpResponseRedirect(reverse('indexUser'))
     try:
         hasPerssion = HasUsPermission(id = str(request.currentUser.id), checkAdmin = True)
-        user: User = User.objects.filter(id = id).first()
-        if not user:
-            messages.error(request, "User not found")
-            return response
-        if not request.currentUser.isAdmin:
-            if hasPerssion == False:
-                messages.error(request, "Not Permission")
-                return response
         
         if request.method == "POST":
             usid = request.POST.get("usid")
             if not usid:
                 messages.error(request, "Not found user id !")
                 return response
+            if not request.currentUser.isAdmin:
+                if hasPerssion == False and str(request.currentUser.id) != str(usid):
+                    messages.error(request, "Not Permission")
+                    return response
             authid = request.POST.get("authid")
             if not authid:
                 messages.error(request, "Not found auth id !")
@@ -640,6 +636,17 @@ def resetPassword(request: HttpRequest, id:str):
             messages.success(request, 'Reset Password Success')
             return response
         else:
+            if not id:
+                messages.error(request, "ID Not Found.")
+                return response
+            if not request.currentUser.isAdmin:
+                if hasPerssion == False and str(request.currentUser.id) != str(id):
+                    messages.error(request, "Not Permission")
+                    return response
+            user: User = User.objects.filter(id = id).first()
+            if not user:
+                messages.error(request, "User not found")
+                return response
             authUser: AuthUser = AuthUser.objects.filter(refUser = user.id).first()
             if not authUser:
                 messages.error(request, "Auth User not found")
