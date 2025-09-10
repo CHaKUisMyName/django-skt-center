@@ -83,9 +83,15 @@
     <script src="{% static 'js/tempus-dominus.js' %}"></script>
     <script type="text/javascript">
         let cropper;
-        function canvasToBlobAsync(canvas) {
+        function canvasToBlobAsync(canvas, fileType) {
             return new Promise((resolve) => {
-                canvas.toBlob((blob) => resolve(blob), 'image/png');
+                if (fileType === "image/png") {
+                // PNG ไม่บีบอัด
+                    canvas.toBlob((blob) => resolve(blob), 'image/png');
+                } else {
+                    // JPEG บีบอัดด้วยคุณภาพ 0.8 (80%)
+                    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.8);
+                }
             });
         }
         
@@ -133,21 +139,24 @@
             }
             if (cropper) {
                 const canvas = cropper.getCroppedCanvas({
-                    width: 1920,
-                    height: 1080
+                    maxWidth: 1920,
+                    maxHeight: 1080
                 });
 
                 if (canvas) {
-                    const blob = await canvasToBlobAsync(canvas);
-                    const file = new File(
-                        [blob], 
-                        $("#inputImage").prop("files")[0]['name'], 
-                        { type: "image/png" }
-                    );
+                    const inputFile = $("#inputImage").prop("files")[0];
+                    const originalType = inputFile.type; // image/jpeg หรือ image/png
+
+                    const blob = await canvasToBlobAsync(canvas, originalType);
+                    const newFileName = inputFile.name.replace(/\.[^/.]+$/, "") + (originalType === "image/png" ? ".png" : ".jpg");
+
+                    const file = new File([blob], newFileName, {
+                        type: blob.type
+                    });
 
                     const container = new DataTransfer();
                     container.items.add(file);
-                    document.getElementById('croppedImageInput').files = container.files;
+                    document.getElementById("croppedImageInput").files = container.files;
                 }
             }
             
@@ -184,8 +193,8 @@
                         responsive:true,
                         crop: function () {
                             const canvas = cropper.getCroppedCanvas({
-                                width: 1920,  // ✅ Full HD 16:9
-                                height: 1080
+                                maxWidth: 1920,
+                                maxHeight: 1080,
                             });
                             if (canvas) {
                                 $('#preview').addClass("img-thumbnail");

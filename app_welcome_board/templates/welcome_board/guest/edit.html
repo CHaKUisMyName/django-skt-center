@@ -1,51 +1,52 @@
 {% extends 'layout.html' %}
 {% load static %}
-{% block title %}<title>Welcome Board Add</title>{% endblock %}
+{% block title %}<title>Welcome Board Edit</title>{% endblock %}
+
 {% block css %}
-    <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet">
-    <!-- Tempus Dominus Styles -->
-     <link rel="stylesheet" href="{% static 'css/tempus-dominus.css' %}" />
+<link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/tempus-dominus.css' %}" />
 {% endblock %}
+
 {% block content %}
 <div class="row mb-3">
     <div class="col-sm-12 col-lg-10 mx-auto">
         <div class="card">
             <form id="fm" 
-            method="post" 
-            class="card-body mb-3 needs-validation"
-            enctype="multipart/form-data" novalidate>
+                  method="post" 
+                  class="card-body mb-3 needs-validation"
+                  enctype="multipart/form-data" novalidate>
                 {% csrf_token %}
                 <input type="hidden" id="wgid" name="wgid" value="{{ guest.id }}"/>
-                <h3 class="display-6 fw-bold">Edit Welcome Board</h3>
+                <h3 class="display-6 fw-bold">Edit  Welcome Board</h3>
                 <p class="text-sm">Edit welcome board data</p>
+
                 <div class="col-12">
-                    <div class="rwo mb-3">
+                    <div class="row mb-3">
                         <div class="col-sm-12 col-lg-8">
                             <label for="title" class="form-label fw-bold text-dark-emphasis">Title</label>
-                            <input type="text" id="title" name="title" class="form-control" value="{{ guest.title }}"/>
+                            <input type="text" id="title" name="title" class="form-control" value="{{ guest.title }}" required/>
                         </div>
                     </div>
+
                     <div class="row mb-3">
                         <div class="col-sm-12 col-lg-8">
                             <label for="inputImage" class="form-label fw-bold text-dark-emphasis">Image</label>
-                            <input type="file" id="inputImage" name="imagekuy" accept="image/*" class="form-control mb-3" required>
+                            <input type="file" id="inputImage" name="imagekuy" accept="image/*" class="form-control mb-3">
                             <div class="invalid-feedback">Please upload image</div>
-                            
                         </div>
                     </div>
+
                     <div class="row mb-3">
                         <label>Crop Image area</label>
                         <div class="col-md-6">
-                            <!-- <h5>Crop Area</h5> -->
-                            <img id="imageToCrop" style="width: 300px;height: 300px;" />
-                            <!-- <button id="cropButton" class="btn btn-primary mt-2">Crop</button> -->
+                            <img id="imageToCrop" style="width: 100%; max-width: 400px; height: auto;" />
                         </div>
-                        <div id="hddimg" class="col-md-6">
-                            <!-- <h5>Preview</h5> -->
-                            <img id="preview" >
-                             <input type="file" id="croppedImageInput" name="image" hidden>
+                        <div class="col-md-6">
+                            <img id="preview" class="img-thumbnail" style="width: 100%; max-width: 400px; height: auto;">
+                            <input type="file" id="croppedImageInput" name="image" hidden>
                         </div>
                     </div>
+
                     <div class="row mb-3">
                         <div class="col-md-6 col-sm-12">
                             <label for="sdate" class="form-label fw-bold text-dark-emphasis">Start Date</label>
@@ -58,12 +59,14 @@
                             <div id="edate-error" class="invalid-feedback">Please input date format (DD/MM/YYYY)</div>
                         </div>
                     </div>
+
                     <div class="row mb-5">
                         <div class="col-md-8 col-sm-12">
                             <label for="note" class="form-label fw-bold text-dark-emphasis">Note</label>
                             <textarea id="note" name="note" class="form-control" style="height: 100px;">{{ guest.note }}</textarea>
                         </div>
                     </div>
+
                     <div class="row mb-3 float-end">
                         <div class="col-12">
                             <a href="{% url 'indexWelcomeBoard' %}" class="btn btn-light">Cancel</a>
@@ -76,195 +79,138 @@
     </div>
 </div>
 {% endblock %}
+
 {% block script %}
-    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
-    <!-- Popperjs -->
-     <script src="{% static 'js/popper.min.js' %}"></script>
-    <!-- Tempus Dominus JavaScript -->
-    <script src="{% static 'js/tempus-dominus.js' %}"></script>
-    <script type="text/javascript">
-        let cropper;
-        function canvasToBlobAsync(canvas) {
-            return new Promise((resolve) => {
-                canvas.toBlob((blob) => resolve(blob), 'image/png');
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
+<script src="{% static 'js/popper.min.js' %}"></script>
+<script src="{% static 'js/tempus-dominus.js' %}"></script>
+
+<script>
+let cropper;
+
+// convert canvas -> Blob
+function canvasToBlobAsync(canvas) {
+    return new Promise(resolve => {
+        canvas.toBlob(resolve, 'image/png', 1.0);
+    });
+}
+
+// ฟังก์ชันแปลง string -> Date UTC
+const dateTimeStrToDateTime = (str) => {
+    if(str){
+        const parts = str.match(/(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})/);
+        return Date.UTC(+parts[3], parts[2]-1, +parts[1], +parts[4], +parts[5]);
+    }
+}
+
+// init cropper จากรูปเก่า
+function initCropper(imgEl){
+    if(cropper) cropper.destroy();
+    cropper = new Cropper(imgEl, {
+        aspectRatio: 16/9,
+        viewMode: 0,
+        autoCropArea: 1,
+        responsive:true,
+        imageSmoothingEnabled:true,
+        imageSmoothingQuality:'high',
+        ready: async function(){
+            const canvas = cropper.getCroppedCanvas({
+                maxWidth: 1920,
+                maxHeight: 1080
             });
-        }
-        
-        $("#fm").submit(async function(e){
-            Loading(true);
-            event.preventDefault(); // ❗ ต้องหยุดไว้ก่อน เพื่อรอ crop ให้เสร็จก่อน
-            event.stopPropagation();
-            let isValid = true;
-            const sDateEl = document.getElementById("sdate");
-            const eDateEl = document.getElementById("edate");
-            const sVal = sDateEl.value;
-            const eVal = eDateEl.value;
-
-            // reset error
-            sDateEl.setCustomValidity("");
-            eDateEl.setCustomValidity("");
-
-            // หากกรอกครบแล้ว ค่อยเช็คว่า s < e
-            if (sVal && eVal) {
-                const sDate = dateTimeStrToDateTime(sVal);
-                const eDate = dateTimeStrToDateTime(eVal);
-
-                if (sDate && eDate) {
-                    if (sDate >= eDate) {
-                        // ตั้ง error
-                        sDateEl.setCustomValidity("Start date must be before end date.");
-                        eDateEl.setCustomValidity("End date must be after start date.");
-
-                        // ✅ เปลี่ยนข้อความใน .invalid-feedback
-                        document.getElementById("sdate-error").textContent = "Start date must be before end date.";
-                        document.getElementById("edate-error").textContent = "End date must be after start date.";
-                    } else {
-                        // ✅ ล้างข้อความถ้า valid แล้ว
-                        sDateEl.setCustomValidity("");
-                        eDateEl.setCustomValidity("");
-                        document.getElementById("sdate-error").textContent = "Please input date format (DD/MM/YYYY)";
-                        document.getElementById("edate-error").textContent = "Please input date format (DD/MM/YYYY)";
-                    }
-                }
+            if(canvas){
+                $('#preview').attr('src', canvas.toDataURL('image/png'));
+                const blob = await canvasToBlobAsync(canvas);
+                const file = new File([blob], "cropped-image.png", { type: "image/png" });
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                document.getElementById('croppedImageInput').files = dt.files;
             }
-            if (!this.checkValidity()) {
-                this.classList.add('was-validated');
-                Loading(false);
-                return false;
-            }
-            if (cropper) {
-                const canvas = cropper.getCroppedCanvas({
-                    width: 1920,
-                    height: 1080
-                });
-
-                if (canvas) {
-                    const blob = await canvasToBlobAsync(canvas);
-                    const file = new File(
-                        [blob], 
-                        $("#inputImage").prop("files")[0]['name'], 
-                        { type: "image/png" }
-                    );
-
-                    const container = new DataTransfer();
-                    container.items.add(file);
-                    document.getElementById('croppedImageInput').files = container.files;
-                }
-            }
-            
-            this.classList.add('was-validated');
-            // return false;
-            this.submit(); // ✅ ส่ง form manual
-        
-        });        
-        $(document).ready(async ()=>{
-            ActiveMenu("welguest");
-            var startDate = initialDateTimePk(document.getElementById("sdate"));
-            var endDate = initialDateTimePk(document.getElementById("edate"));
-            let sDate = "{{ guest.sDate|date:'r' }}";// RFC 5322 formatted date.
-            let eDate = "{{ guest.eDate|date:'r' }}";// RFC 5322 formatted date.
-            
-            if(sDate){
-                startDate.dates.setValue(tempusDominus.DateTime.convert(new Date(sDate)));
-            }
-            if(eDate){
-                endDate.dates.setValue(tempusDominus.DateTime.convert(new Date(eDate)));
-            }
-            // แสดงรูปเก่าและ init cropper ถ้ามี
-            const imgUrl = window.location.origin + '{{ mediaRoot }}{{ imgPath }}' + '?t=' + new Date().getTime();
-            $('#imageToCrop').attr('src', imgUrl);
-            $('#imageToCrop').on('load', function(){
-                if(cropper) cropper.destroy();
-                cropper = new Cropper(this, {
-                    aspectRatio: 16 / 9,
-                    viewMode: 0,
-                    autoCropArea: 1,
-                    responsive:true,
-                    ready: async function(){
-                        const canvas = cropper.getCroppedCanvas({
-                            width: 1920,
-                            height: 1080
-                        });
-                        console.log("Canvas ready:", canvas);
-                        if (canvas) {
-                            $('#preview').addClass("img-thumbnail");
-                            $('#preview').attr('src', canvas.toDataURL());
-                            const imgName = "{{ imgPath }}";
-                            const blob = await canvasToBlobAsync(canvas);
-                            // const file = new File([blob], imgName.split("/")[1], { type: "image/png" });
-                            // --- สร้างชื่อไฟล์ใหม่เสมอ เพื่อแก้ปัญหา Cache ---
-                            const originalFile = $("#inputImage").prop("files")[0];
-                            let originalName = "cropped-image.png"; // ชื่อไฟล์สำรอง
-                            if (originalFile) {
-                                originalName = originalFile.name;
-                            }
-                            const nameParts = originalName.split('.');
-                            const extension = nameParts.length > 1 ? nameParts.pop() : 'png';
-                            const nameWithoutExt = nameParts.join('.');
-                            const uniqueName = `${nameWithoutExt}-${new Date().getTime()}.${extension}`;
-                            // --- จบส่วนสร้างชื่อไฟล์ใหม่ ---
-
-                            const file = new File(
-                                [blob],
-                                uniqueName, // ✅ ใช้ชื่อไฟล์ใหม่ที่สร้างขึ้น
-                                { type: "image/png" }
-                            );
-
-                            const dt = new DataTransfer();
-                            dt.items.add(file);
-
-                            // ✅ ใส่ cropped file ลงไปใน input ทั้ง 2 ตัว
-                            document.getElementById('croppedImageInput').files = dt.files;
-                            document.getElementById('inputImage').files = dt.files;
-
-                            // ✅ Trigger inputImage change event
-                            const changeEvent = new Event('change', { bubbles: true });
-                            document.getElementById('inputImage').dispatchEvent(changeEvent);
-                        }
-                    }
-                });
+        },
+        crop: function(){
+            const canvas = cropper.getCroppedCanvas({
+                maxWidth: 1920,
+                maxHeight: 1080
             });
-        });
-        
-        $("#inputImage").on('change', function(e){
-            const file = e.target.files[0];
-            if(!file) return;
-            if(file.size > 50 * 1024 * 1024){
-                alert("File size must be <= 50 MB");
-                $(this).val(""); // clear input
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = function(ev){
-                $('#imageToCrop').attr('src', ev.target.result);
-                $('#imageToCrop').on('load', function(){
-                    if(cropper) cropper.destroy();
-                    cropper = new Cropper(this, {
-                        aspectRatio: 16 / 9,
-                        viewMode: 0,
-                        autoCropArea: 1,
-                        responsive:true,
-                        crop: function () {
-                            const canvas = cropper.getCroppedCanvas({
-                                width: 1920,
-                                height: 1080
-                            });
-                            if (canvas) {
-                                $('#preview').addClass("img-thumbnail");
-                                $('#preview').attr('src', canvas.toDataURL());
-                            }
-                        }
-                    });
-                });
-            };
-            reader.readAsDataURL(file);
-        });
-
-        const dateTimeStrToDateTime = (str) => {
-            if(str){
-                const parts = str.match(/(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})/);
-                return Date.UTC(+parts[3], parts[2]-1, +parts[1], +parts[4], +parts[5]);
+            if(canvas){
+                $('#preview').attr('src', canvas.toDataURL('image/png'));
             }
         }
-    </script>
+    });
+}
+
+$(document).ready(function(){
+    ActiveMenu("welguest");
+
+    // init start/end date
+    var startDate = initialDateTimePk(document.getElementById("sdate"));
+    var endDate = initialDateTimePk(document.getElementById("edate"));
+    let sDate = "{{ guest.sDate|date:'r' }}";
+    let eDate = "{{ guest.eDate|date:'r' }}";
+    if(sDate) startDate.dates.setValue(tempusDominus.DateTime.convert(new Date(sDate)));
+    if(eDate) endDate.dates.setValue(tempusDominus.DateTime.convert(new Date(eDate)));
+
+    // load รูปเก่า
+    const imgUrl = window.location.origin + '{{ mediaRoot }}{{ imgPath }}' + '?t=' + new Date().getTime();
+    const imgEl = document.getElementById('imageToCrop');
+    imgEl.src = imgUrl;
+    imgEl.onload = () => initCropper(imgEl);
+});
+
+// handle input image change
+$("#inputImage").on('change', function(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    if(file.size > 50*1024*1024){ alert("File must <= 50MB"); $(this).val(''); return; }
+
+    const reader = new FileReader();
+    reader.onload = function(ev){
+        const imgEl = document.getElementById('imageToCrop');
+        imgEl.src = ev.target.result;
+        imgEl.onload = () => initCropper(imgEl);
+    }
+    reader.readAsDataURL(file);
+});
+
+// submit form
+$("#fm").submit(async function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    Loading(true);
+
+    const sDateEl = document.getElementById("sdate");
+    const eDateEl = document.getElementById("edate");
+    sDateEl.setCustomValidity("");
+    eDateEl.setCustomValidity("");
+
+    const sVal = sDateEl.value;
+    const eVal = eDateEl.value;
+    if(sVal && eVal){
+        const sDate = dateTimeStrToDateTime(sVal);
+        const eDate = dateTimeStrToDateTime(eVal);
+        if(sDate >= eDate){
+            sDateEl.setCustomValidity("Start date must be before end date.");
+            eDateEl.setCustomValidity("End date must be after start date.");
+            document.getElementById("sdate-error").textContent = "Start date must be before end date.";
+            document.getElementById("edate-error").textContent = "End date must be after start date.";
+        }
+    }
+
+    if(!this.checkValidity()){ this.classList.add('was-validated'); Loading(false); return false; }
+
+    if(cropper){
+        const canvas = cropper.getCroppedCanvas({ maxWidth: 1920, maxHeight: 1080 });
+        const blob = await canvasToBlobAsync(canvas);
+        const originalFile = $("#inputImage").prop("files")[0];
+        const fileName = originalFile ? originalFile.name : "cropped-image.png";
+        const file = new File([blob], fileName, { type: "image/png" });
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        document.getElementById('croppedImageInput').files = dt.files;
+    }
+
+    this.classList.add('was-validated');
+    this.submit();
+});
+</script>
 {% endblock %}

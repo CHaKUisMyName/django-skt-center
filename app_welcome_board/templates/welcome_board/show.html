@@ -34,7 +34,9 @@
                 height: 100vh; */
                 object-fit: cover;
                 z-index: -1;
+                transition: opacity 0.5s ease-in-out;
             }
+            
             .video {
                 position: fixed;
                 top: 0;
@@ -42,6 +44,7 @@
                 width: 100%;
                 height: 100%;
                 z-index: -1;
+                object-fit: cover;
             }
         </style>
     </head>
@@ -157,7 +160,8 @@
                     if (mediaType === "image" && Array.isArray(paths) && paths.length > 0) {
                         let currentIndex = 0;
                         const showNextImage = () => {
-                            $(imageEl).attr("src", paths[currentIndex].path);
+                            // $(imageEl).attr("src", paths[currentIndex].path);
+                            $(imageEl).css("opacity", 0).attr("src", paths[currentIndex].path).animate({opacity: 1}, 500);
                             console.log("Showing image:", paths[currentIndex].path);
                             currentIndex = (currentIndex + 1) % paths.length;
                         };
