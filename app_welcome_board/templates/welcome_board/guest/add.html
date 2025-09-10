@@ -1,217 +1,163 @@
 {% extends 'layout.html' %}
 {% load static %}
-{% block title %}<title>Welcome Board Add</title>{% endblock %}
+{% block title %}<title>Add Welcome Board</title>{% endblock %}
 {% block css %}
-    <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet">
-    <!-- Tempus Dominus Styles -->
-     <link rel="stylesheet" href="{% static 'css/tempus-dominus.css' %}" />
+<link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/tempus-dominus.css' %}" />
 {% endblock %}
+
 {% block content %}
 <div class="row mb-3">
-    <div class="col-sm-12 col-lg-10 mx-auto">
-        <div class="card">
-            <form id="fm" 
-            action="{% url 'addGuestWelcomeBoard' %}"
-            method="post" 
-            class="card-body mb-3 needs-validation"
-            enctype="multipart/form-data" novalidate>
-                {% csrf_token %}
-                <h3 class="display-6 fw-bold">Add Welcome Board</h3>
-                <p class="text-sm">create new welcome board data</p>
-                <div class="col-12">
-                    <div class="row mb-3">
-                        <div class="col-sm-12 col-lg-8">
-                            <label for="title" class="form-label fw-bold text-dark-emphasis">Title</label>
-                            <input type="text" id="title" name="title" class="form-control"/>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-sm-12 col-lg-8">
-                            <label for="inputImage" class="form-label fw-bold text-dark-emphasis">Image</label>
-                            <input type="file" id="inputImage" name="imagekuy" accept="image/*" class="form-control mb-3" required>
-                            <div class="invalid-feedback">Please upload image</div>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label>Crop Image area</label>
-                        <div class="col-md-6">
-                            <!-- <h5>Crop Area</h5> -->
-                            <img id="imageToCrop" style="width: 300px;height: 300px;" />
-                            <!-- <button id="cropButton" class="btn btn-primary mt-2">Crop</button> -->
-                        </div>
-                        <div id="hddimg" class="col-md-6">
-                            <!-- <h5>Preview</h5> -->
-                            <img id="preview" >
-                             <input type="file" id="croppedImageInput" name="image" hidden>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6 col-sm-12">
-                            <label for="sdate" class="form-label fw-bold text-dark-emphasis">Start Date</label>
-                            <input type="text" id="sdate" name="sdate" class="form-control" required/>
-                            <div id="sdate-error" class="invalid-feedback">Please input date format (DD/MM/YYYY)</div>
-                        </div>
-                        <div class="col-md-6 col-sm-12">
-                            <label for="edate" class="form-label fw-bold text-dark-emphasis">End Date</label>
-                            <input type="text" id="edate" name="edate" class="form-control" required/>
-                            <div id="edate-error" class="invalid-feedback">Please input date format (DD/MM/YYYY)</div>
-                        </div>
-                    </div>
-                    <div class="row mb-5">
-                        <div class="col-md-8 col-sm-12">
-                            <label for="note" class="form-label fw-bold text-dark-emphasis">Note</label>
-                            <textarea id="note" name="note" class="form-control" style="height: 100px;"></textarea>
-                        </div>
-                    </div>
-                    <div class="row mb-3 float-end">
-                        <div class="col-12">
-                            <a href="{% url 'indexWelcomeBoard' %}" class="btn btn-light">Cancel</a>
-                            <button type="submit" class="btn btn-primary ms-2">Submit</button>
-                        </div>
-                    </div>
-                </div>
-            </form>
+  <div class="col-sm-12 col-lg-10 mx-auto">
+    <div class="card">
+      <form id="fm" action="{% url 'addGuestWelcomeBoard' %}" method="post" class="card-body mb-3 needs-validation" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <h3 class="display-6 fw-bold">Add Welcome Board</h3>
+        <p class="text-sm">Create new welcome board data</p>
+
+        <div class="row mb-3">
+          <div class="col-sm-12 col-lg-8">
+            <label class="form-label fw-bold">Title</label>
+            <input type="text" name="title" class="form-control">
+          </div>
         </div>
+
+        <div class="row mb-3">
+          <div class="col-sm-12 col-lg-8">
+            <label class="form-label fw-bold">Image</label>
+            <input type="file" id="inputImage" name="imagekuy" accept="image/*" class="form-control" required>
+            <input type="file" id="croppedImageInput" name="image" hidden>
+            <div class="invalid-feedback">Please upload image</div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label>Crop Image Area</label>
+          <div class="col-md-6">
+            <img id="imageToCrop" style="width: 300px;height: 300px;" />
+          </div>
+          <div class="col-md-6">
+            <img id="preview" class="img-thumbnail" />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Start Date</label>
+            <input type="text" id="sdate" name="sdate" class="form-control" required>
+            <div id="sdate-error" class="invalid-feedback">Start date must be before end date</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">End Date</label>
+            <input type="text" id="edate" name="edate" class="form-control" required>
+            <div id="edate-error" class="invalid-feedback">End date must be after start date</div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-8">
+            <label class="form-label fw-bold">Note</label>
+            <textarea name="note" class="form-control" style="height:100px;"></textarea>
+          </div>
+        </div>
+
+        <div class="row mb-3 float-end">
+          <div class="col-12">
+            <a href="{% url 'indexWelcomeBoard' %}" class="btn btn-light">Cancel</a>
+            <button type="submit" class="btn btn-primary ms-2">Submit</button>
+          </div>
+        </div>
+
+      </form>
     </div>
+  </div>
 </div>
 {% endblock %}
+
 {% block script %}
-    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
-    <!-- Popperjs -->
-     <script src="{% static 'js/popper.min.js' %}"></script>
-    <!-- Tempus Dominus JavaScript -->
-    <script src="{% static 'js/tempus-dominus.js' %}"></script>
-    <script type="text/javascript">
-        let cropper;
-        function canvasToBlobAsync(canvas, fileType) {
-            return new Promise((resolve) => {
-                if (fileType === "image/png") {
-                // PNG ไม่บีบอัด
-                    canvas.toBlob((blob) => resolve(blob), 'image/png');
-                } else {
-                    // JPEG บีบอัดด้วยคุณภาพ 0.8 (80%)
-                    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.8);
-                }
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
+<script src="{% static 'js/tempus-dominus.js' %}"></script>
+<script>
+let cropper;
+
+function canvasToBlobAsync(canvas, type='image/png') {
+    return new Promise(resolve => {
+        canvas.toBlob(blob => resolve(blob), type);
+    });
+}
+
+$(document).ready(function(){
+    ActiveMenu("welguest");
+    // Initialize datetime pickers
+    var startDate = initialDateTimePk(document.getElementById("sdate"));
+    var endDate = initialDateTimePk(document.getElementById("edate"));
+    
+    $("#inputImage").on('change', function(e){
+        const file = e.target.files[0];
+        if(!file) return;
+    
+        const reader = new FileReader();
+        reader.onload = function(ev){
+            $('#imageToCrop').attr('src', ev.target.result);
+            $('#imageToCrop').on('load', function(){
+                if(cropper) cropper.destroy();
+                cropper = new Cropper(this,{
+                    aspectRatio: 16/9,
+                    viewMode:0,
+                    autoCropArea:1,
+                    responsive:true,
+                    crop: function(){
+                        const canvas = cropper.getCroppedCanvas({width:3840,height:2160});
+                        if(canvas){
+                            $('#preview').attr('src', canvas.toDataURL());
+                        }
+                    }
+                });
             });
         }
-        
-        $("#fm").submit(async function(e){
-            Loading(true);
-            event.preventDefault(); // ❗ ต้องหยุดไว้ก่อน เพื่อรอ crop ให้เสร็จก่อน
-            event.stopPropagation();
-            let isValid = true;
-            const sDateEl = document.getElementById("sdate");
-            const eDateEl = document.getElementById("edate");
-            const sVal = sDateEl.value;
-            const eVal = eDateEl.value;
-
-            // reset error
-            sDateEl.setCustomValidity("");
-            eDateEl.setCustomValidity("");
-
-            // หากกรอกครบแล้ว ค่อยเช็คว่า s < e
-            if (sVal && eVal) {
-                const sDate = dateTimeStrToDateTime(sVal);
-                const eDate = dateTimeStrToDateTime(eVal);
-
-                if (sDate && eDate) {
-                    if (sDate >= eDate) {
-                        // ตั้ง error
-                        sDateEl.setCustomValidity("Start date must be before end date.");
-                        eDateEl.setCustomValidity("End date must be after start date.");
-
-                        // ✅ เปลี่ยนข้อความใน .invalid-feedback
-                        document.getElementById("sdate-error").textContent = "Start date must be before end date.";
-                        document.getElementById("edate-error").textContent = "End date must be after start date.";
-                    } else {
-                        // ✅ ล้างข้อความถ้า valid แล้ว
-                        sDateEl.setCustomValidity("");
-                        eDateEl.setCustomValidity("");
-                        document.getElementById("sdate-error").textContent = "Please input date format (DD/MM/YYYY)";
-                        document.getElementById("edate-error").textContent = "Please input date format (DD/MM/YYYY)";
-                    }
-                }
-            }
-            if (!this.checkValidity()) {
-                this.classList.add('was-validated');
-                Loading(false);
-                return false;
-            }
-            if (cropper) {
-                const canvas = cropper.getCroppedCanvas({
-                    maxWidth: 1920,
-                    maxHeight: 1080
-                });
-
-                if (canvas) {
-                    const inputFile = $("#inputImage").prop("files")[0];
-                    const originalType = inputFile.type; // image/jpeg หรือ image/png
-
-                    const blob = await canvasToBlobAsync(canvas, originalType);
-                    const newFileName = inputFile.name.replace(/\.[^/.]+$/, "") + (originalType === "image/png" ? ".png" : ".jpg");
-
-                    const file = new File([blob], newFileName, {
-                        type: blob.type
-                    });
-
-                    const container = new DataTransfer();
-                    container.items.add(file);
-                    document.getElementById("croppedImageInput").files = container.files;
-                }
-            }
-            
-            this.classList.add('was-validated');
-            // return false;
-            this.submit(); // ✅ ส่ง form manual
-        
-        });        
-        $(document).ready(()=>{
-            ActiveMenu("welguest");
-            var startDate = initialDateTimePk(document.getElementById("sdate"));
-            var endDate = initialDateTimePk(document.getElementById("edate"));
-        });
-        
-        $("#inputImage").on('change', function(e){
-            const file = e.target.files[0];
-            if(!file) return;
-            if(file.size > 50 * 1024 * 1024){
-                alert("File size must be <= 50 MB");
-                $(this).val(""); // clear input
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(ev){
-                $('#imageToCrop').attr('src', ev.target.result);
-                $('#imageToCrop').on('load', function(){
-                    if(cropper) cropper.destroy();
-                    cropper = new Cropper(this, {
-                        aspectRatio: 16 / 9, // ✅ 16:9 สำหรับ TV
-                        viewMode: 0,
-                        preview: '',
-                        autoCropArea: 1,
-                        responsive:true,
-                        crop: function () {
-                            const canvas = cropper.getCroppedCanvas({
-                                maxWidth: 1920,
-                                maxHeight: 1080,
-                            });
-                            if (canvas) {
-                                $('#preview').addClass("img-thumbnail");
-                                $('#preview').attr('src', canvas.toDataURL());
-                            }
-                            
-                        }
-                    });
-                });
-            };
-            reader.readAsDataURL(file);
-        });
-        const dateTimeStrToDateTime = (str) => {
-            if(str){
-                const parts = str.match(/(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})/);
-                return Date.UTC(+parts[3], parts[2]-1, +parts[1], +parts[4], +parts[5]);
+        reader.readAsDataURL(file);
+    });
+  
+    $("#fm").submit(async function(e){
+        e.preventDefault();
+    
+        // Validate datetime
+        const sVal = $('#sdate').val();
+        const eVal = $('#edate').val();
+        let isValid = true;
+    
+        $('#sdate')[0].setCustomValidity("");
+        $('#edate')[0].setCustomValidity("");
+    
+        if(sVal && eVal){
+            const sDateObj = new Date(sVal);
+            const eDateObj = new Date(eVal);
+            if(sDateObj >= eDateObj){
+                $('#sdate')[0].setCustomValidity("Invalid");
+                $('#edate')[0].setCustomValidity("Invalid");
+                isValid = false;
             }
         }
-    </script>
+      
+        if(!isValid){
+            this.classList.add('was-validated');
+            return false;
+        }
+      
+        if(cropper){
+            const canvas = cropper.getCroppedCanvas({width:3840,height:2160});
+            if(canvas){
+                const blob = await canvasToBlobAsync(canvas,'image/png');
+                const file = new File([blob], "cropped-image.png",{type:'image/png'});
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                document.getElementById('croppedImageInput').files = dt.files;
+            }
+        }
+      
+        this.submit();
+    });
+
+});
+</script>
 {% endblock %}

@@ -1,6 +1,6 @@
 {% extends 'layout.html' %}
 {% load static %}
-{% block title %}<title>Welcome Board Edit</title>{% endblock %}
+{% block title %}<title>Edit Welcome Board</title>{% endblock %}
 
 {% block css %}
 <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet">
@@ -9,208 +9,172 @@
 
 {% block content %}
 <div class="row mb-3">
-    <div class="col-sm-12 col-lg-10 mx-auto">
-        <div class="card">
-            <form id="fm" 
-                  method="post" 
-                  class="card-body mb-3 needs-validation"
-                  enctype="multipart/form-data" novalidate>
-                {% csrf_token %}
-                <input type="hidden" id="wgid" name="wgid" value="{{ guest.id }}"/>
-                <h3 class="display-6 fw-bold">Edit  Welcome Board</h3>
-                <p class="text-sm">Edit welcome board data</p>
+  <div class="col-sm-12 col-lg-10 mx-auto">
+    <div class="card">
+      <form id="fm" method="post" class="card-body mb-3 needs-validation" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="wgid" value="{{ guest.id }}">
+        <h3 class="display-6 fw-bold">Edit Welcome Board</h3>
+        <p class="text-sm">Edit welcome board data</p>
 
-                <div class="col-12">
-                    <div class="row mb-3">
-                        <div class="col-sm-12 col-lg-8">
-                            <label for="title" class="form-label fw-bold text-dark-emphasis">Title</label>
-                            <input type="text" id="title" name="title" class="form-control" value="{{ guest.title }}" required/>
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-sm-12 col-lg-8">
-                            <label for="inputImage" class="form-label fw-bold text-dark-emphasis">Image</label>
-                            <input type="file" id="inputImage" name="imagekuy" accept="image/*" class="form-control mb-3">
-                            <div class="invalid-feedback">Please upload image</div>
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <label>Crop Image area</label>
-                        <div class="col-md-6">
-                            <img id="imageToCrop" style="width: 100%; max-width: 400px; height: auto;" />
-                        </div>
-                        <div class="col-md-6">
-                            <img id="preview" class="img-thumbnail" style="width: 100%; max-width: 400px; height: auto;">
-                            <input type="file" id="croppedImageInput" name="image" hidden>
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-6 col-sm-12">
-                            <label for="sdate" class="form-label fw-bold text-dark-emphasis">Start Date</label>
-                            <input type="text" id="sdate" name="sdate" class="form-control" required/>
-                            <div id="sdate-error" class="invalid-feedback">Please input date format (DD/MM/YYYY)</div>
-                        </div>
-                        <div class="col-md-6 col-sm-12">
-                            <label for="edate" class="form-label fw-bold text-dark-emphasis">End Date</label>
-                            <input type="text" id="edate" name="edate" class="form-control" required/>
-                            <div id="edate-error" class="invalid-feedback">Please input date format (DD/MM/YYYY)</div>
-                        </div>
-                    </div>
-
-                    <div class="row mb-5">
-                        <div class="col-md-8 col-sm-12">
-                            <label for="note" class="form-label fw-bold text-dark-emphasis">Note</label>
-                            <textarea id="note" name="note" class="form-control" style="height: 100px;">{{ guest.note }}</textarea>
-                        </div>
-                    </div>
-
-                    <div class="row mb-3 float-end">
-                        <div class="col-12">
-                            <a href="{% url 'indexWelcomeBoard' %}" class="btn btn-light">Cancel</a>
-                            <button type="submit" class="btn btn-primary ms-2">Submit</button>
-                        </div>
-                    </div>
-                </div>
-            </form>
+        <div class="row mb-3">
+          <div class="col-sm-12 col-lg-8">
+            <label class="form-label fw-bold">Title</label>
+            <input type="text" name="title" class="form-control" value="{{ guest.title }}">
+          </div>
         </div>
+
+        <div class="row mb-3">
+          <div class="col-sm-12 col-lg-8">
+            <label class="form-label fw-bold">Image</label>
+            <input type="file" id="inputImage" name="imagekuy" accept="image/*" class="form-control">
+            <input type="file" id="croppedImageInput" name="image" hidden>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label>Crop Image Area</label>
+          <div class="col-md-6">
+            <img id="imageToCrop" style="width:300px;height:300px;">
+          </div>
+          <div class="col-md-6">
+            <img id="preview" class="img-thumbnail">
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Start Date</label>
+            <input type="text" id="sdate" name="sdate" class="form-control" required>
+            <div id="sdate-error" class="invalid-feedback">Start date must be before end date</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">End Date</label>
+            <input type="text" id="edate" name="edate" class="form-control" required>
+            <div id="edate-error" class="invalid-feedback">End date must be after start date</div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-8">
+            <label class="form-label fw-bold">Note</label>
+            <textarea name="note" class="form-control" style="height:100px;">{{ guest.note }}</textarea>
+          </div>
+        </div>
+
+        <div class="row mb-3 float-end">
+          <div class="col-12">
+            <a href="{% url 'indexWelcomeBoard' %}" class="btn btn-light">Cancel</a>
+            <button type="submit" class="btn btn-primary ms-2">Submit</button>
+          </div>
+        </div>
+
+      </form>
     </div>
+  </div>
 </div>
 {% endblock %}
 
 {% block script %}
 <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
-<script src="{% static 'js/popper.min.js' %}"></script>
 <script src="{% static 'js/tempus-dominus.js' %}"></script>
-
 <script>
 let cropper;
 
-// convert canvas -> Blob
-function canvasToBlobAsync(canvas) {
-    return new Promise(resolve => {
-        canvas.toBlob(resolve, 'image/png', 1.0);
-    });
-}
-
-// ฟังก์ชันแปลง string -> Date UTC
-const dateTimeStrToDateTime = (str) => {
-    if(str){
-        const parts = str.match(/(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})/);
-        return Date.UTC(+parts[3], parts[2]-1, +parts[1], +parts[4], +parts[5]);
-    }
-}
-
-// init cropper จากรูปเก่า
-function initCropper(imgEl){
-    if(cropper) cropper.destroy();
-    cropper = new Cropper(imgEl, {
-        aspectRatio: 16/9,
-        viewMode: 0,
-        autoCropArea: 1,
-        responsive:true,
-        imageSmoothingEnabled:true,
-        imageSmoothingQuality:'high',
-        ready: async function(){
-            const canvas = cropper.getCroppedCanvas({
-                maxWidth: 1920,
-                maxHeight: 1080
-            });
-            if(canvas){
-                $('#preview').attr('src', canvas.toDataURL('image/png'));
-                const blob = await canvasToBlobAsync(canvas);
-                const file = new File([blob], "cropped-image.png", { type: "image/png" });
-                const dt = new DataTransfer();
-                dt.items.add(file);
-                document.getElementById('croppedImageInput').files = dt.files;
-            }
-        },
-        crop: function(){
-            const canvas = cropper.getCroppedCanvas({
-                maxWidth: 1920,
-                maxHeight: 1080
-            });
-            if(canvas){
-                $('#preview').attr('src', canvas.toDataURL('image/png'));
-            }
-        }
-    });
+function canvasToBlobAsync(canvas,type='image/png'){
+  return new Promise(resolve=>{
+    canvas.toBlob(blob=>resolve(blob),type);
+  });
 }
 
 $(document).ready(function(){
     ActiveMenu("welguest");
+    // Initialize datetime pickers
+    var startPicker = new tempusDominus.TempusDominus(document.getElementById('sdate'));
+    var endPicker   = new tempusDominus.TempusDominus(document.getElementById('edate'));
 
-    // init start/end date
-    var startDate = initialDateTimePk(document.getElementById("sdate"));
-    var endDate = initialDateTimePk(document.getElementById("edate"));
+  // Set initial date
     let sDate = "{{ guest.sDate|date:'r' }}";
     let eDate = "{{ guest.eDate|date:'r' }}";
     if(sDate) startDate.dates.setValue(tempusDominus.DateTime.convert(new Date(sDate)));
     if(eDate) endDate.dates.setValue(tempusDominus.DateTime.convert(new Date(eDate)));
-
-    // load รูปเก่า
+    // Load existing image
     const imgUrl = window.location.origin + '{{ mediaRoot }}{{ imgPath }}' + '?t=' + new Date().getTime();
-    const imgEl = document.getElementById('imageToCrop');
-    imgEl.src = imgUrl;
-    imgEl.onload = () => initCropper(imgEl);
-});
+    $('#imageToCrop').attr('src', imgUrl);
+    $('#imageToCrop').on('load', function(){
+        if(cropper) cropper.destroy();
+        cropper = new Cropper(this,{
+            aspectRatio:16/9,
+            viewMode:0,
+            autoCropArea:1,
+            responsive:true,
+            ready: async function(){
+                const canvas = cropper.getCroppedCanvas({width:3840,height:2160});
+                if(canvas){
+                    $('#preview').attr('src',canvas.toDataURL());
+                    const blob = await canvasToBlobAsync(canvas,'image/png');
+                    const file = new File([blob],"cropped-image.png",{type:'image/png'});
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    document.getElementById('croppedImageInput').files = dt.files;
+                }
+            },
+            crop: function(){
+                const canvas = cropper.getCroppedCanvas({width:3840,height:2160});
+                if(canvas) $('#preview').attr('src',canvas.toDataURL());
+            }
+        });
+    });
 
-// handle input image change
-$("#inputImage").on('change', function(e){
-    const file = e.target.files[0];
-    if(!file) return;
-    if(file.size > 50*1024*1024){ alert("File must <= 50MB"); $(this).val(''); return; }
+    $("#inputImage").on('change', function(e){
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev){
+            $('#imageToCrop').attr('src', ev.target.result);
+        };
+        reader.readAsDataURL(file);
+    });
 
-    const reader = new FileReader();
-    reader.onload = function(ev){
-        const imgEl = document.getElementById('imageToCrop');
-        imgEl.src = ev.target.result;
-        imgEl.onload = () => initCropper(imgEl);
-    }
-    reader.readAsDataURL(file);
-});
+    $("#fm").submit(async function(e){
+        e.preventDefault();
 
-// submit form
-$("#fm").submit(async function(e){
-    e.preventDefault();
-    e.stopPropagation();
-    Loading(true);
+        // Validate datetime
+        const sVal = $('#sdate').val();
+        const eVal = $('#edate').val();
+        let isValid = true;
+        $('#sdate')[0].setCustomValidity("");
+        $('#edate')[0].setCustomValidity("");
 
-    const sDateEl = document.getElementById("sdate");
-    const eDateEl = document.getElementById("edate");
-    sDateEl.setCustomValidity("");
-    eDateEl.setCustomValidity("");
-
-    const sVal = sDateEl.value;
-    const eVal = eDateEl.value;
-    if(sVal && eVal){
-        const sDate = dateTimeStrToDateTime(sVal);
-        const eDate = dateTimeStrToDateTime(eVal);
-        if(sDate >= eDate){
-            sDateEl.setCustomValidity("Start date must be before end date.");
-            eDateEl.setCustomValidity("End date must be after start date.");
-            document.getElementById("sdate-error").textContent = "Start date must be before end date.";
-            document.getElementById("edate-error").textContent = "End date must be after start date.";
+        if(sVal && eVal){
+            const sDateObj = new Date(sVal);
+            const eDateObj = new Date(eVal);
+            if(sDateObj >= eDateObj){
+                $('#sdate')[0].setCustomValidity("Invalid");
+                $('#edate')[0].setCustomValidity("Invalid");
+                isValid = false;
+            }
         }
-    }
 
-    if(!this.checkValidity()){ this.classList.add('was-validated'); Loading(false); return false; }
+        if(!isValid){
+            this.classList.add('was-validated');
+            return false;
+        }
 
-    if(cropper){
-        const canvas = cropper.getCroppedCanvas({ maxWidth: 1920, maxHeight: 1080 });
-        const blob = await canvasToBlobAsync(canvas);
-        const originalFile = $("#inputImage").prop("files")[0];
-        const fileName = originalFile ? originalFile.name : "cropped-image.png";
-        const file = new File([blob], fileName, { type: "image/png" });
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        document.getElementById('croppedImageInput').files = dt.files;
-    }
+        if(cropper){
+            const canvas = cropper.getCroppedCanvas({width:3840,height:2160});
+            if(canvas){
+                const blob = await canvasToBlobAsync(canvas,'image/png');
+                const file = new File([blob],"cropped-image.png",{type:'image/png'});
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                document.getElementById('croppedImageInput').files = dt.files;
+            }
+        }
 
-    this.classList.add('was-validated');
-    this.submit();
+        this.submit();
+    });
+
 });
 </script>
 {% endblock %}
