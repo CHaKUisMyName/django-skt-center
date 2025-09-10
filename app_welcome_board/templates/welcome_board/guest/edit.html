@@ -90,14 +90,14 @@ function canvasToBlobAsync(canvas,type='image/png'){
 $(document).ready(function(){
     ActiveMenu("welguest");
     // Initialize datetime pickers
-    var startPicker = new tempusDominus.TempusDominus(document.getElementById('sdate'));
-    var endPicker   = new tempusDominus.TempusDominus(document.getElementById('edate'));
+    var startPicker = initialDateTimePk(document.getElementById('sdate'));
+    var endPicker   = initialDateTimePk(document.getElementById('edate'));
 
   // Set initial date
     let sDate = "{{ guest.sDate|date:'r' }}";
     let eDate = "{{ guest.eDate|date:'r' }}";
-    if(sDate) startDate.dates.setValue(tempusDominus.DateTime.convert(new Date(sDate)));
-    if(eDate) endDate.dates.setValue(tempusDominus.DateTime.convert(new Date(eDate)));
+    if(sDate) startPicker.dates.setValue(tempusDominus.DateTime.convert(new Date(sDate)));
+    if(eDate) endPicker.dates.setValue(tempusDominus.DateTime.convert(new Date(eDate)));
     // Load existing image
     const imgUrl = window.location.origin + '{{ mediaRoot }}{{ imgPath }}' + '?t=' + new Date().getTime();
     $('#imageToCrop').attr('src', imgUrl);
