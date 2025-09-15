@@ -7,7 +7,6 @@
 </div>
 {% endblock %}
 {% block css %}
-<link href="{% static 'css/sweetalert2.min.css' %}" rel="stylesheet">
 <style>
     .fc-daygrid-event {
         white-space: normal !important;
@@ -73,8 +72,6 @@
 </div>
 {% endblock %}
 {% block script %}
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js'></script>
-    <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
     {% if messages %}
         {% for message in messages %}
         <script type="text/javascript">

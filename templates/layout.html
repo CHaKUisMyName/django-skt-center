@@ -24,11 +24,14 @@
     <link href="{% static 'css/fontawesome/css/fontawesome.min.css' %}" rel="stylesheet" />
     <link href="{% static 'css/fontawesome/css/brands.min.css' %}" rel="stylesheet" />
     <link href="{% static 'css/fontawesome/css/solid.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'css/datatables.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/dataTables.bootstrap5.css' %}" rel="stylesheet">
     <link href="{% static 'css/custom.css' %}" rel="stylesheet" />
     <link href="{% static 'css/loading.css' %}" rel="stylesheet" />
     <link rel="stylesheet" href="{% static 'css/select2.min.css' %}" />
     <link rel="stylesheet"
           href="{% static 'css/select2-bootstrap-5-theme.min.css' %}" />
+    <link href="{% static 'css/sweetalert2.min.css' %}" rel="stylesheet">
     
     {% block css %}{% endblock %}
     {% block title %}<title>SKT Center</title>{% endblock %}
@@ -227,6 +230,10 @@
     <script src="{% static 'js/select2.min.js' %}"></script>
     <script src="{% static 'js/moment.js' %}"></script>
     <script src="{% static 'js/moment-timezone-with-data.js' %}"></script>
+    <script src="{% static 'js/fullcalendar.min.js' %}"></script>
+    <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
+    <script src="{% static 'js/datatables.min.js' %}"></script>
+    <script src="{% static 'js/dataTables.bootstrap5.js' %}"></script>
     <script type="text/JavaScript">
       function ActiveMenu(menu) {
         // ลบ Active ออกจากทุกเมนูที่ไม่ตรงกับ data-active
