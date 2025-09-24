@@ -12,7 +12,7 @@ from base_models.basemodel import UserSnapshot
 
 @requiredLogin
 def index(request: HttpRequest):
-    rooms: Room = Room.objects.filter(isActive = True)
+    rooms = Room.objects.filter(isActive = True)
     hasPermission = HasVstPermission(id = str(request.currentUser.id), menu = "Room")
     if not request.currentUser.isAdmin:
         if hasPermission == False:

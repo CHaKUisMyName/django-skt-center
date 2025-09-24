@@ -1,0 +1,211 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Car Schedule</title>{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>Car Schedule / </span><span class="fw-bold">Add Schedule</span>
+</div>
+{% endblock %}
+{% block css %}
+<!-- Tempus Dominus Styles -->
+<link rel="stylesheet" href="{% static 'css/tempus-dominus.css' %}" />
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-lg-9 col-12 mx-auto">
+        <div class="card">
+            <form id="fm" method="post" class="card-body mb-3" novalidate>
+                <h3>Add Schedule</h3>
+                <p class="text-sm">create new schedule</p>
+                {% csrf_token %}
+                <div class="col-12">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="title" class="form-label fw-bold text-dark-emphasis">Title</label>
+                            <input type="text" class="form-control" id="title" name="title" required />
+                            <div class="invalid-feedback">Please input data</div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 col-sm-12">
+                            <label for="dpStart" class="form-label fw-bold text-dark-emphasis">Delivery Date</label>
+                            <div class="input-group" id="date" data-td-target-input="nearest" data-td-target-toggle="nearest">
+                                <input id="dpStart" type="text" name="dpStart" class="form-control" data-td-target="#date" required/>
+                                <span class="input-group-text rounded-end-2" data-td-target="#date" data-td-toggle="datetimepicker">
+                                    <i class="fas fa-calendar"></i>
+                                </span>
+                                <div id="date-error" class="invalid-feedback">Please input date format (DD/MM/YYYY)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <label for="stime" class="form-label fw-bold text-dark-emphasis">Start Time</label>
+                            <div class="input-group" id="dv-stime" data-td-target-input="nearest" data-td-target-toggle="nearest">
+                                <input id="stime" type="text" name="stime" class="form-control" data-td-target="#dv-stime" required/>
+                                <span class="input-group-text rounded-end-2" data-td-target="#dv-stime" data-td-toggle="datetimepicker">
+                                    <i class="fas fa-clock"></i>
+                                </span>
+                                <div id="stime-error" class="invalid-feedback">Please input date format (HH:MM)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <label for="etime" class="form-label fw-bold text-dark-emphasis">End Time</label>
+                            <div class="input-group" id="dv-etime" data-td-target-input="nearest" data-td-target-toggle="nearest">
+                                <input id="etime" type="text" name="etime" class="form-control" data-td-target="#dv-etime" required />
+                                <span class="input-group-text rounded-end-2" data-td-target="#dv-etime" data-td-toggle="datetimepicker">
+                                    <i class="fas fa-clock"></i>
+                                </span>
+                                <div id="etime-error" class="invalid-feedback">Please input date format (HH:MM)</div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="driver" class="form-label fw-bold text-dark-emphasis">Driver</label>
+                            <select id="driver" name="driver" class="form-select" required>
+                                <option value=""></option>
+                                {% for driver in drivers %}
+                                <option value="{{ driver.id }}">
+                                    ({{ driver.user.code }}) {{ driver.user.fNameEN }} {{ driver.user.lNameEN}}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">Please input data</div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="purpose" class="form-label fw-bold text-dark-emphasis">Purpose</label>
+                            <textarea id="purpose" name="purpose" class="form-control" style="height: 100px;"></textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="passenger" class="form-label fw-bold text-dark-emphasis">Passenger</label>
+                            <select id="passenger" name="passenger" class="form-select">
+                                <option value=""></option>
+                                {% for passenger in passengers %}
+                                <option value="{{ passenger.id }}">({{ passenger.code }}) {{ passenger.fNameEN }} {{ passenger.lNameEN}} </option>
+                                {% endfor %}
+                                <option value="0">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div id="psgTb" class="col-12"></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="destination" class="form-label fw-bold text-dark-emphasis">Destination</label>
+                            <textarea id="destination" name="destination" class="form-control" style="height: 100px;"></textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-3 float-end">
+                        <div class="col-12">
+                            <a href="{% url 'indexCarSchedule' %}" class="btn btn-light">Cancel</a>
+                            <button type="submit" class="btn btn-primary ms-2">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    <script src="{% static 'js/popper.min.js' %}"></script>
+    <script src="{% static 'js/tempus-dominus.js' %}"></script>
+    <script type="text/javascript">
+        var $psgTable;
+        $("#fm").submit(function(e){
+            Loading(true);
+            e.preventDefault();
+            e.stopPropagation();
+            const sDate = document.getElementById("dpStart");
+            const sTime = document.getElementById("stime");
+            const eTime = document.getElementById("etime");
+            if(sDate.value && sTime.value && eTime.value){
+                const startDate = dateTimeStrToDateTime(sDate.value + " " + sTime.value);
+                const endDate = dateTimeStrToDateTime(sDate.value + " " + eTime.value);
+                
+                if (startDate >= endDate) {
+                    sDate.setCustomValidity("");
+                    sTime.setCustomValidity("Start time must be before End time.");
+                    eTime.setCustomValidity("End time must be after Start time.");
+
+                    $("#date-error").text("");
+                    $("#stime-error").text("Start time must be before End time.");
+                    $("#etime-error").text("End time must be after Start time.");
+                } else {
+                    sDate.setCustomValidity("");
+                    sTime.setCustomValidity("");
+                    eTime.setCustomValidity("");
+
+                    $("#date-error").text("Please input date format (DD/MM/YYYY)");
+                    $("#stime-error").text("");
+                    $("#etime-error").text("");
+                }
+            }
+            
+            if(!this.checkValidity()){
+                this.classList.add('was-validated');
+                Loading(false);
+                return false;
+            }
+            this.classList.add('was-validated');
+            // return false;
+            this.submit(); // ✅ ส่ง form manual
+        });
+        $(document).ready(() => {
+            ActiveMenu("csh");
+            var date = initialDatePk(document.getElementById("date"));
+            var stime = initialTimePk(document.getElementById("dv-stime"));
+            var etime = initialTimePk(document.getElementById("dv-etime"));
+            let qDate = "{{ qDate }}";
+            if(qDate){
+                const newDate = new tempusDominus.DateTime(qDate);
+                date.dates.setValue(newDate);
+            }
+            $('.form-select').select2({
+                theme: 'bootstrap-5',
+                allowClear: true,
+                placeholder: "Please Select",
+                width: "style",
+            });
+        });
+        // let $psgTable = null;
+
+        $("#passenger").on("change", function () {
+            let val = $(this).val();
+            if (!val) return;
+
+            let $sel = $(this).find(":selected");
+            $sel.prop("disabled", true);
+
+            if (!$psgTable || !$psgTable.$table) {
+                $psgTable = new PassengerTable(["Name", "Actions"]);
+                $("#psgTb").append($psgTable.render());
+            }
+
+            let parts = $sel.text().split(" ");
+            let code = parts[0] ? parts[0]+ " " : "";
+            let fname = parts[1] ? parts[1]+ " "  : "";
+            let lname = parts[2] ? parts[2] : "";
+            let $rowData = {
+                data: [code + fname + lname],
+                val: val,
+            };
+
+            $psgTable.addRow($rowData);
+
+            $(this).val("").trigger("change");
+        });
+        const dateTimeStrToDateTime = (str) => {
+            if(str){
+                const parts = str.match(/(\d{2})\/(\d{2})\/(\d{4}) (\d{2}):(\d{2})/);
+                return Date.UTC(+parts[3], parts[2]-1, +parts[1], +parts[4], +parts[5]);
+            }
+        }
+
+    </script>
+{% endblock %}

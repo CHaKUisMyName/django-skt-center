@@ -16,9 +16,257 @@
 {% endblock %}
 {% block content %}
 <div class="row">
-    <div class="col-12"></div>
+    <div class="col-12">
+        <h1>Car Schedule</h1>
+    </div>
+</div>
+<div class="card">
+    <div class="card-body row mb-3">
+        <div class="col-12">
+            <div id="calendar"></div>
+        </div>
+    </div>
+</div>
+<div id="detail" class="card d-none">
+    <div class="card-body row mb-3">
+        <div class="col-12">
+            <div class="row">
+                <div class="col-12">
+                    <span id="sdate"></span>
+                    <span class="mx-2">-</span>
+                    <span id="edate"></span>
+                </div>
+            </div>
+            <hr>
+            <div class="row">
+                <div class="col-12">
+                    <p class="fs-6 fst-italic fw-bold text-muted">
+                        <i class="bi bi-person me-1"></i>
+                        Driver
+                    </p>
+                    <p id="driver" class="fs-2 fw-light mb-0"></p>
+                    <p id="driverPhone" class="fw-light mb-0"></p>
+                    <p id="driverLicenseNo" class="fs-5 fw-light text-muted"></p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <p class="fs-6 fst-italic fw-bold text-muted">
+                        <i class="bi bi-journal-bookmark-fill me-1"></i>
+                        Purpose
+                    </p>
+                    <p id="purpose" class="fs-2 fw-light"></p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <p class="fs-6 fst-italic fw-bold text-muted">
+                        <i class="bi bi-geo-alt me-1"></i>
+                        Destination
+                    </p>
+                    <p id="destination" class="fs-2 fw-light"></p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <p class="fs-6 fst-italic fw-bold text-muted">
+                        <i class="bi bi-people me-1"></i>
+                        Passengers
+                    </p>
+                    <div id="passengers"></div>
+                </div>
+            </div>
+            <div id="rowEdit" class="row my-3">
+                <div class="col-12">
+                    <a href="#" id="edit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-pencil-square"></i>
+                        <span class="ms-2">Edit</span>
+                    </a>
+                    <button type="button" id="delete" class="btn btn-secondary btn-lg delete" data-vstid="" onclick="deleteClick(this);">
+                        <i class="bi bi-trash"></i>
+                        <span class="ms-2">Delete</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 {% block script %}
-    
+    {% if messages %}
+        {% for message in messages %}
+        <script type="text/javascript">
+            $(document).ready(function(){
+                const mssTag = "{{message.tags}}";
+                const mssMsg = "{{message}}";
+                PopMessage(mssMsg, mssTag);
+            });
+        </script>
+        {% endfor %}
+    {% endif %}
+    <script type="text/javascript">
+        var calendar;
+        var calendarEl;
+        $(document).ready(function(){
+            ActiveMenu("csh");
+            calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: "prev,next today",
+                    center: "title",
+                    right: "dayGridMonth,timeGridWeek,timeGridDay,listYear",
+                },
+                eventDisplay: "block",
+                height: "auto",
+                aspectRatio: 2,
+                eventTimeFormat:{
+                    hour12: false,
+                    hour: "2-digit",
+                    minute: "2-digit",
+                },
+                events: async function (info, successCallback, failureCallback) {
+                    const url = window.location.origin + window.location.pathname+"api/listjs/?sdate="+moment(info.start).format().split("T")[0]+"&edate="+moment(info.end).format().split("T")[0];
+                    const apiData = await getAPIData(url);
+                    if(Array.isArray(apiData) && apiData.length > 0){
+                        const newArr = apiData.map((item)=>{
+                            
+                            const newItem = {
+                                id: item.id,
+                                title: item.title,
+                                start: item.sDate,
+                                end: item.eDate,
+                                color: item.color,
+                                driver: item.driver,
+                                destination: item.destination,
+                                passengers: item.passengers,
+                                purpose: item.purpose,
+                                link: window.location.origin + window.location.pathname + "edit/" + item.id
+                            }
+                            return newItem
+                        });
+                        successCallback(newArr);
+                    }else{
+                        successCallback([]);
+                    }
+                },
+                dateClick: function(info){
+                    if(info.dateStr >= new Date().toISOString().split("T")[0]){
+                        window.location.href = window.location.origin + window.location.pathname + "add?d=" + info.dateStr;
+                    }
+                },
+                dayCellDidMount: function(info) {
+                    // เสาร์ (6) อาทิตย์ (0)
+                    if (info.date.getDay() === 0 || info.date.getDay() === 6) {
+                        info.el.style.backgroundColor = "#f0f0f0"; // เทาอ่อน
+                    }
+                },
+                eventContent: function(arg){
+                    return { html: arg.timeText + ' ' + arg.event.title };
+                },
+                eventClick: function(info){
+                    showDetailModal(info);
+                },
+            });
+            calendar.render();
+            // setInterval(function() {
+            //     calendar.refetchEvents();
+            // }, 10000);
+        });
+        const showDetailModal = async (info) => {
+            await initialDetailToHTML(info);
+            Swal.fire({
+                title: `<p class="display-6 mb-0">${info.event.title}</p>`,
+                // icon: "info",
+                // imageWidth: 100,
+                // imageHeight: 50,
+                html: $("#detail").html(),
+                showCloseButton: true,
+                showCancelButton: false,
+                showConfirmButton: false,
+                focusConfirm: false,
+                width:'40rem',
+            });
+        }
+        const initialDetailToHTML = async (info) =>{
+            clearDetailData();
+            $("#sdate").text(strUTCDateToStrThaiDate(info.event.start));
+            $("#edate").text(strUTCDateToStrThaiDate(info.event.end));
+            const driver = info.event.extendedProps.driver.fNameEN+ " " + info.event.extendedProps.driver.lNameEN;
+            $("#driver").text(driver);
+            $("#destination").text(info.event.extendedProps.destination ? info.event.extendedProps.destination : "-");
+            $("#purpose").text(info.event.extendedProps.purpose ? info.event.extendedProps.purpose : "-");
+            
+            if (info.event.extendedProps.driver.phone && info.event.extendedProps.driver.phone != "-"){
+                $("#driverPhone").text("( "+info.event.extendedProps.driver.phone+" )");
+            }
+            if (info.event.extendedProps.driver.carLicenseNo){
+                $("#driverLicenseNo").text(info.event.extendedProps.driver.carLicenseNo);
+            }
+            
+            if (info.event.extendedProps.passengers && info.event.extendedProps.passengers.length > 0){
+                
+                const $psdArray = info.event.extendedProps.passengers;
+                $.each($psdArray, function(index, value){
+                    if(value.id == "0"){
+                        const $psgText = $("<p>",{
+                            class: "fs-2 fw-light"
+                        }).text("-- Other --");
+                        $("#passengers").append($psgText);    
+                    }else{
+                        const $psgText = $("<p>",{
+                            class: "fs-2 fw-light"
+                        }).text("-- "+value.fNameEN+" "+value.lNameEN+" --");
+                        $("#passengers").append($psgText);
+                    }
+                    
+                });
+            }else{
+                const $psgText = $("<p>",{
+                    class: "fs-2 fw-light"
+                }).text("-");
+                $("#passengers").append($psgText);
+            }
+            $("#edit").attr("href", info.event.extendedProps.link);
+            $("#delete").attr("data-cshid", info.event.id);
+        }
+        const clearDetailData = ()=>{
+            $("#sdate").text("");
+            $("#edate").text("");
+            $("#destination").text("");
+            $("#driver").text("");
+            $("#purpose").text("");
+            $("#driverPhone").text("");
+            $("#driverLicenseNo").text("");
+            $("#passengers").empty();
+            $("#edit").attr("href", "#");
+            $("#delete").attr("data-cshid", "");
+        }
+        const deleteClick = (e) => {
+            Loading(true);
+            console.log($(e).data('cshid'));
+            
+            const settings = {
+                url: window.location.origin + window.location.pathname + "delete/" + $(e).data('cshid'),
+                method: "GET",
+            }
+            $.ajax(settings).done((response) => {
+                Loading(false);
+                if(response.deleted == true){
+                    var event = calendar.getEventById($(e).data('cshid'));
+                    if(event){
+                        event.remove();
+                    }
+                    PopMessage("Delete success", "success",true);
+                }else{
+                    PopMessage(response.message, "error");
+                }
+                // calendar.refetchEvents();
+            }).fail((xjr, status, error) => {
+                Loading(false);
+                PopMessage(error, "error");
+                // calendar.refetchEvents();
+            });
+        }
+    </script>
 {% endblock %}

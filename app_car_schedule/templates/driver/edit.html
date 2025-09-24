@@ -1,0 +1,79 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Car Schedule</title>{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>Car Schedule / </span><span class="fw-bold">Edit Driver</span>
+</div>
+{% endblock %}
+{% block css %}
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-lg-9 col-12 mx-auto">
+        <div class="card">
+            <form method="post" class="card-body mb-3" novalidate>
+                {% csrf_token %}
+                <h3>Edit Driver</h3>
+                <p class="text-sm">edit driver</p>
+                <input type="hidden" name="dvid" value="{{ driver.id }}"/>
+                <div class="col-12">
+                    <div class="row mb-3">
+                        <div class="col-md-8 col-sm-12">
+                            <label for="driver" class="form-label fw-bold text-dark-emphasis">Driver</label>
+                            <select id="driver" name="driver" class="form-select" disabled>
+                                <option value="{{ driver.user.id }}">({{ driver.user.code|default:'-' }}) {{ driver.user.fNameEN|default:'' }} {{ driver.user.lNameEN|default:'' }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 col-sm-12">
+                            <label for="color" class="form-label fw-bold text-dark-emphasis">Color</label>
+                            <input
+                                type="color"
+                                name="color"
+                                id="color"
+                                class="form-control form-control-color"
+                                value="{{ driver.color }}"
+                            />
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6 col-sm-12">
+                            <label for="car" class="form-label fw-bold text-dark-emphasis">Car</label>
+                            <select id="car" name="car" class="form-select">
+                                <option value="None">Not Select</option>
+                                {% for car in dropdown_cars %}
+                                    {% if car.id|stringformat:"s" == driver.car.id|stringformat:"s" %}
+                                    <option value="{{ car.id }}" selected>{{ car.licenseNo }}</option>
+                                    {% else %}
+                                    <option value="{{ car.id }}" {% if car.disabled %}disabled{% endif %}>{{ car.licenseNo }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-8 col-sm-12">
+                            <label for="note" class="form-label fw-bold text-dark-emphasis">Note</label>
+                            <textarea id="note" name="note" class="form-control" style="height: 100px;">{{ driver.note}}</textarea>
+                        </div>
+                    </div>
+                    <div class="row float-end">
+                        <div class="col-12">
+                            <a href="{% url 'indexDriver' %}" class="btn btn-light">Cancel</a>
+                            <button type="submit" class="btn btn-primary ms-2">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    
+    <script type="text/javascript">
+        $(document).ready(()=>{
+            ActiveMenu("driver");
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Car Schedule</title>{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>Car Schedule / </span><span class="fw-bold">Driver</span>
+</div>
+{% endblock %}
+{% block css %}
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">List Driver</h3>
+                    </div>
+                    <div class="ms-auto my-auto mt-lg-0 mt-4">
+                        <div class="ms-auto my-auto">
+                            <a href="{% url 'addDriver' %}" class="btn btn-primary">
+                                <i class="bi bi-plus"></i>
+                                <span>Add Driver</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table id="tb" class="table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Driver</th>
+                                        <th>Car</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for driver in drivers %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>
+                                            <p class="p-0 m-0">({{ driver.user.code|default:'-' }}) {{ driver.user.fNameEN|default:'' }} {{ driver.user.lNameEN|default:'' }}</p>
+                                            <p class="p-0 m-0"><span class="fw-bold">Tel : </span>{{ driver.user.phone_thai|default:'-' }}</p>
+                                        </td>
+                                        <td>{{ driver.car.licenseNo|default:'-' }}</td>
+                                        <td>
+                                            <div>
+                                                <a href="{% url 'editDriver' driver.id %}" class="btn btn-info">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-danger delete" data-dvid="{{driver.id}}">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    
+    {% if messages %}
+        {% for message in messages %}
+        <script type="text/javascript">
+            $(document).ready(function(){
+                const mssTag = "{{message.tags}}";
+                const mssMsg = "{{message}}";
+                PopMessage(mssMsg, mssTag);
+            });
+        </script>
+        {% endfor %}
+    {% endif %}
+    <script type="text/javascript">
+        $(document).ready(()=>{
+            ActiveMenu("driver");
+            $('#tb').DataTable();
+        });
+        $('.delete').click(function(e){
+            e.preventDefault();
+            Swal.fire({
+                title: "Do you want to delete ?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#f97316",
+                confirmButtonText: "Delete",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if(result.isConfirmed){
+                    Loading(true);
+                    console.log(window.location.origin + window.location.pathname + "delete/" + $(e.currentTarget).data('dvid'));
+                    const settings = {
+                        url: window.location.origin + window.location.pathname + "delete/" + $(e.currentTarget).data('dvid'),
+                        method: "GET",
+                    };
+                    $.ajax(settings)
+                    .done((response)=>{
+                        Loading(false);
+                        if(response.deleted == true){
+                            PopMessage("Delete success", "success", true);
+                        }else{
+                            PopMessage(response.message, "error");
+                        }
+                    })
+                    .fail((xhr, status, error)=>{
+                        Loading(false);
+                        console.error("เกิดข้อผิดพลาด: " + status + " - " + error);
+                        PopMessage(error, "error");
+                    });
+                }
+            });
+        });
+    </script>
+{% endblock %}

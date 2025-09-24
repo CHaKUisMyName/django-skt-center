@@ -190,8 +190,6 @@
                 $("#edit").attr("href", info.event.extendedProps.link);
                 $("#delete").attr("data-vstid", info.event.id);
             }
-
-            
         }
         
         const deleteClick = (e) => {
@@ -202,6 +200,7 @@
                 method: "GET",
             }
             $.ajax(settings).done((response) => {
+                calendar.removeEvents($(e).data('vstid'));
                 Loading(false);
                 if(response.deleted == true){
                     PopMessage("Delete success", "success",true);

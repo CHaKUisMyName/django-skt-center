@@ -1,3 +1,4 @@
+import re
 import mongoengine as me
 from bson import ObjectId
 from enum import Enum
@@ -73,6 +74,17 @@ class User(BaseClass):
     note = me.StringField(null= True, required= False, default = None)
     address = me.StringField(null= True, required= False, default = None)
     roles = me.EmbeddedDocumentListField(RoleUser)
+
+    @property
+    def phone_thai(self):
+        if not self.phone:
+            return "-"
+        digits = re.sub(r"\D", "", self.phone or "")
+        if len(digits) == 10 and digits.startswith(("06", "08", "09")):
+            return f"{digits[:3]}-{digits[3:6]}-{digits[6:]}"
+        if len(digits) == 9 and digits.startswith("02"):
+            return f"{digits[:2]}-{digits[2:5]}-{digits[5:]}"
+        return self.phone or "-"
 
     meta = {
         'collection': 'user'  # 👈 ชื่อ collection ที่กำหนดเอง

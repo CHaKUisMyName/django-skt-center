@@ -1,0 +1,129 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Car Schedule</title>{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>Car Schedule / </span><span class="fw-bold">Car</span>
+</div>
+{% endblock %}
+{% block css %}
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">List Car</h3>
+                        <!-- <p class="text-sm mb-0">
+                            List of Room
+                        </p> -->
+                    </div>
+                    <div class="ms-auto my-auto mt-lg-0 mt-4">
+                        <div class="ms-auto my-auto">
+                            <a href="{% url 'addCar' %}" class="btn btn-primary">
+                                <i class="bi bi-plus"></i>
+                                <span>Add Car</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table id="tb" class="table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Brand</th>
+                                        <th>Model</th>
+                                        <th>License No.</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for car in cars %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ car.brand|default:'' }}</td>
+                                        <td>{{ car.model|default:'' }}</td>
+                                        <td>{{ car.licenseNo|default:'' }}</td>
+                                        <td>
+                                            <div>
+                                                <a href="{% url 'editCar' car.id %}" class="btn btn-info">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-danger delete" data-cid="{{car.id}}">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    
+    {% if messages %}
+        {% for message in messages %}
+        <script type="text/javascript">
+            $(document).ready(function(){
+                const mssTag = "{{message.tags}}";
+                const mssMsg = "{{message}}";
+                PopMessage(mssMsg, mssTag);
+            });
+        </script>
+        {% endfor %}
+    {% endif %}
+    <script type="text/javascript">
+        $(document).ready(()=>{
+            ActiveMenu("car");
+            $('#tb').DataTable();
+        });
+        $('.delete').click(function(e){
+            e.preventDefault();
+            Swal.fire({
+                title: "Do you want to delete ?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#f97316",
+                confirmButtonText: "Delete",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if(result.isConfirmed){
+                    // console.log(window.location.origin + window.location.pathname + "delete/" + $(e.currentTarget).data('cid'));
+                    Loading(true);
+                    const settings = {
+                        url: window.location.origin + window.location.pathname + "delete/" + $(e.currentTarget).data('cid'),
+                        method: "GET",
+                    }
+                    $.ajax(settings)
+                    .done((response)=>{
+                        Loading(false);
+                        if(response.deleted == true){
+                            PopMessage("Delete success", "success", true);
+                        }else{
+                            PopMessage(response.message, "error");
+                        }
+                    })
+                    .fail((xhr, status, error)=>{
+                        Loading(false);
+                        console.error("เกิดข้อผิดพลาด: " + status + " - " + error);
+                        PopMessage(error, "error");
+                    });
+                }
+            });
+        });
+    </script>
+{% endblock %}

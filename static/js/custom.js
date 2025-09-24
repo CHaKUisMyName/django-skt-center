@@ -88,6 +88,35 @@ const initialDateTimePk = (element) => {
   });
   return dp;
 };
+
+const initialTimePk = (element) => {
+  const dp = new tempusDominus.TempusDominus(element, {
+    useCurrent: false, // ไม่ให้มีค่าเริ่มต้นที่อาจผิดพลาด
+    localization: {
+      format: "HH:mm",
+      hourCycle: "h24",
+    },
+    display: {
+      // buttons: {
+      //   today: true,
+      //   clear: true,
+      //   close: true,
+      // },
+      viewMode: "calendar",
+      components: {
+        decades: true,
+        year: false,
+        month: false,
+        date: false,
+        hours: true,
+        minutes: true,
+        seconds: false,
+      },
+    },
+  });
+  return dp;
+};
+
 function datePkSetMinDate(el, date) {
   el.updateOptions({
     restrictions: {
@@ -204,4 +233,99 @@ function strUTCDateToStrThaiDate(dateString) {
     hour12: false,
   });
   return result;
+}
+
+// -- car schedule : create passenger table -- //
+
+class PassengerTable {
+  constructor(headers = []) {
+    this.headers = headers;
+    this.rows = []; // { data: [...], val: ... }
+    this.$table = null;
+    this.$tbody = null;
+  }
+
+  addRow(data) {
+    this.rows.push(data);
+    if (this.$tbody) {
+      this.refresh();
+    }
+  }
+
+  removeRow(index) {
+    let removed = this.rows[index];
+    this.rows.splice(index, 1);
+    this.refresh();
+
+    // enable dropdown option กลับคืน
+    if (removed && removed.val) {
+      $("#passenger option[value='" + removed.val + "']").prop(
+        "disabled",
+        false
+      );
+    }
+
+    // ถ้า row หมด → clear table ออกไป
+    if (this.rows.length === 0) {
+      this.clear();
+    }
+  }
+
+  clear() {
+    if (this.$table) {
+      this.$table.remove(); // ลบ DOM ออก
+    }
+    this.$table = null;
+    this.$tbody = null;
+    this.rows = []; // reset array ด้วย
+  }
+
+  render() {
+    this.$table = $("<table>").addClass(
+      "align-middle table table-bordered table-hover table-primary table-striped"
+    );
+
+    if (this.headers.length > 0) {
+      let $thead = $("<thead>");
+      let $tr = $("<tr>");
+      this.headers.forEach((h) => $tr.append($("<th>").html(h)));
+      $thead.append($tr);
+      this.$table.append($thead);
+    }
+
+    this.$tbody = $("<tbody>");
+    this.$table.append(this.$tbody);
+
+    this.refresh();
+    return this.$table;
+  }
+
+  refresh() {
+    if (!this.$tbody) return;
+    this.$tbody.empty();
+
+    this.rows.forEach((row, idx) => {
+      let $tr = $("<tr>").attr("data-value", row.val);
+      let $inputHiddenId = $("<input>", {
+        type: "hidden",
+        name: "psgs[]",
+        value: row.val,
+      });
+
+      row.data.forEach((cell) => {
+        $tr.append($("<td>").html(cell));
+      });
+
+      let $actionTd = $("<td>");
+      let $btnDel = $("<button>", {
+        class: "btn btn-sm btn-danger",
+        text: "Remove",
+      }).on("click", () => this.removeRow(idx));
+
+      $actionTd.append($btnDel);
+      $actionTd.append($inputHiddenId);
+      $tr.append($actionTd);
+      this.$tbody.append($tr);
+    });
+  }
 }

@@ -26,6 +26,7 @@
     <link href="{% static 'css/fontawesome/css/solid.min.css' %}" rel="stylesheet" />
     <link href="{% static 'css/datatables.min.css' %}" rel="stylesheet">
     <link href="{% static 'css/dataTables.bootstrap5.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/tempus-dominus.css' %}" />
     <link href="{% static 'css/custom.css' %}" rel="stylesheet" />
     <link href="{% static 'css/loading.css' %}" rel="stylesheet" />
     <link rel="stylesheet" href="{% static 'css/select2.min.css' %}" />
@@ -159,6 +160,25 @@
                             </li>
                         </ul>
                     </li>
+                    <li class="sidebar-item my-2 mx-3">
+                        <a data-bs-target="#carschedule" data-bs-toggle="collapse" class="sidebar-link">
+                            <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
+                                <i class="bi bi-truck-front-fill"></i>
+                            </div>
+                            <span class="fw-bold">Car Schedule</span>
+                        </a>
+                        <ul id="carschedule" class="parent-menu-collapse sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="{% url 'indexCarSchedule' %}" data-active="csh">Schedule</a>
+                            </li>
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="{% url 'indexCar' %}" data-active="car">Car</a>
+                            </li>
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="{% url 'indexDriver' %}" data-active="driver">Driver</a>
+                            </li>
+                        </ul>
+                    </li>
                     {% if request.currentUser.isAdmin == True %}
                     <li class="sidebar-item my-2 mx-3">
                         <a data-bs-target="#system" data-bs-toggle="collapse" class="sidebar-link">
@@ -234,6 +254,7 @@
     <script src="{% static 'js/sweetalert2.all.min.js' %}"></script>
     <script src="{% static 'js/datatables.min.js' %}"></script>
     <script src="{% static 'js/dataTables.bootstrap5.js' %}"></script>
+    <script src="{% static 'js/tempus-dominus.js' %}"></script>
     <script type="text/JavaScript">
       function ActiveMenu(menu) {
         // ลบ Active ออกจากทุกเมนูที่ไม่ตรงกับ data-active

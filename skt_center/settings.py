@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     # 'app_welcome_board',
     'app_welcome_board.apps.AppWelcomeBoardConfig',
     'app_deploy',
+    'app_car_schedule',
 ]
 
 INSTALLED_APPS += ["channels"]
