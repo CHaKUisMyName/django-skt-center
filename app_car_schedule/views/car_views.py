@@ -6,6 +6,7 @@ from django.utils import timezone
 
 
 from app_car_schedule.models.car import Car
+from app_car_schedule.models.driver import Driver
 from app_user.models.user import User
 from app_user.utils import requiredLogin
 from base_models.basemodel import UserSnapshot
@@ -113,6 +114,9 @@ def delete(request: HttpRequest, id: str):
         car: Car = Car.objects.filter(id = id).first()
         if not car:
             return JsonResponse({'deleted': False, 'message': 'Car not found'})
+        driver = Driver.objects.filter(isActive = True, car = car)
+        if driver:
+            return JsonResponse({'deleted': False, 'message': 'Car is in use'})
         car.isActive = False
         car.updateDate = timezone.now()
         currentUser: User = request.currentUser

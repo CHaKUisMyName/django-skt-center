@@ -133,9 +133,14 @@ def edit(request: HttpRequest, id: str):
             messages.error(request, "Driver not found")
             return response
         drivers = Driver.objects.filter(isActive = True)
+        print(driver.to_json())
         cars: List[Car] = Car.objects.filter(isActive = True)
         # สร้าง set ของ car_id ที่ถูกใช้แล้ว
-        used_car_ids = {str(d.car.id) for d in drivers if d.car.id and driver.car.id != d.car.id}
+        used_car_ids = {
+            str(d.car.id)
+            for d in drivers
+            if d.car and (not driver.car or driver.car.id != d.car.id)
+        }
         dropdown_cars = []
         for c in cars:
             dropdown_cars.append({
@@ -160,7 +165,9 @@ def delete(request: HttpRequest, id: str):
         driver: Driver = Driver.objects.filter(id = id).first()
         if not driver:
             return JsonResponse({'deleted': False, 'message': 'Driver not found'})
+        
         driver.isActive = False
+        driver.car = None
         driver.updateDate = timezone.now()
         currentUser: User = request.currentUser
         if currentUser:

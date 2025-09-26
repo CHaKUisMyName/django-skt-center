@@ -1,11 +1,14 @@
+import json
 from typing import List
+from bson import ObjectId
 from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 import pytz
 from django.contrib import messages
-from datetime import datetime
 from django.utils import timezone
+from datetime import datetime
+from mongoengine.queryset.visitor import Q
 
 from app_car_schedule.models.car_schedule import CarSchedule, ViewPersonCarSchedule
 from app_car_schedule.models.driver import Driver
@@ -286,7 +289,24 @@ def delete(request: HttpRequest, id: str):
     except Exception as e:
         print(e)
         return JsonResponse({'deleted': False, 'message': str(e)})
-
+    
+@requiredLogin
+def listPage(request: HttpRequest):
+    if request.method == 'POST':
+        pass
+    else:
+        drivers = Driver.objects.filter(isActive = True)
+        users = User.objects.filter(isActive = True).order_by('code')
+        print(f"year : {timezone.now().year}")
+        defaultYear =int(2020)
+        nowYear = int(timezone.now().year)
+        years = list(range(nowYear, defaultYear - 1, -1))
+        context = {
+            "drivers": drivers,
+            "users": users,
+            "years": years,
+        }
+        return render(request,'schedule/list.html', context)
 
 def dateStrAndTimeToDatetime(date: str, time: str):
     try:
@@ -296,3 +316,32 @@ def dateStrAndTimeToDatetime(date: str, time: str):
     except Exception as e:
         print(e)
         return None
+    
+def filterCarScheduleJson(request: HttpRequest):
+    try:
+        if request.method != "POST":
+            return JsonResponse({'success': False, 'message': "Method not allowed"})
+        body = json.loads(request.body.decode('utf-8'))  # อ่าน JSON body
+        year = body.get('year')
+        passenger = body.get('passenger')
+        driver = body.get('driver')
+        bookby = body.get('bookby')
+
+        schedules: List[CarSchedule] = CarSchedule.objects.filter(isActive = True)
+        if year:
+            # schedules = schedules.filter(sDate__year = year)
+            start = datetime(int(year), 1, 1, tzinfo=tz)
+            end = datetime(int(year) + 1, 1, 1, tzinfo=tz)
+            schedules = schedules.filter(sDate__gte=start, sDate__lt=end)
+        if passenger and passenger != "None":
+            schedules = schedules.filter(passengers__id = passenger)
+        if driver and driver != "0":
+            schedules = schedules.filter(driver__id = driver)
+        if bookby and bookby != "0":
+            schedules = schedules.filter(Q(createBy__userId = ObjectId(bookby)) | Q(updateBy__userId = ObjectId(bookby)))
+        schedules = schedules.order_by('-sDate')
+        return JsonResponse({'success': True, 'data': [sch.serialize() for sch in schedules], 'message': 'Success'})
+
+    except Exception as e:
+        print(e)
+        return JsonResponse({'success': False, 'message': str(e)})

@@ -12,6 +12,15 @@ class Driver(BaseClass):
     color = me.StringField(null= True, required= False, default = None)
     note = me.StringField(null= True, required= False, default = None)
     isActive = me.BooleanField()
+    @property
+    def fullNameEN(self):
+        if not self.user:
+            return "-"
+        code  = self.user.code if self.user.code else "-"
+        fNameEN = self.user.fNameEN if self.user.fNameEN else ""
+        lNameEN = self.user.lNameEN if self.user.lNameEN else ""
+        return f"({code}) {fNameEN} {lNameEN}"
+
 
     meta = {
         'collection': 'carScheduleDriver'  # 👈 ชื่อ collection ที่กำหนดเอง

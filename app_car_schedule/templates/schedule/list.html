@@ -1,0 +1,256 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Car Schedule</title>{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span class="">Car Schedule / </span><span class="fw-bold">List</span>
+</div>
+{% endblock %}
+{% block css %}
+    
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">Search Panel</h3>
+                    </div>  
+                </div>
+            </div>
+            <div class="card-body">
+                <form class="row mb-3">
+                    {% csrf_token %}
+                    <div class="col-12">
+                        <div class="row mb-3">
+                            <div class="col-sm-12 col-md-3">
+                                <label for="year" class="form-label fw-bold text-dark-emphasis">Year</label>
+                                <select id="year" name="year" class="form-select" required>
+                                    {% for year in years %}
+                                    <option value="{{ year }}">{{ year }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-sm-12 col-md-4">
+                                <label for="passenger" class="form-label fw-bold text-dark-emphasis">Passenger</label>
+                                <select id="passenger" name="passenger" class="form-select" required>
+                                    <option value="None">Not Select</option>
+                                    {% for passenger in users %}
+                                    <option value="{{ passenger.id }}">{% if passenger.code %}({{ passenger.code }}) {% endif %} {{ passenger.fNameEN }} {{ passenger.lNameEN }}</option>
+                                    {% endfor %}
+                                    <option value="0">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-12 col-md-4">
+                                <label for="bookby" class="form-label fw-bold text-dark-emphasis">Book By</label>
+                                <select id="bookby" name="bookby" class="form-select" required>
+                                    <option value="0">Not Select</option>
+                                    {% for bookby in users %}
+                                    <option value="{{ bookby.id }}">
+                                        {% if bookby.code %}({{ bookby.code }}) {% endif %} {{ bookby.fNameEN }} {{ bookby.lNameEN }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-sm-12 col-md-4">
+                                <label for="driver" class="form-label fw-bold text-dark-emphasis">Driver</label>
+                                <select id="driver" name="driver" class="form-select" required>
+                                    <option value="0">Not Select</option>
+                                    {% for driver in drivers %}
+                                    <option value="{{ driver.id }}">{{ driver.fullNameEN }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3 float-end">
+                            <div class="col-12">
+                                <button id="btnReset" type="button" class="btn btn-secondary">Reset</button>
+                                <button id="btnSearch" type="button" class="btn btn-primary ms-2">Search</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">List Car Schedule</h3>
+                        <p class="text-sm mb-0">
+                            List of Car Schedule
+                        </p>
+                    </div>
+                    <div class="ms-auto my-auto mt-lg-0 mt-4">
+                        <div class="ms-auto my-auto">
+                            <a href="{% url 'addCarSchedule' %}" class="btn btn-primary">
+                                <i class="bi bi-plus"></i>
+                                <span>Add Schedule</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table id="tb" class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Title</th>
+                                        <th>Passengers</th>
+                                        <th>Driver</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    
+    <script type="text/javascript">
+        var table;
+        $(document).ready(() => {
+            ActiveMenu("listcsh");
+            table = $('#tb').DataTable({
+                ajax: {
+                    url: window.location.origin + "/csh/api/filter/",
+                    type: "POST",
+                    contentType: "application/json",
+                    headers: { "X-CSRFToken": getCSRFToken() },
+                    data: function(d) {
+                        return JSON.stringify({
+                            year: $('#year').val(),
+                            passenger: $('#passenger').val(),
+                            driver: $('#driver').val(),
+                            bookby: $('#bookby').val()
+                        });
+                    },
+                    dataSrc: function(json) {
+                        Loading(false);
+                        if (!json.success) return [];
+                        return json.data;
+                    }
+                },
+                columns: [
+                    { 
+                        data: 'sDate',
+                        render: function(data, type, row) {
+                            if (!data) return '';
+                            const s = new Date(data);
+                            const e = row.eDate ? new Date(row.eDate) : null;
+
+                            const formatDate = dt => dt.getDate().toString().padStart(2,'0') + '/' +
+                                                    (dt.getMonth()+1).toString().padStart(2,'0') + '/' +
+                                                    dt.getFullYear();
+                            const formatTime = dt => dt.getHours().toString().padStart(2,'0') + ':' +
+                                                    dt.getMinutes().toString().padStart(2,'0');
+
+                            let text = formatDate(s) + `<br>` + formatTime(s);
+                            if (e) text += ' - ' + formatTime(e);
+                            return text;
+                        }
+                    },
+                    { data: 'title' },
+                    { 
+                        data: 'passengers',
+                        render: function(data, type, row) {
+                            if (!data || !data.length) return '';
+                            let html = '<ul class="mb-0 ps-3">';
+                            data.forEach(p => {
+                                html += p.id != "0" ?`<li>${p.fNameEN} ${p.lNameEN}</li>` : `<li>Other</li>`;
+                            });
+                            html += '</ul>';
+                            return html;
+                        }
+                    },
+                    { 
+                        data: 'driver',
+                        render: function(data) {
+                            return data ? `${data.fNameEN} ${data.lNameEN}` : '';
+                        }
+                    },
+                    { 
+                        data: 'id',
+                        render: function(data) {
+                            editBtn = `<a href="/csh/edit/${data}" class="btn btn-info m-1"><i class="bi bi-pencil"></i></a>`;
+                            deleteBtn = `<button type="button" class="btn btn-danger delete" onclick="deleteClick('${data}');"><i class="bi bi-trash"></i></button>`;
+                            return editBtn + deleteBtn;
+                        }
+                    }
+                ]
+            });
+            $('.form-select').select2({
+                theme: 'bootstrap-5',
+            });
+        });
+        $('#btnReset').click(function(e){
+            e.preventDefault();
+            $('#driver').val('0').change();
+            $('#passenger').val('None').change();
+            $('#bookby').val('0').change();
+            $('#year').val(new Date().getFullYear()).change();
+            Loading(true);
+            table.ajax.reload();
+            
+        });
+        $('#btnSearch').click(function(e){
+            e.preventDefault();
+            Loading(true);
+            table.ajax.reload();
+        });
+
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+        
+        const deleteClick = (data) => {
+            Swal.fire({
+                title: "Do you want to delete ?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#f97316",
+                confirmButtonText: "Delete",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if(result.isConfirmed){
+                    Loading(true);
+                    const settings = {
+                        url: window.location.origin + "/csh/delete/" + data,
+                        method: "GET",
+                    }
+                    $.ajax(settings).done((response) => {
+                        Loading(false);
+                        if(response.deleted == true){
+                            PopMessage("Delete success", "success",true);
+                        }else{
+                            PopMessage(response.message, "error");
+                        }
+                        // calendar.refetchEvents();
+                    }).fail((xjr, status, error) => {
+                        Loading(false);
+                        PopMessage(error, "error");
+                        // calendar.refetchEvents();
+                    });
+                }
+            });
+        }
+    </script>
+{% endblock %}
