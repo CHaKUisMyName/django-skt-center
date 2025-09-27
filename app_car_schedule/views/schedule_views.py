@@ -301,10 +301,12 @@ def listPage(request: HttpRequest):
         defaultYear =int(2020)
         nowYear = int(timezone.now().year)
         years = list(range(nowYear, defaultYear - 1, -1))
+        currentUser: User = request.currentUser
         context = {
             "drivers": drivers,
             "users": users,
             "years": years,
+            "selectUser": currentUser.id if currentUser else ""
         }
         return render(request,'schedule/list.html', context)
 

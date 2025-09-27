@@ -48,9 +48,15 @@
                                 <select id="bookby" name="bookby" class="form-select" required>
                                     <option value="0">Not Select</option>
                                     {% for bookby in users %}
-                                    <option value="{{ bookby.id }}">
-                                        {% if bookby.code %}({{ bookby.code }}) {% endif %} {{ bookby.fNameEN }} {{ bookby.lNameEN }}
-                                    </option>
+                                        {% if selectUser != "" and bookby.id == selectUser %}
+                                        <option value="{{ bookby.id }}" selected>
+                                            {% if bookby.code %}({{ bookby.code }}) {% endif %} {{ bookby.fNameEN }} {{ bookby.lNameEN }}
+                                        </option>
+                                        {% else %}
+                                        <option value="{{ bookby.id }}">
+                                            {% if bookby.code %}({{ bookby.code }}) {% endif %} {{ bookby.fNameEN }} {{ bookby.lNameEN }}
+                                        </option>
+                                        {% endif %}
                                     {% endfor %}
                                 </select>
                             </div>
