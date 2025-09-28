@@ -1,0 +1,135 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Setting Car Schedule</title>{% endblock %}
+{% block css %}
+    
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>Car Schedule / </span><span class="fw-bold">Setting</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">List Setting Car Schedule</h3>
+                        <p class="text-sm mb-0">
+                            List of user and menu system
+                        </p>
+                    </div>
+                    <div class="ms-auto my-auto mt-lg-0 mt-4">
+                        <div class="ms-auto my-auto">
+                            <a href="#" id="addAll" class="btn btn-outline-primary">
+                                <i class="bi bi-file-earmark-excel"></i>
+                                <span>Import Excel</span>
+                            </a>
+                            <a href="{% url 'addSettingCsh' %}" class="btn btn-primary">
+                                <i class="bi bi-plus"></i>
+                                <span>Map User</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="tb" class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Employee</th>
+                                <th>Menu</th>
+                                <th>Admin</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in cshSettings %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ user.user.fNameEN }} {{ user.user.lNameEN }} ({{ user.user.code }})</td>
+                                <td>
+                                    {% for menu in user.menus %}
+                                    <p>- {{ menu.name }}</p>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    {% if user.isAdmin %}
+                                    <span class="badge text-bg-success text-white">Admin</span>
+                                    {% else %}
+                                    <span class="badge text-bg-secondary text-white">User</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div>
+                                        <a href="{% url 'editSettingCsh' user.id %}" class="btn btn-info me-2">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-danger delete" data-cshid="{{ user.id }}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    {% if messages %}
+        {% for message in messages %}
+        <script type="text/javascript">
+            $(document).ready(function(){
+                const mssTag = "{{message.tags}}";
+                const mssMsg = "{{message}}";
+                PopMessage(mssMsg, mssTag);
+            });
+        </script>
+        {% endfor %}
+    {% endif %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            ActiveMenu("settingcsh");
+            $('#tb').DataTable();
+        });
+        $('.delete').click(function(e){
+            e.preventDefault();
+            Swal.fire({
+                title: "Do you want to delete ?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#f97316",
+                confirmButtonText: "Delete",
+                cancelButtonText: "Cancel"
+            }).then((result)=>{
+                if(result.isConfirmed){
+                    Loading(true);
+                    const settings = {
+                        url: window.location.origin + window.location.pathname + "delete/" + $(e.currentTarget).data('cshid'),
+                        method: "GET",
+                    }
+                    $.ajax(settings).done((response)=>{
+                        Loading(false);
+                        if(response.deleted == true){
+                            PopMessage("Delete success", "success", true);
+                        }else{
+                            PopMessage(response.message, "error");
+                        }
+                    }).fail((xjr, status, error) => {
+                        Loading(false);
+                        PopMessage(error, "error");
+                    });
+                }
+            });
+        });
+    </script>
+{% endblock %}

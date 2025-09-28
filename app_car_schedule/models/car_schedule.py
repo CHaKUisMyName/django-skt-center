@@ -55,7 +55,14 @@ class CarSchedule(BaseClass):
     meta = {
         'collection': 'carSchedule'  # 👈 ชื่อ collection ที่กำหนดเอง
     }
-    def serialize(self):
+    def serialize(self, current_user=None, is_setting_admin=False):
+        can_edit_delete = False
+        if current_user:
+            if getattr(current_user, "isAdmin", False) or is_setting_admin:
+                can_edit_delete = True
+            elif (self.createBy and str(self.createBy.userId) == str(current_user.id)) or \
+                (self.updateBy and str(self.updateBy.userId) == str(current_user.id)):
+                can_edit_delete = True
         return {
             "id": str(self.id) if self.id else "",
             # "sDate": self.sDate.strftime("%d/%m/%Y %H:%M") if self.sDate else "",
@@ -69,4 +76,9 @@ class CarSchedule(BaseClass):
             "destination": self.destination,
             "color": self.color,
             "isActive": self.isActive,
+            "createDate": self.createDate.astimezone(datetime.timezone.utc).isoformat() if self.createDate else None,
+            "createBy":self.createBy.serialize() if self.createBy else None,
+            "updateDate": self.updateDate.astimezone(datetime.timezone.utc).isoformat() if self.updateDate else None,
+            "updateBy": self.updateBy.serialize() if self.updateBy else None,
+            "canEditDelete": can_edit_delete,
         }

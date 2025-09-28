@@ -141,7 +141,8 @@
                                 destination: item.destination,
                                 passengers: item.passengers,
                                 purpose: item.purpose,
-                                link: window.location.origin + window.location.pathname + "edit/" + item.id
+                                link: window.location.origin + window.location.pathname + "edit/" + item.id,
+                                canEdit: canEdit(item),
                             }
                             return newItem
                         });
@@ -227,8 +228,15 @@
                 }).text("-");
                 $("#passengers").append($psgText);
             }
-            $("#edit").attr("href", info.event.extendedProps.link);
-            $("#delete").attr("data-cshid", info.event.id);
+            if(info.event.extendedProps.canEdit == false){
+                $("#rowEdit").addClass("d-none");
+                $("#edit").attr("href", "#");
+                $("#delete").attr("data-vstid", "");
+            }else{
+                $("#rowEdit").removeClass("d-none");
+                $("#edit").attr("href", info.event.extendedProps.link);
+                $("#delete").attr("data-cshid", info.event.id);
+            }
         }
         const clearDetailData = ()=>{
             $("#sdate").text("");
@@ -267,6 +275,23 @@
                 PopMessage(error, "error");
                 // calendar.refetchEvents();
             });
+        }
+        const canEdit = (info) => {
+            const isSuperAdmin = "{{request.currentUser.isAdmin}}" === "True";
+            const createById = info.createBy?.userId ? info.createBy.userId : "";
+            const updateById = info.updateBy?.userId ? info.updateBy.userId : "";
+            const userId = "{{request.currentUser.id}}";
+            const isSettingAdmin = "{{isSettingAdmin}}" === "True";
+            // console.log(createById);
+            console.log(info);
+            if(
+                isSuperAdmin == true 
+                || isSettingAdmin == true
+                || (createById == userId || updateById == userId)
+            ){
+                return true;
+            }
+            return false;
         }
     </script>
 {% endblock %}

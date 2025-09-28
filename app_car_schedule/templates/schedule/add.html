@@ -161,6 +161,7 @@
             var date = initialDatePk(document.getElementById("date"));
             var stime = initialTimePk(document.getElementById("dv-stime"));
             var etime = initialTimePk(document.getElementById("dv-etime"));
+            datePkSetMinDate(date, new Date(new Date().setHours(0, 0, 0, 0)));
             let qDate = "{{ qDate }}";
             if(qDate){
                 const newDate = new tempusDominus.DateTime(qDate);

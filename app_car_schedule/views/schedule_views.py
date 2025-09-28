@@ -11,6 +11,7 @@ from datetime import datetime
 from mongoengine.queryset.visitor import Q
 
 from app_car_schedule.models.car_schedule import CarSchedule, ViewPersonCarSchedule
+from app_car_schedule.models.car_schedule_setting import CarScheduleSetting
 from app_car_schedule.models.driver import Driver
 from app_user.models.user import User
 from app_user.utils import requiredLogin
@@ -20,8 +21,14 @@ tz = pytz.timezone("Asia/Bangkok")
 
 @requiredLogin
 def index(request: HttpRequest):
-    
-    return render(request,'schedule/index.html')
+    checCurUserSettingAdmin = CarScheduleSetting.objects.filter(user = request.currentUser.id, isAdmin = True, isActive = True).first()
+    isSettingAdmin = False
+    if checCurUserSettingAdmin:
+        isSettingAdmin = True
+    context = {
+        "isSettingAdmin": isSettingAdmin,
+    }
+    return render(request,'schedule/index.html', context)
 
 def listCarScheduleJson(request: HttpRequest):
     try:
@@ -39,6 +46,7 @@ def listCarScheduleJson(request: HttpRequest):
         if not listData:
             return JsonResponse({'success': True, 'data': [], 'message': 'Success'})
         schedules = [ csh.serialize() for csh in listData]
+        
         return JsonResponse({'success': True, 'data': schedules, 'message': 'Success'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)})
@@ -144,8 +152,6 @@ def add(request: HttpRequest):
             "passengers": passengers,
             "qDate": qDate,
         }
-        for driver in drivers:
-            print(driver.to_json())
         return render(request,'schedule/add.html', context)
 
 @requiredLogin
@@ -302,11 +308,16 @@ def listPage(request: HttpRequest):
         nowYear = int(timezone.now().year)
         years = list(range(nowYear, defaultYear - 1, -1))
         currentUser: User = request.currentUser
+        checkCurUserSettingAdmin = CarScheduleSetting.objects.filter(user = currentUser.id, isAdmin = True, isActive = True).first()
+        isSettingAdmin = False
+        if checkCurUserSettingAdmin:
+            isSettingAdmin = True
         context = {
             "drivers": drivers,
             "users": users,
             "years": years,
-            "selectUser": currentUser.id if currentUser else ""
+            "selectUser": currentUser.id if currentUser else "",
+            "isSettingAdmin": isSettingAdmin,
         }
         return render(request,'schedule/list.html', context)
 
@@ -328,6 +339,11 @@ def filterCarScheduleJson(request: HttpRequest):
         passenger = body.get('passenger')
         driver = body.get('driver')
         bookby = body.get('bookby')
+        currentUser: User = request.currentUser
+        checkCurUserSettingAdmin = CarScheduleSetting.objects.filter(user = currentUser.id, isAdmin = True, isActive = True).first()
+        isSettingAdmin = False
+        if checkCurUserSettingAdmin:
+            isSettingAdmin = True
 
         schedules: List[CarSchedule] = CarSchedule.objects.filter(isActive = True)
         if year:
@@ -342,7 +358,7 @@ def filterCarScheduleJson(request: HttpRequest):
         if bookby and bookby != "0":
             schedules = schedules.filter(Q(createBy__userId = ObjectId(bookby)) | Q(updateBy__userId = ObjectId(bookby)))
         schedules = schedules.order_by('-sDate')
-        return JsonResponse({'success': True, 'data': [sch.serialize() for sch in schedules], 'message': 'Success'})
+        return JsonResponse({'success': True, 'data': [sch.serialize(current_user=currentUser, is_setting_admin=isSettingAdmin) for sch in schedules], 'message': 'Success'})
 
     except Exception as e:
         print(e)

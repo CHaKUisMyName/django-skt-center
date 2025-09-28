@@ -120,7 +120,6 @@ def delete(request: HttpRequest, id: str):
         hasPermission = HasVstPermission(id = str(request.currentUser.id), menu = "Room")
         if not request.currentUser.isAdmin:
             if hasPermission == False:
-                messages.error(request, "Not Permission")
                 return JsonResponse({'deleted': False, 'message': 'Not Permission'})
         if not id:
             return JsonResponse({'deleted': False, 'message': 'Not found id'})

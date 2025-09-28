@@ -134,11 +134,13 @@
                 const newDate = new tempusDominus.DateTime(scheduleSDate);
                 date.dates.setValue(newDate);
                 stime.dates.setValue(newDate);
+                datePkSetMinDate(date, new Date(new Date(scheduleSDate).setHours(0, 0, 0, 0)));
             }
             if(scheduleEDate){
                 const newDate = new tempusDominus.DateTime(scheduleEDate);
                 etime.dates.setValue(newDate);
             }
+            
             $('.form-select').select2({
                 theme: 'bootstrap-5',
                 allowClear: true,

@@ -1,0 +1,162 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Setting Car Schedule</title>{% endblock %}
+{% block css %}
+    
+    <style>
+        /* แสดงขอบสีแดงสำหรับ validation error */
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+
+    </style>
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>Car Schedule / </span><span class="fw-bold">Setting</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-sm-12 col-lg-10 mx-auto">
+        <div class="card">
+            <form id="fm" method="post" class="card-body mb-3 needs-validation" novalidate>
+                {% csrf_token %}
+                <h3 class="display-6 fw-bold">Setting Car Schedule</h3>
+                <p class="text-sm">Add new setting Car Schedule</p>
+                <div class="row mb-3">
+                    <div class="col-lg-8 col-sm-12">
+                        <label for="user" class="form-label fw-bold text-dark-emphasis">User</label>
+                        <select id="user" name="user" class="form-select" required>
+                            <option value=""></option>
+                            {% for user in users %}
+                            <option value="{{ user.id }}" {% if user.id in selectedUsers %}disabled{% endif %}>{% if user.id in selectedUsers %}(** is already used **){% endif %} {{ user.fNameEN }} {{ user.lNameEN }} ({{ user.code }})</option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">Please select data</div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="mb-2">
+                            <labe class="form-label fw-bold text-dark-emphasis">Menu</labe>
+                        </div>
+                        {% for menu in menus %}
+                        <div class="form-check mb-2">
+                            <input class="form-check-input menu" type="checkbox" name="menus" value="{{ menu.id }}" id="{{ menu.id }}">
+                            <label class="form-check-label menu-label" for="{{ menu.id }}">{{ menu.name }}</label>
+                        </div>
+                        {% endfor %}
+                        <div class="invalid-feedback" id="menu-error" style="display: none;">Please select data</div>
+                    </div>
+                </div>
+                <hr class="my-4">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="mb-2">
+                            <labe class="form-label fw-bold text-dark-emphasis">Is Admin</labe>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input isadmin" type="checkbox" name="isadmin" id="isadmin">
+                            <label class="form-check-label" for="isadmin">Is Admin</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row float-end">
+                    <div class="col-12">
+                        <a href="{% url 'indexSettingCsh' %}" class="btn btn-light">Cancel</a>
+                        <button id="btnSave" type="submit" class="btn btn-primary ms-2">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    <script type="text/javascript">
+        (function () {
+            'use strict';
+            const form = document.querySelector('form');
+            const menuError = document.getElementById('menu-error');
+            
+            form.addEventListener('submit', function (event) {
+                const checkedMenus = document.querySelectorAll('input[name="menus"]:checked');
+                
+                let isValid = true;
+                // ถ้าไม่มี checkbox ใดถูกเลือก
+                if (checkedMenus.length === 0) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    Loading(false);
+
+                    // แสดง error
+                    menuError.style.display = 'block';
+
+                    // เพิ่ม is-invalid ไปที่ checkbox แรก (หรือทั้งหมดก็ได้)
+                    document.querySelectorAll('input[name="menus"]').forEach(cb => {
+                        cb.classList.add('is-invalid');
+                        console.log("test");
+                    });
+                    $(".menu-label").each(function(){
+                        $(this).addClass("text-danger");
+                    });
+                    isValid = false;
+                } else {
+                    // ซ่อน error และลบ is-invalid ถ้ามีการเลือกแล้ว
+                    menuError.style.display = 'none';
+                    document.querySelectorAll('input[name="menus"]').forEach(cb => {
+                        cb.classList.remove('is-invalid');
+                    });
+                    $(".menu-label").each(function(){
+                        $(this).addClass("text-success");
+                    });
+                }
+                Loading(true);
+                if (!form.checkValidity() || !isValid) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    Loading(false);
+                }
+                form.classList.add('was-validated');
+            }, false);
+        })();
+        $(document).ready(()=>{
+            ActiveMenu("settingcsh");
+            $('.form-select').select2({
+                theme: 'bootstrap-5',
+            });
+        });
+        $('.menu').change(function(){
+        if($(this).is(":checked")){
+            const parent = $(this);
+            $(".menu-label").each(function(){
+                if($(this).hasClass("text-danger")){
+                    $(this).removeClass("text-danger");
+                    $(this).addClass("text-success");
+                }
+            });
+            $("#menu-error").css("display", "none");
+            $('.menu').each(function(){
+            if($(this).hasClass('is-invalid')){
+                    $(this).removeClass('is-invalid');
+                }
+            });
+        }else{
+            // -- ถ้า menu ไม่ถูกเลือก เอา checkbox isadmin ออก
+            if($('.menu').length != $('.menu:checked').length){
+                $("#isadmin").prop("checked", false).change();
+            }
+        }
+    });
+
+    // -- ถ้าเป็น admin ให้ checked all menu
+    $("#isadmin").change(function(){
+        if($(this).is(":checked")){
+            $('.menu').each(function(){
+                $(this).prop("checked",true).change();
+            });
+        }
+    });
+    </script>
+{% endblock %}

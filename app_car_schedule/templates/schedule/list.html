@@ -195,10 +195,15 @@
                     },
                     { 
                         data: 'id',
-                        render: function(data) {
-                            editBtn = `<a href="/csh/edit/${data}" class="btn btn-info m-1"><i class="bi bi-pencil"></i></a>`;
-                            deleteBtn = `<button type="button" class="btn btn-danger delete" onclick="deleteClick('${data}');"><i class="bi bi-trash"></i></button>`;
-                            return editBtn + deleteBtn;
+                        render: function(data, type, row) {
+                            let html = "";
+                            if (row.canEditDelete) {
+                                html += `<a href="/csh/edit/${data}" class="btn btn-info m-1"><i class="bi bi-pencil"></i></a>`;
+                                html += `<button type="button" class="btn btn-danger delete" onclick="deleteClick('${data}');"><i class="bi bi-trash"></i></button>`;
+                            }else{
+                                html += "-"
+                            }
+                            return html;
                         }
                     }
                 ]

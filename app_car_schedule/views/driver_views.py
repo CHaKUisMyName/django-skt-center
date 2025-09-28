@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.utils import timezone
 from app_car_schedule.models.car import Car
 from app_car_schedule.models.driver import Driver
+from app_car_schedule.utils import HasCshPermission
 from app_user.models.user import User, UserStatus
 from app_user.utils import requiredLogin
 from base_models.basemodel import UserSnapshot
@@ -14,6 +15,11 @@ from base_models.basemodel import UserSnapshot
 @requiredLogin
 def index(request: HttpRequest):
     drivers = Driver.objects.filter(isActive = True)
+    hasPermission = HasCshPermission(id = str(request.currentUser.id), menu = "Driver")
+    if not request.currentUser.isAdmin:
+        if hasPermission == False:
+            messages.error(request, "Not Permission")
+            return HttpResponseRedirect('/')
     context = {
         "drivers": drivers,
     }
@@ -21,6 +27,11 @@ def index(request: HttpRequest):
 
 @requiredLogin
 def add(request: HttpRequest):
+    hasPermission = HasCshPermission(id = str(request.currentUser.id), menu = "Driver")
+    if not request.currentUser.isAdmin:
+        if hasPermission == False:
+            messages.error(request, "Not Permission")
+            return HttpResponseRedirect('/')
     if request.method == "POST":
         response = HttpResponseRedirect(reverse('indexDriver'))
         try:
@@ -90,6 +101,11 @@ def add(request: HttpRequest):
 
 @requiredLogin
 def edit(request: HttpRequest, id: str):
+    hasPermission = HasCshPermission(id = str(request.currentUser.id), menu = "Driver")
+    if not request.currentUser.isAdmin:
+        if hasPermission == False:
+            messages.error(request, "Not Permission")
+            return HttpResponseRedirect('/')
     response = HttpResponseRedirect(reverse('indexDriver'))
     if request.method == "POST":
         try:
@@ -160,6 +176,10 @@ def delete(request: HttpRequest, id: str):
     try:
         if not request.method == "GET":
             return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
+        hasPermission = HasCshPermission(id = str(request.currentUser.id), menu = "Driver")
+        if not request.currentUser.isAdmin:
+            if hasPermission == False:
+                return JsonResponse({'deleted': False, 'message': 'Not Permission'})
         if not id:
             return JsonResponse({'deleted': False, 'message': 'Not found id'})
         driver: Driver = Driver.objects.filter(id = id).first()
