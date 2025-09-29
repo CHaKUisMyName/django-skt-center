@@ -9,4 +9,5 @@ urlpatterns = [
     path('list/', view= schedule_views.listPage, name="listCarSchedule"),
     path('api/listjs/', view= schedule_views.listCarScheduleJson, name="listCarScheduleJson"),
     path('api/filter/', view= schedule_views.filterCarScheduleJson, name="filterCarScheduleJson"),
+    path('api/excelyear/<str:year>/', view= schedule_views.excelYear, name="excelYear"),
 ]

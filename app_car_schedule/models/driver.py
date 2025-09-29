@@ -20,6 +20,17 @@ class Driver(BaseClass):
         fNameEN = self.user.fNameEN if self.user.fNameEN else ""
         lNameEN = self.user.lNameEN if self.user.lNameEN else ""
         return f"({code}) {fNameEN} {lNameEN}"
+    
+    def serialize(self):
+        return {
+            "id": str(self.id) if self.id else "",
+            "fullNameEN": self.fullNameEN,
+            "user": self.user.serialize() if self.user else {},
+            "car": self.car.serialize() if self.car else {},
+            "color": self.color,
+            "note": self.note,
+            "isActive": self.isActive,
+        }
 
 
     meta = {

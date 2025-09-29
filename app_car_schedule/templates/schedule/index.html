@@ -20,6 +20,16 @@
         <h1>Car Schedule</h1>
     </div>
 </div>
+{% if request.currentUser %}
+<div class="row mb-3">
+    <div class="col-12">
+        <button id="exp" type="button" class="btn btn-success mb-3">
+            <i class="bi bi-file-earmark-excel-fill"></i>
+            export
+        </button>
+    </div>
+</div>
+{% endif %}
 <div class="card">
     <div class="card-body row mb-3">
         <div class="col-12">
@@ -104,6 +114,7 @@
         </script>
         {% endfor %}
     {% endif %}
+    <script src="{% static 'js/exceljs.js' %}"></script>
     <script type="text/javascript">
         var calendar;
         var calendarEl;
@@ -252,7 +263,6 @@
         }
         const deleteClick = (e) => {
             Loading(true);
-            console.log($(e).data('cshid'));
             
             const settings = {
                 url: window.location.origin + window.location.pathname + "delete/" + $(e).data('cshid'),
@@ -282,8 +292,7 @@
             const updateById = info.updateBy?.userId ? info.updateBy.userId : "";
             const userId = "{{request.currentUser.id}}";
             const isSettingAdmin = "{{isSettingAdmin}}" === "True";
-            // console.log(createById);
-            console.log(info);
+            
             if(
                 isSuperAdmin == true 
                 || isSettingAdmin == true
@@ -293,5 +302,209 @@
             }
             return false;
         }
+        var dv = undefined;
+        $("#exp").click(function(e){
+            e.preventDefault();
+            Loading(true);
+            const nowYear = new Date().getFullYear();
+            const settings = {
+                url: window.location.origin + window.location.pathname + "api/excelyear/" + nowYear,
+                method: "GET",
+                timeout: 0,
+                async: false, // -- รอจนกว่า AJAX request จะเสร็จสิ้น
+            };
+            $.ajax(settings).done(async function (res) {
+                
+                if(res.success == true){
+                    // dv = res.data;
+                    await createExcel(res.data);
+                    // Loading(false);
+                }else{
+                    PopMessage(res.message, "error");
+                    Loading(false);
+                }
+                
+            }).fail((xjr, status, error) => {
+                Loading(false);
+                PopMessage(error, "error");
+                // calendar.refetchEvents();
+            });
+        });
+        const createExcel = async (data) =>{
+            
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet("My Sheet", {
+            views: [{ state: "frozen", ySplit: 1 }],
+            });
+
+            const col = [];
+            const dayAllYear = getDays(new Date());
+            col.push({
+                header: "Date/Time",
+                key: "date",
+                width: 15,
+                alignment: { wrapText: true },
+            });
+            var rowObj = {};
+            rowObj["date"] = "";
+            $.each(data.drivers, function(i, v){
+                col.push({
+                    header: v.user.fNameEN + " " + v.user.lNameEN,
+                    key: "dv" + v.id,
+                    width: 25,
+                });
+                rowObj["dv" + v.id] = "";
+            });
+            worksheet.columns = col;
+            $.each(col, function (i, v) {
+                worksheet.getColumn(i + 1).alignment = {
+                    wrapText: true,
+                    vertical: "top",
+                };
+                worksheet.getColumn(i + 1).border = {
+                    top: { style: "thin" },
+                    left: { style: "thin" },
+                    bottom: { style: "thin" },
+                    right: { style: "thin" },
+                };
+            });
+            // -- header style
+            worksheet.getRow(1).alignment = {
+                horizontal: "center",
+                wrapText: true,
+                vertical: "top",
+                vertical: "middle",
+            };
+            worksheet.getRow(1).height = 45;
+            worksheet.getRow(1).font = { bold: true, size: 16 };
+
+            // -- date column
+            worksheet.getColumn(1).alignment = {
+                horizontal: "center",
+                wrapText: true,
+                vertical: "middle",
+            };
+            $.each(dayAllYear, function(i, d){
+                console.log(d);
+                let main = jQuery.extend({}, rowObj);
+                const all = moment(d.date, "DD-MM-YYYY").format("YYYY-MM-DD");
+                const csh = data.schedules.filter(
+                    (e) => moment(e.sDate).format("YYYY-MM-DD") == all
+                );
+                $.each(csh, function(i, v){
+                    
+                    const start = moment(v.sDate).format("HH:mm");
+                    const end = moment(v.eDate).format("HH:mm");
+                    let psg = "";
+                    psg += v.title + "\r\n";
+                    if(
+                        v.passengers != undefined &&
+                        v.passengers != null &&
+                        v.passengers.length > 0
+                    ){
+                        $.each(v.passengers, function(i, p){
+                            if(p.id == "0"){
+                                psg += "-- Other --\r\n";
+                            }else{
+                                psg += p.fNameEN + " " + p.lNameEN + "\r\n";
+                            } 
+                        });
+                        psg += start + " -> " + end;
+                    }
+                    var drive = main["dv" + v.driver.id];
+                    if(drive){
+                        main["dv" + v.driver.id] = drive + "\r\n--------------------------\r\n" + psg;
+                    }else{
+                        main["dv" + v.driver.id] = psg;
+                    }
+                });
+                main["date"] = d.date + "\r\n" + d.day;
+                worksheet.addRow(main);
+            });
+            // Iterate over all rows that have values in a worksheet
+            worksheet.eachRow(function (row, rowNumber) {
+            if (rowNumber > 1) {
+                const day = row.values[1].toString().toLowerCase();
+                if (day.includes("sunday") || day.includes("saturday")) {
+                row.eachCell(function (cell, colNumber) {
+                    cell.fill = {
+                    type: "pattern",
+                    pattern: "solid",
+                    fgColor: { argb: "ccffacac" },
+                    };
+                });
+                }
+            }
+            });
+            // write to a new buffer
+            const buffer = await workbook.xlsx.writeBuffer();
+            // Convert buffer to a Blob
+            const blob = new Blob([buffer], {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            });
+            await exportFileFromBlob(blob, "report-carschedlue.xlsx");
+            Loading(false);
+        }
+
+        const exportFileFromBlob = async (blob, fileName) => {
+            // Create a link element
+            const link = document.createElement("a");
+
+            // Create an object URL for the blob
+            const url = URL.createObjectURL(blob);
+
+            // Set the download attribute with a filename
+            link.href = url;
+            link.download = fileName;
+
+            // Append the link to the body (it's necessary for Firefox)
+            document.body.appendChild(link);
+
+            // Programmatically click the link to trigger the download
+            link.click();
+
+            // Clean up and remove the link
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        };
+
+        function getDays(date) {
+            var result = [];
+            const weekday = [
+            "Sunday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            ];
+
+            for (var i = 0; i < 12; i++) {
+            var r = date.getDaysInMonth(i);
+
+            $.each(r, function (k, v) {
+                var formatted = {
+                date: v.getDate() + "-" + (v.getMonth() + 1) + "-" + v.getFullYear(),
+                day: weekday[v.getDay()],
+                };
+                result.push(formatted);
+            });
+            }
+
+            return result;
+        }
+        Date.prototype.getDaysInMonth = function (month) {
+            var date = new Date(this.getFullYear(), month, 1);
+            var days = [];
+            while (date.getMonth() === month) {
+            days.push(new Date(date));
+            date.setDate(date.getDate() + 1);
+            }
+            return days;
+        };
+
+        
+        
     </script>
 {% endblock %}

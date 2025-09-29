@@ -363,3 +363,30 @@ def filterCarScheduleJson(request: HttpRequest):
     except Exception as e:
         print(e)
         return JsonResponse({'success': False, 'message': str(e)})
+    
+
+def excelYear(request: HttpRequest, year: str):
+    try:
+        if request.method != "GET":
+            return JsonResponse({'success': False, 'message': "Method not allowed"})
+        if not year:
+            return JsonResponse({'success': False, 'message': "Year is required"})
+        year = int(year)
+        start_date = tz.localize(datetime(year, 1, 1, 0, 0, 0))
+        end_date   = tz.localize(datetime(year + 1, 1, 1, 0, 0, 0))
+
+        drivers: List[Driver] = Driver.objects.filter(isActive=True)
+        schedules: List[CarSchedule] = CarSchedule.objects.filter(
+            isActive=True,
+            sDate__gte=start_date,
+            sDate__lt=end_date
+        ).order_by('sDate')
+        context = {
+            "year": year,
+            "drivers": [driver.serialize() for driver in drivers],
+            "schedules": [schedule.serialize() for schedule in schedules],
+        }
+        return JsonResponse({'success': True, 'data': context, 'message': 'Success'})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'success': False, 'message': str(e)})

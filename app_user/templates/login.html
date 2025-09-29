@@ -65,13 +65,17 @@
                                    placeholder="User Name">
                             <label for="uname" place>User Name</label>
                         </div>
-                        <div class="form-floating mb-3">
-                            <input type="text"
-                                   class="form-control"
-                                   id="password"
-                                   name="password"
-                                   placeholder="Password">
+                        <div class="form-floating mb-3 position-relative">
+                            <input type="password"
+                                class="form-control"
+                                id="password"
+                                name="password"
+                                placeholder="Password">
                             <label for="password">Password</label>
+                            <button type="button" class="btn btn-lg position-absolute top-50 end-0 translate-middle-y me-2"
+                                    id="togglePassword" tabindex="-1">
+                                <i class="bi bi-eye"></i>
+                            </button>
                         </div>
                         <button id="loginBtn" type="submit" class="btn btn-primary w-100 my-3">
                             <span>LOGIN</span>
@@ -90,6 +94,7 @@
         {% if messages %}
         {% for message in messages %}
         <script type="text/javascript">
+            
             $(document).ready(function(){
                 const mssTag = "{{message.tags}}";
                 const mssMsg = "{{message}}";
@@ -101,5 +106,16 @@
         </script>
         {% endfor %}
     {% endif %}
+    <script type="text/javascript">
+        const passwordInput = document.getElementById("password");
+        const toggleBtn = document.getElementById("togglePassword");
+        const toggleIcon = toggleBtn.querySelector("i");
+        toggleBtn.addEventListener("click", () => {
+            const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+            passwordInput.setAttribute("type", type);
+            toggleIcon.classList.toggle("bi-eye");
+            toggleIcon.classList.toggle("bi-eye-slash");
+        });
+    </script>
     </body>
 </html>
