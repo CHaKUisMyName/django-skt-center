@@ -5,6 +5,7 @@ from django.utils import timezone
 from datetime import timezone as dt_timezone
 from urllib.parse import urljoin
 from typing import List
+from app_welcome_board.models.welcomboard_setting import WelcomeboardSetting
 from app_welcome_board.models.welcome_default import WelcomeBoardDefault
 from app_welcome_board.models.welcome_guest import WelcomeBoardGuest
 from app_welcome_board.models.welcomeboard import WelcomeBoardStatus
@@ -70,3 +71,24 @@ def sanitize_filename(filename: str) -> str:
     filename = filename.replace(" ", "_")
     filename = re.sub(r"[^A-Za-z0-9\.\-_]", "", filename)
     return filename
+
+
+def HasWbPermission(id: str, menu: str = None, checkAdmin: bool = False):
+    try:
+        result = False
+        wbSetting: WelcomeboardSetting = WelcomeboardSetting.objects.filter(user = id).first()
+        if wbSetting:
+            if checkAdmin == True:
+                if wbSetting.isAdmin == True and wbSetting.isActive == True:
+                    result = True
+            else:
+                if wbSetting.isActive == True:
+                    if menu:
+                        result = any(m.name == menu for m in wbSetting.menus)
+        return result
+    except Exception as e:
+        print(e)
+        return False
+
+
+

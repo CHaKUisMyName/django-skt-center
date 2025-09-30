@@ -15,12 +15,14 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 import pytz
 
+from app_system_setting.models import SystemApp, SystemMenu
 from app_user.models.user import User
 from app_user.utils import requiredLogin
+from app_welcome_board.models.welcomboard_setting import WelcomeboardSetting
 from app_welcome_board.models.welcome_default import WelcomeBoardDefault
 from app_welcome_board.models.welcome_guest import WelcomeBoardGuest
 from app_welcome_board.models.welcomeboard import WelcomeBoardStatus
-from app_welcome_board.utils import get_all_welcome_data, get_filtered_welcome_data, sanitize_filename
+from app_welcome_board.utils import HasWbPermission, get_all_welcome_data, get_filtered_welcome_data, sanitize_filename
 from base_models.basemodel import UserSnapshot
 
 uploadDir = 'guest-img'
@@ -34,6 +36,11 @@ MAX_UPLOAD_SIZE = 50 * 1024 * 1024  # 50 MB
 # --------------------------------------------------------------------------------
 @requiredLogin
 def index(request: HttpRequest):
+    hasPermission = HasWbPermission(id = str(request.currentUser.id), menu="Guest", checkAdmin = False)
+    if not request.currentUser.isAdmin:
+        if hasPermission == False:
+            messages.error(request, "Not Permission")
+            return HttpResponseRedirect('/')
     welcomeGuests = WelcomeBoardGuest.objects.filter(isActive=True)
     context = {
         'welcomeGuests': welcomeGuests,
@@ -44,6 +51,11 @@ def index(request: HttpRequest):
 @requiredLogin
 def addGuest(request: HttpRequest):
     response = HttpResponseRedirect(reverse('indexWelcomeBoard'))
+    hasPermission = HasWbPermission(id = str(request.currentUser.id), menu="Guest", checkAdmin = False)
+    if not request.currentUser.isAdmin:
+        if hasPermission == False:
+            messages.error(request, "Not Permission")
+            return HttpResponseRedirect('/')
     if request.method == "POST":
         try:
             img = request.FILES.get("image")
@@ -126,7 +138,11 @@ def addGuest(request: HttpRequest):
 @requiredLogin
 def editGuest(request: HttpRequest, id: str):
     response = HttpResponseRedirect(reverse('indexWelcomeBoard'))
-    
+    hasPermission = HasWbPermission(id = str(request.currentUser.id), menu="Guest", checkAdmin = False)
+    if not request.currentUser.isAdmin:
+        if hasPermission == False:
+            messages.error(request, "Not Permission")
+            return HttpResponseRedirect('/')
     if request.method == "POST":
         try:
             wgid = request.POST.get("wgid")
@@ -222,6 +238,10 @@ def deleteGuest(request: HttpRequest, id: str):
     try:
         if not request.method == "GET":
             return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
+        hasPermission = HasWbPermission(id = str(request.currentUser.id), menu="Guest", checkAdmin = False)
+        if not request.currentUser.isAdmin:
+            if hasPermission == False:
+                return JsonResponse({'deleted': False, 'message': 'Not Permission'})
         if not id:
             return JsonResponse({'deleted': False, 'message': 'Not found id'})
         wg: WelcomeBoardGuest = WelcomeBoardGuest.objects.filter(id = ObjectId(id)).first()
@@ -331,3 +351,181 @@ def broadCastAllGuests():
             }
         )
     async_to_sync(send_message)()
+
+# --------------------------------------------------------------------------------
+# -------------------------------- setting welcome board ----------------------------------
+# --------------------------------------------------------------------------------
+@requiredLogin
+def indexSetting(request: HttpRequest):
+    hasPermission = HasWbPermission(id = str(request.currentUser.id), checkAdmin = True)
+    wbSettings = WelcomeboardSetting.objects.filter(isActive = True)
+    if not request.currentUser.isAdmin:
+        if hasPermission == False:
+            messages.error(request, "Not Permission")
+            return HttpResponseRedirect('/')
+    wbSettings = WelcomeboardSetting.objects.filter(isActive = True)
+    
+    context = {
+        "wbSettings": wbSettings,
+    }
+    return render(request, 'setting_welcome_board/index.html', context)
+
+@requiredLogin
+def addSetting(request: HttpRequest):
+    response = HttpResponseRedirect(reverse('indexSettingWelcomeBoard'))
+    hasPermission = HasWbPermission(id = str(request.currentUser.id), checkAdmin = True)
+    if not request.currentUser.isAdmin:
+        if hasPermission == False:
+            messages.error(request, "Not Permission")
+            return HttpResponseRedirect('/')
+    if request.method == "POST":
+        try:
+            isadmin = True if request.POST.get("isadmin") == 'on' else False
+            user = request.POST.get("user")
+            if not user:
+                messages.error(request, "User is required")
+                return response
+            menus = request.POST.getlist("menus")
+            if not menus:
+                messages.error(request, "Menu is required")
+                return response
+            dupUser: WelcomeboardSetting = WelcomeboardSetting.objects.filter(user = user).first()
+            if dupUser:
+                messages.error(request, "Duplicate User")
+                return response
+            wbSetting = WelcomeboardSetting()
+            wbSetting.user = ObjectId(user)
+            menuList = []
+            for menu in menus:
+                menuList.append(ObjectId(menu))
+            wbSetting.menus = menuList
+            wbSetting.isAdmin = isadmin
+            wbSetting.isActive = True
+            currentUser: User = request.currentUser
+            if currentUser:
+                uCreate = UserSnapshot().UserToSnapshot(currentUser)
+                if uCreate:
+                    wbSetting.createBy = uCreate
+            wbSetting.save()
+            messages.success(request, 'Save Success')
+            return response
+        except Exception as e:
+            print(e)
+            messages.error(request, str(e))
+            return response
+    else:
+        users: List[User] = User.objects.filter(isActive = True).order_by('code')
+        app: SystemApp = SystemApp.objects.filter(name = "app_welcome_board").first()
+        if not app:
+            messages.error(request, "App not found")
+            return response
+        menus: List[SystemMenu] = SystemMenu.objects.filter(isActive = True, app = app.id)
+        if not menus:
+            messages.error(request, "Menu not found")
+            return response
+        selectedUsers = []
+        wbSettings: List[WelcomeboardSetting] = WelcomeboardSetting.objects.filter(isActive = True)
+        if wbSettings:
+            selectedUsers = [us.user.id for us in wbSettings]
+        context = {
+            "users": users,
+            "menus": menus,
+            "selectedUsers": selectedUsers
+        }
+        return render(request, 'setting_welcome_board/add.html', context)
+    
+@requiredLogin
+def editSetting(request: HttpRequest, id: str):
+    response = HttpResponseRedirect(reverse('indexSettingWelcomeBoard'))
+    hasPermission = HasWbPermission(id = str(request.currentUser.id), checkAdmin = True)
+    if not request.currentUser.isAdmin:
+        if hasPermission == False:
+            messages.error(request, "Not Permission")
+            return HttpResponseRedirect('/')
+    if request.method == "POST":
+        try:
+            wbId = request.POST.get("wbId")
+            if not wbId:
+                messages.error(request, "Id is required")
+                return response
+            menus = request.POST.getlist("menus")
+            if not menus:
+                messages.error(request, "Menu is required")
+                return response
+            wbSetting: WelcomeboardSetting = WelcomeboardSetting.objects.filter(id = wbId).first()
+            if not wbSetting:
+                messages.error(request, "Welcome Board Setting not found")
+                return response
+            isadmin = True if request.POST.get("isadmin") == 'on' else False
+            wbSetting.isAdmin = isadmin
+            menuList = []
+            for menu in menus:
+                menuList.append(ObjectId(menu))
+            wbSetting.menus = menuList
+            wbSetting.updateDate = timezone.now()
+            currentUser: User = request.currentUser
+            if currentUser:
+                uUpdateUser = UserSnapshot().UserToSnapshot(currentUser)
+                if uUpdateUser:
+                    wbSetting.updateBy = uUpdateUser
+            wbSetting.save()
+
+            messages.success(request, 'Save Success')
+            return response
+        except Exception as e:
+            print(e)
+            messages.error(request, str(e))
+            return response
+    else:
+        if not id:
+            messages.error(request, "Id is required")
+            return response
+        users: List[User] = User.objects.filter(isActive = True).order_by('code')
+        app: SystemApp = SystemApp.objects.filter(name = "app_welcome_board").first()
+        if not app:
+            messages.error(request, "App not found")
+            return response
+        menus: List[SystemMenu] = SystemMenu.objects.filter(isActive = True, app = app.id)
+        if not menus:
+            messages.error(request, "Menu not found")
+            return response
+        wbSetting = WelcomeboardSetting.objects.filter(id = id).first()
+        if not wbSetting:
+            messages.error(request, "Welcome Board Setting not found")
+            return response
+        menu_ids = [m.id for m in wbSetting.menus]
+        context = {
+            "users": users,
+            "menus": menus,
+            "wbSetting": wbSetting,
+            "menu_ids": menu_ids
+        }
+        return render(request, 'setting_welcome_board/edit.html', context)
+    
+@requiredLogin
+def deleteSetting(request: HttpRequest, id: str):
+    try:
+        if not request.method == "GET":
+            return JsonResponse({'deleted': False, 'message': 'Method not allowed'})
+        hasPermission = HasWbPermission(id = str(request.currentUser.id), checkAdmin = True)
+        if not request.currentUser.isAdmin:
+            if hasPermission == False:
+                return JsonResponse({'deleted': False, 'message': 'Not Permission'})
+        if not id:
+            return JsonResponse({'deleted': False, 'message': 'Not found id'})
+        weSetting: WelcomeboardSetting = WelcomeboardSetting.objects.filter(id = id).first()
+        if not weSetting:
+            return JsonResponse({'deleted': False, 'message': 'Welcome Board Setting not found'})
+        weSetting.isActive = False
+        weSetting.updateDate = timezone.now()
+        currentUser: User = request.currentUser
+        if currentUser:
+            uUpdate = UserSnapshot().UserToSnapshot(currentUser)
+            if uUpdate:
+                weSetting.updateBy = uUpdate
+        weSetting.save()
+
+        return JsonResponse({'deleted': True, 'message': 'Delete success'})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'deleted': False, 'message': str(e)})

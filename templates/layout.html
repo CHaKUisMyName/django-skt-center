@@ -3,6 +3,7 @@
 {% load org_tags %}
 {% load visitor_tag %}
 {% load car_schedule_tag %}
+{% load welcomeboard_tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -239,7 +240,10 @@
                             {% endif %}
                         </ul>
                     </li>
-                    <li class="sidebar-item my-2 mx-3">
+                    {% has_menu_welcomboard request.currentUser "Guest" as can_view_wbGuest %}
+                    {% has_menu_welcomboard request.currentUser "SettingWelcomeBoard" as can_view_wbSetting %}
+                    {% if can_view_wbGuest or can_view_wbSetting %}
+                    <li class="sidebar-item mt-2 my-5 mx-3">
                         <a data-bs-target="#welcomeboard" data-bs-toggle="collapse" class="sidebar-link">
                             <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
                                 <i class="bi bi-display-fill"></i>
@@ -250,11 +254,14 @@
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'indexWelcomeBoard' %}" data-active="welguest">Guest</a>
                             </li>
+                            {% if can_view_wbSetting %}
                             <li class="sidebar-item my-2">
-                                <a class="sidebar-link" target="_blank" href="{% url 'showWelcomeBoard' %}" data-active="wellist">Show Welcome Board</a>
+                                <a class="sidebar-link" href="{% url 'indexSettingWelcomeBoard' %}" data-active="settingwb">Settings</a>
                             </li>
+                            {% endif %}
                         </ul>
                     </li>
+                    {% endif %}
                     
                     {% if request.currentUser.isAdmin == True %}
                     <li class="sidebar-item my-2 mx-3">

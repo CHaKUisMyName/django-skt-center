@@ -11,4 +11,9 @@ urlpatterns = [
     path("gs/delete/<str:id>", view=views.deleteGuest, name="deleteGuestWelcomeBoard"),
     path("show/", view=views.showWelcomeBoard, name="showWelcomeBoard"),
     path("df/add", view=views.addDefault, name="addDefaultWelcomeBoard"),
+    path("setting/", view=views.indexSetting, name="indexSettingWelcomeBoard"),
+    path("setting/add", view=views.addSetting, name="addSettingWelcomeBoard"),
+    path("setting/edit/<str:id>", view=views.editSetting, name="editSettingWelcomeBoard"),
+    path("setting/delete/<str:id>", view=views.deleteSetting, name="deleteSettingWelcomeBoard"),
+
 ]

@@ -16,7 +16,7 @@
             <div class="card-header pb-0 border-0">
                 <div class="d-lg-flex">
                     <div>
-                        <h3 class="mb-0">List Setting Car Schedule</h3>
+                        <h3 class="mb-0">List Setting Welcome Board</h3>
                         <p class="text-sm mb-0">
                             List of user and menu system
                         </p>
@@ -27,7 +27,7 @@
                                 <i class="bi bi-file-earmark-excel"></i>
                                 <span>Import Excel</span>
                             </a>
-                            <a href="#" class="btn btn-primary">
+                            <a href="{% url 'addSettingWelcomeBoard' %}" class="btn btn-primary">
                                 <i class="bi bi-plus"></i>
                                 <span>Map User</span>
                             </a>
@@ -47,7 +47,36 @@
                                 <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody></tbody>
+                        <tbody>
+                            {% for user in wbSettings %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ user.user.fNameEN }} {{ user.user.lNameEN }} ({{ user.user.code }})</td>
+                                <td>
+                                    {% for menu in user.menus %}
+                                    <p>- {{ menu.name }}</p>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    {% if user.isAdmin %}
+                                    <span class="badge text-bg-success text-white">Admin</span>
+                                    {% else %}
+                                    <span class="badge text-bg-secondary text-white">User</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div>
+                                        <a href="{% url 'editSettingWelcomeBoard' user.id %}" class="btn btn-info me-2">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-danger delete" data-wbid="{{ user.id }}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -63,12 +92,44 @@
                 const mssTag = "{{message.tags}}";
                 const mssMsg = "{{message}}";
                 PopMessage(mssMsg, mssTag);
-                $('#tb').DataTable();
             });
         </script>
         {% endfor %}
     {% endif %}
     <script type="text/javascript">
-        ActiveMenu("settingwb");
+        $(document).ready(function(){
+            ActiveMenu("settingwb");
+            $('#tb').DataTable();
+        });
+        $('.delete').click(function(e){
+            e.preventDefault();
+            Swal.fire({
+                title: "Do you want to delete ?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#f97316",
+                confirmButtonText: "Delete",
+                cancelButtonText: "Cancel"
+            }).then((result)=>{
+                if(result.isConfirmed){
+                    Loading(true);
+                    const settings = {
+                        url: window.location.origin + window.location.pathname + "delete/" + $(e.currentTarget).data('wbid'),
+                        method: "GET",
+                    }
+                    $.ajax(settings).done((response)=>{
+                        Loading(false);
+                        if(response.deleted == true){
+                            PopMessage("Delete success", "success", true);
+                        }else{
+                            PopMessage(response.message, "error");
+                        }
+                    }).fail((xjr, status, error) => {
+                        Loading(false);
+                        PopMessage(error, "error");
+                    });
+                }
+            });
+        });
     </script>
 {% endblock %}
