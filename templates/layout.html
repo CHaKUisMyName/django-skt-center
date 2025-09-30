@@ -58,6 +58,12 @@
                             <span class="fw-bold">Home</span>
                         </a>
                     </li>
+                    {% has_menu_csh request.currentUser "Schedule" as can_view_cshSchedule %}
+                    {% has_menu_csh request.currentUser "Search" as can_view_cshSearch %}
+                    {% has_menu_csh request.currentUser "Car" as can_view_cshCar %}
+                    {% has_menu_csh request.currentUser "Driver" as can_view_cshDriver %}
+                    {% has_menu_csh request.currentUser "SettingCarSchedule" as can_view_cshSettingCsh %}
+                    {% if can_view_cshSchedule or can_view_cshSearch or can_view_cshCar or can_view_cshDriver or can_view_cshSettingCsh %}
                     <li class="sidebar-item my-2 mx-3">
                         <a data-bs-target="#carschedule" data-bs-toggle="collapse" class="sidebar-link">
                             <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
@@ -66,31 +72,49 @@
                             <span class="fw-bold">Car Schedule</span>
                         </a>
                         <ul id="carschedule" class="parent-menu-collapse sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                            {% if can_view_cshSchedule %}
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'indexCarSchedule' %}" data-active="csh">Schedule</a>
                             </li>
+                            {% endif %}
+                            {% if can_view_cshSearch %}
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'listCarSchedule' %}" data-active="listcsh">Search</a>
                             </li>
-                            {% has_menu_csh request.currentUser "Car" as can_view_cshCar %}
+                            {% endif %}
                             {% if can_view_cshCar %}
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'indexCar' %}" data-active="car">Car</a>
                             </li>
                             {% endif %}
-                            {% has_menu_csh request.currentUser "Driver" as can_view_cshDriver %}
                             {% if can_view_cshDriver %}
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'indexDriver' %}" data-active="driver">Driver</a>
                             </li>
                             {% endif %}
-                            {% has_menu_csh request.currentUser "SettingCarSchedule" as can_view_cshSettingCsh %}
                             {% if can_view_cshSettingCsh %}
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'indexSettingCsh' %}" data-active="settingcsh">Settings</a>
                             </li>
                             {% endif %}
                         </ul>
+                    </li>
+                    {% endif %}
+                    <li class="sidebar-item my-2 mx-3">
+                        <a class="sidebar-link" href="http://192.168.1.219/eSmart7" target="_blank" data-active="esmart">
+                            <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
+                                <i class="bi bi-clipboard-check-fill"></i>
+                            </div>
+                            <span class="fw-bold">E-Smart System</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item my-2 mx-3">
+                        <a class="sidebar-link" href="http://192.168.1.230:8080/SANYOLAB/login.jsf" target="_blank" data-active="lims">
+                            <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
+                                <i class="bi bi-droplet-half"></i>
+                            </div>
+                            <span class="fw-bold">LIMS System</span>
+                        </a>
                     </li>
                     <li class="sidebar-item my-2 mx-3">
                         <a data-bs-target="#mainorg" data-bs-toggle="collapse" class="sidebar-link">
@@ -117,7 +141,14 @@
                             {% endif %}
                         </ul>
                     </li>
-                    
+                    <li class="sidebar-item my-2 mx-3">
+                        <a class="sidebar-link" href="http://192.168.1.214" target="_blank" data-active="sds">
+                            <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
+                                <i class="bi bi-file-earmark-text-fill"></i>
+                            </div>
+                            <span class="fw-bold">SDS</span>
+                        </a>
+                    </li>
                     <li class="sidebar-item my-2 mx-3">
                         <a data-bs-target="#user" data-bs-toggle="collapse" class="sidebar-link">
                             <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">

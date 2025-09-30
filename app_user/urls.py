@@ -2,6 +2,7 @@ from django.urls import path
 
 from app_user.views import user_views as user_views
 from app_user.views import setting_user_views as setting__user_views
+from app_user.views import immigration_views as immigration_views
 
 
 
@@ -23,4 +24,8 @@ urlpatterns = [
     path('setting/delete/<str:id>/', view=setting__user_views.deleteSettingUser, name= 'deleteSettingUser'),
     path('setting/import/', view=setting__user_views.importSettingUser, name= 'importSettingUser'),
     path('setting/template/', view=setting__user_views.exportExcelTemplate, name= 'userExcelTemplate'),
+    # -----------------------------------------------------
+    # ------------------- immigration --------------------
+    # -----------------------------------------------------
+    path('immigration/', view=immigration_views.index, name='indexImmigration'),
 ]
