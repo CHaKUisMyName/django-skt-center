@@ -12,6 +12,10 @@
         white-space: normal !important;
         align-items: normal !important;
     }
+    /* กันเหนียว ป้องกัน fc-event-main เป็นสีขาว */
+    .fc-event-main {
+        background-color: inherit !important;
+    }
 </style>
 {% endblock %}
 {% block content %}
@@ -64,7 +68,7 @@
                     <button type="button" id="delete" class="btn btn-secondary btn-lg delete" data-vstid="" onclick="deleteClick(this);">
                         <i class="bi bi-trash"></i>
                         <span class="ms-2">Delete</span>
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -84,6 +88,31 @@
         {% endfor %}
     {% endif %}
     <script type="text/javascript">
+        // ---------- Utils ----------
+        function getLuminance(r, g, b) {
+            const a = [r, g, b].map(function (v) {
+                v /= 255;
+                return v <= 0.03928
+                    ? v / 12.92
+                    : Math.pow((v + 0.055) / 1.055, 2.4);
+            });
+            return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+        }
+        function normalizeHex(hex) {
+            hex = (hex || "").replace("#", "").toLowerCase();
+            if (hex.length === 3) {
+                hex = hex.split("").map(x => x + x).join("");
+            } else if (hex.length === 4) {
+                hex = hex.split("").map((x, i) => i < 3 ? x + x : "").join("");
+            } else if (hex.length === 8) {
+                hex = hex.substring(0, 6); // ตัด alpha ทิ้ง
+            } else if (hex.length !== 6) {
+                hex = "007bff"; // fallback
+            }
+            return "#" + hex;
+        }
+
+        // ---------- Main ----------
         var calendarEl;
         var calendar;
         $(document).ready(()=>{
@@ -109,14 +138,12 @@
                     const apiData = await getAPIData(url);
                     if(Array.isArray(apiData) && apiData.length > 0){
                         const newArr = apiData.map((item)=>{
-                            console.log(item.sDate);
-                            console.log(strUTCDateToStrThaiDate(item.sDate));
                             const newItem = {
                                 id: item.id,
                                 title: item.topic,
                                 start: item.sDate,
                                 end: item.eDate,
-                                color: item.room.color,
+                                color: normalizeHex(item.room.color),
                                 room: item.room.name,
                                 member: item.sktMember ? item.sktMember : "-",
                                 gcom: item.guestCompany,
@@ -142,8 +169,23 @@
                 eventContent: function(arg) {
                     return { html: '<b class="me-1">(' + arg.event.extendedProps.room + ')</b>' + arg.timeText + ' ' + arg.event.title };
                 },
+                eventDidMount: function(info) {
+                    // apply contrast
+                    let bg = normalizeHex(info.event.backgroundColor || info.event.extendedProps.color || "#007bff");
+                    let rgb = bg.match(/\w\w/g).map(h => parseInt(h, 16));
+                    let luminance = getLuminance(...rgb);
+                    let textColor = luminance > 0.5 ? "#000" : "#fff";
+
+                    info.el.style.backgroundColor = bg;
+                    info.el.style.color = textColor;
+
+                    let mainEl = info.el.querySelector(".fc-event-main");
+                    if (mainEl) {
+                        mainEl.style.backgroundColor = bg;
+                        mainEl.style.color = textColor;
+                    }
+                },
                 dayCellDidMount: function(info) {
-                    // เสาร์ (6) อาทิตย์ (0)
                     if (info.date.getDay() === 0 || info.date.getDay() === 6) {
                         info.el.style.backgroundColor = "#f0f0f0"; // เทาอ่อน
                     }
@@ -153,10 +195,9 @@
             setInterval(function() {
                 calendar.refetchEvents();
             }, 10000);
-
         });
+
         const showDetailModal = async (info) => {
-            
             await initialDetailToHTML(info);
             Swal.fire({
                 title: `<p class="display-4">${info.event.title}</p>`,
@@ -170,10 +211,9 @@
                 focusConfirm: false,
                 width:'40rem',
             });
-            
         }
+
         const initialDetailToHTML = async (info) =>{
-            console.log(window.location.origin + window.location.pathname);
             $("#sdate").text(strUTCDateToStrThaiDate(info.event.start));
             $("#edate").text(strUTCDateToStrThaiDate(info.event.end));
             $("#room").text(info.event.extendedProps.room);
@@ -193,7 +233,6 @@
         }
         
         const deleteClick = (e) => {
-            console.log($(e).data('vstid'));
             Loading(true);
             const settings = {
                 url: window.location.origin + window.location.pathname + "delete/" + $(e).data('vstid'),
@@ -207,21 +246,18 @@
                 }else{
                     PopMessage(response.message, "error");
                 }
-                // calendar.refetchEvents();
             }).fail((xjr, status, error) => {
                 Loading(false);
                 PopMessage(error, "error");
-                // calendar.refetchEvents();
             });
-            
         }
+
         const canEdit = (info) => {
             const isSuperAdmin = "{{request.currentUser.isAdmin}}" === "True";
             const createById = info.createBy?.userId ? info.createBy.userId : "";
             const updateById = info.updateBy?.userId ? info.updateBy.userId : "";
             const userId = "{{request.currentUser.id}}";
             const isSettingAdmin = "{{isSettingAdmin}}" === "True";
-            // console.log(createById);
             if(
                 isSuperAdmin == true 
                 || isSettingAdmin == true

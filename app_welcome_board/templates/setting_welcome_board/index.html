@@ -1,0 +1,74 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Setting Welcome Board</title>{% endblock %}
+{% block css %}
+    
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>Welcome Board / </span><span class="fw-bold">Setting</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">List Setting Car Schedule</h3>
+                        <p class="text-sm mb-0">
+                            List of user and menu system
+                        </p>
+                    </div>
+                    <div class="ms-auto my-auto mt-lg-0 mt-4">
+                        <div class="ms-auto my-auto">
+                            <a href="#" id="addAll" class="btn btn-outline-primary">
+                                <i class="bi bi-file-earmark-excel"></i>
+                                <span>Import Excel</span>
+                            </a>
+                            <a href="#" class="btn btn-primary">
+                                <i class="bi bi-plus"></i>
+                                <span>Map User</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="tb" class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Employee</th>
+                                <th>Menu</th>
+                                <th>Admin</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    {% if messages %}
+        {% for message in messages %}
+        <script type="text/javascript">
+            $(document).ready(function(){
+                const mssTag = "{{message.tags}}";
+                const mssMsg = "{{message}}";
+                PopMessage(mssMsg, mssTag);
+                $('#tb').DataTable();
+            });
+        </script>
+        {% endfor %}
+    {% endif %}
+    <script type="text/javascript">
+        ActiveMenu("settingwb");
+    </script>
+{% endblock %}

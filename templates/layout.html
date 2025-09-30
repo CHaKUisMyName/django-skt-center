@@ -101,11 +101,35 @@
                     </li>
                     {% endif %}
                     <li class="sidebar-item my-2 mx-3">
+                        <a class="sidebar-link" href="https://app.empeo.com/" target="_blank" data-active="esmart">
+                            <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
+                                <i class="bi bi-person-badge-fill"></i>
+                            </div>
+                            <span class="fw-bold">Empeo System</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item my-2 mx-3">
                         <a class="sidebar-link" href="http://192.168.1.219/eSmart7" target="_blank" data-active="esmart">
                             <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
                                 <i class="bi bi-clipboard-check-fill"></i>
                             </div>
                             <span class="fw-bold">E-Smart System</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item my-2 mx-3">
+                        <a class="sidebar-link" href="https://portal.systemstone.com/" target="_blank" data-active="esmart">
+                            <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
+                                <i class="bi bi-building-fill-gear"></i>
+                            </div>
+                            <span class="fw-bold">Factorium CMMS</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item my-2 mx-3">
+                        <a class="sidebar-link" href="http://192.168.1.196/ConMasManager" target="_blank" data-active="esmart">
+                            <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
+                                <i class="bi bi-file-earmark-excel-fill"></i>
+                            </div>
+                            <span class="fw-bold">I-Reporter</span>
                         </a>
                     </li>
                     <li class="sidebar-item my-2 mx-3">
@@ -147,6 +171,14 @@
                                 <i class="bi bi-file-earmark-text-fill"></i>
                             </div>
                             <span class="fw-bold">SDS</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item my-2 mx-3">
+                        <a class="sidebar-link" href="http://192.168.1.206/" target="_blank" data-active="esmart">
+                            <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
+                                <i class="bi bi-ticket-detailed-fill"></i>
+                            </div>
+                            <span class="fw-bold">IT Ticket</span>
                         </a>
                     </li>
                     <li class="sidebar-item my-2 mx-3">
@@ -218,9 +250,6 @@
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'indexWelcomeBoard' %}" data-active="welguest">Guest</a>
                             </li>
-                            <!-- <li class="sidebar-item my-2">
-                                <a class="sidebar-link" href="{% url 'addDefaultWelcomeBoard' %}" data-active="weldafault">Default</a>
-                            </li> -->
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" target="_blank" href="{% url 'showWelcomeBoard' %}" data-active="wellist">Show Welcome Board</a>
                             </li>

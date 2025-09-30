@@ -11,7 +11,19 @@
     <link href="{% static 'css/fontawesome/css/solid.min.css' %}" rel="stylesheet" />
     <link href="{% static 'css/custom.css' %}" rel="stylesheet" />
     <title>Document</title>
-    
+    <style>
+        .fc-event-main {
+            background-color: inherit !important;
+        }
+        .fc-daygrid-event .fc-event-title,
+        .fc-daygrid-event .fc-event-main {
+            white-space: nowrap !important;   /* บังคับเป็นบรรทัดเดียว */
+            overflow: hidden !important;      /* ซ่อนส่วนที่เกิน */
+            text-overflow: ellipsis !important; /* แสดง … */
+        }
+
+
+    </style>
 </head>
 <body>
     <div class="container-fluid">
@@ -21,7 +33,6 @@
                 <button class="btn auto-contrast" data-color="{{ room.color }}">
                     {{ room.name }}
                 </button>
-
                 {% endfor %}
             </div>
         </div>
@@ -64,19 +75,18 @@
                     const apiData = await getVisitorAPI(url);
                     if(Array.isArray(apiData) && apiData.length > 0){
                         const newArr = apiData.map((item)=>{
-                            const newItem = {
+                            return {
                                 id: item.id,
                                 title: item.topic,
                                 start: item.sDate,
                                 end: item.eDate,
-                                color: item.room.color,
+                                color: normalizeHex(item.room.color),
                                 room: item.room.name,
                                 member: item.sktMember ? item.sktMember : "-",
                                 gcom: item.guestCompany,
                                 gname: item.guestMember ? item.guestMember : "-",
                                 link: window.location.origin + window.location.pathname + "edit/" + item.id,
                             }
-                            return newItem
                         });
                         successCallback(newArr);
                     }else{
@@ -86,19 +96,35 @@
                 eventContent: function(arg) {
                     return { html: '<b class="me-1">(' + arg.event.extendedProps.room + ')</b>' + arg.timeText + ' ' + arg.event.title };
                 },
+                eventDidMount: function(info) {
+                    let bg = normalizeHex(info.event.backgroundColor || info.event.extendedProps.color || "#007bff");
+                    let rgb = bg.match(/\w\w/g).map(h => parseInt(h, 16));
+                    let luminance = getLuminance(...rgb);
+                    let textColor = luminance > 0.5 ? "#000" : "#fff";
+
+                    // apply ทั้ง wrapper และ fc-event-main
+                    info.el.style.backgroundColor = bg;
+                    info.el.style.color = textColor;
+
+                    let mainEl = info.el.querySelector(".fc-event-main");
+                    if (mainEl) {
+                        mainEl.style.backgroundColor = bg;
+                        mainEl.style.color = textColor;
+                    }
+                },
                 dayCellDidMount: function(info) {
-                    // เสาร์ (6) อาทิตย์ (0)
                     if (info.date.getDay() === 0 || info.date.getDay() === 6) {
                         info.el.style.backgroundColor = "#f0f0f0"; // เทาอ่อน
                     }
                 }
-
             });
+
             calendar.render();
             setInterval(function() {
                 calendar.refetchEvents();
             }, 10000);
         });
+
         const getVisitorAPI = async (url) => {
             let returnData = null;
             const settings = {
@@ -107,7 +133,6 @@
             };
             await $.ajax(settings)
                 .done((data) => {
-                    // console.log(data);
                     if (data.success == true) {
                         returnData = data.data;
                     }
@@ -117,6 +142,7 @@
                 });
             return returnData;
         }
+
         // ฟังก์ชันคำนวณ luminance จาก rgb()
         function getLuminance(r, g, b) {
             const a = [r, g, b].map(function (v) {
@@ -128,33 +154,38 @@
             return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
         }
 
-        // ฟังก์ชันเลือกสีตัวอักษร (ดำ/ขาว)
-        function getContrastYIQ(hexcolor) {
-            // แปลง HEX → RGB
-            let c = hexcolor.substring(1); // ตัด #
-            let bigint = parseInt(c, 16);
-            let r = (bigint >> 16) & 255;
-            let g = (bigint >> 8) & 255;
-            let b = bigint & 255;
+        // ฟังก์ชัน normalize HEX → #rrggbb
+        function normalizeHex(hex) {
+            hex = (hex || "").replace("#", "").toLowerCase();
 
-            let luminance = getLuminance(r, g, b);
-            return luminance > 0.5 ? "#000000" : "#FFFFFF";
+            if (hex.length === 3) {
+                // #abc → #aabbcc
+                hex = hex.split("").map(x => x + x).join("");
+            } else if (hex.length === 4) {
+                // #abcd → #aabbcc (ตัด alpha d)
+                hex = hex.split("").map((x, i) => i < 3 ? x + x : "").join("");
+            } else if (hex.length === 6) {
+                // #aabbcc ใช้ได้เลย
+                hex = hex;
+            } else if (hex.length === 8) {
+                // #rrggbbaa → ตัด alpha ทิ้ง
+                hex = hex.substring(0, 6);
+            } else {
+                // ไม่ถูกต้อง → fallback
+                hex = "007bff";
+            }
+            return "#" + hex;
         }
 
         // apply ให้ปุ่มทุกปุ่ม
         document.querySelectorAll(".btn.auto-contrast").forEach(btn => {
-            let color = btn.dataset.color || "#007bff";
+            let color = normalizeHex(btn.dataset.color || "#007bff");
             btn.style.backgroundColor = color;
 
-            // ตั้งสีตัวอักษรอัตโนมัติ
-            let rgb = color.startsWith('#') 
-                ? color.match(/\w\w/g).map(h => parseInt(h, 16)) 
-                : [0,0,0];
+            let rgb = color.match(/\w\w/g).map(h => parseInt(h, 16));
             let luminance = getLuminance(...rgb);
             btn.style.color = luminance > 0.5 ? "#000" : "#fff";
         });
-
-
     </script>
 </body>
 </html>
