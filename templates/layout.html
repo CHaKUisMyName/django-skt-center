@@ -243,7 +243,7 @@
                     {% has_menu_welcomboard request.currentUser "Guest" as can_view_wbGuest %}
                     {% has_menu_welcomboard request.currentUser "SettingWelcomeBoard" as can_view_wbSetting %}
                     {% if can_view_wbGuest or can_view_wbSetting %}
-                    <li class="sidebar-item mt-2 my-5 mx-3">
+                    <li class="sidebar-item my-2 mx-3">
                         <a data-bs-target="#welcomeboard" data-bs-toggle="collapse" class="sidebar-link">
                             <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
                                 <i class="bi bi-display-fill"></i>
@@ -262,6 +262,14 @@
                         </ul>
                     </li>
                     {% endif %}
+                    <li class="sidebar-item my-2 mx-3">
+                        <a class="sidebar-link" href="https://sanyokaseithailand.com:8443/login" target="_blank" data-active="esmart">
+                            <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
+                                <i class="bi bi-truck"></i>
+                            </div>
+                            <span class="fw-bold">WMS</span>
+                        </a>
+                    </li>
                     
                     {% if request.currentUser.isAdmin == True %}
                     <li class="sidebar-item my-2 mx-3">
