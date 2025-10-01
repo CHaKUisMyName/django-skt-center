@@ -529,3 +529,14 @@ def deleteSetting(request: HttpRequest, id: str):
     except Exception as e:
         print(e)
         return JsonResponse({'deleted': False, 'message': str(e)})
+
+def deleteWbSettingByUser(requester: User, user: User):
+    wbSetting: WelcomeboardSetting = WelcomeboardSetting.objects.filter(user = user.id).first()
+    if wbSetting:
+        wbSetting.isActive = False
+        wbSetting.updateDate = timezone.now()
+        if requester:
+            uUpdate = UserSnapshot().UserToSnapshot(requester)
+            if uUpdate:
+                wbSetting.updateBy = uUpdate
+        wbSetting.save()

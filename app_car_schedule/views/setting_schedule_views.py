@@ -188,3 +188,16 @@ def delete(request: HttpRequest, id: str):
     except Exception as e:
         print(e)
         return JsonResponse({'deleted': False, 'message': str(e)})
+    
+
+def deleteCshSettingByUser(requester: User, user: User):
+    cshSetting: CarScheduleSetting = CarScheduleSetting.objects.filter(user = user.id).first()
+    if cshSetting:
+        cshSetting.isActive = False
+        cshSetting.updateDate = timezone.now()
+        if requester:
+            uUpdate = UserSnapshot().UserToSnapshot(requester)
+            if uUpdate:
+                cshSetting.updateBy = uUpdate
+        cshSetting.save()
+        

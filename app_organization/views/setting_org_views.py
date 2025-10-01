@@ -77,7 +77,7 @@ def addSettingOrg(request: HttpRequest):
             messages.error(request, str(e))
             return response
     else:
-        users: List[User] = User.objects.filter(isActive = True)
+        users: List[User] = User.objects.filter(isActive = True).order_by('code')
         app: SystemApp = SystemApp.objects.filter(name = "app_organization").first()
         if not app:
             messages.error(request, "App not found")
@@ -145,7 +145,7 @@ def editSettingOrg(request: HttpRequest, id: str):
         if not id:
             messages.error(request, "Id is required")
             return response
-        users: List[User] = User.objects.filter(isActive = True)
+        users: List[User] = User.objects.filter(isActive = True).order_by('code')
         app: SystemApp = SystemApp.objects.filter(name = "app_organization").first()
         if not app:
             messages.error(request, "App not found")
@@ -305,3 +305,14 @@ def exportExcelTemplate(request: HttpRequest):
         print(e)
         messages.error(request, str(e))
         return HttpResponseRedirect(reverse('indexSettingOrg'))
+    
+def deleteOrgSettingByUser(requester: User, user: User):
+    orgSetting: OrgSetting = OrgSetting.objects.filter(user = user.id).first()
+    if orgSetting:
+        orgSetting.isActive = False
+        orgSetting.updateDate = timezone.now()
+        if requester:
+            uUpdate = UserSnapshot().UserToSnapshot(requester)
+            if uUpdate:
+                orgSetting.updateBy = uUpdate
+        orgSetting.save()

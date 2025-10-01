@@ -28,42 +28,54 @@
             <div class="col-12">
                 <ul>
                     <li style="margin-bottom: 0.5rem;">
-                        <span style="margin-right: 1rem;">หัวข้อการประชุม :</span>
+                        <strong>
+                            <span style="margin-right: 1rem;">หัวข้อการประชุม :</span>
+                        </strong>
                         <span>{{ vst.topic|default:"-" }}</span>
                     </li>
                     <li style="margin-bottom: 0.5rem;">
-                        <span style="margin-right: 1rem;">สถานที่ :</span>
+                        <strong>
+                            <span style="margin-right: 1rem;">สถานที่ :</span>
+                        </strong>
                         <span>{{ vst.room.name }}</span>
                     </li>
                     <li style="margin-bottom: 0.5rem;">
                         <strong>
                             <span style="margin-right: 1rem;">เริ่ม :</span>
-                            <span id="sdate">{{ sDate }}</span>
                         </strong>
+                        <span id="sdate">{{ sDate }}</span>
                         
                     </li>
                     <li style="margin-bottom: 0.5rem;">
                         <strong>
                             <span style="margin-right: 1rem;">สิ้นสุด :</span>
-                            <span id="edate">{{ eDate }}</span>
                         </strong>
+                        <span id="edate">{{ eDate }}</span>
                         
                     </li>
                     <li style="margin-bottom: 0.5rem;">
-                        <span style="margin-right: 1rem;">บริษัท vendor :</span>
+                        <strong>
+                            <span style="margin-right: 1rem;">บริษัท vendor :</span>
+                        </strong>
                         <span>{{ vst.guestCompany|default:"-" }}</span>
                     </li>
                     <li style="margin-bottom: 0.5rem;">
-                        <span style="margin-right: 1rem;">ชื่อ vendor :</span>
+                        <strong>
+                            <span style="margin-right: 1rem;">ชื่อ vendor :</span>
+                        </strong>
                         <span>{{ vst.guestMember|default:"-" }}</span>
                     </li>
                     <li style="margin-bottom: 0.5rem;">
-                        <span style="margin-right: 1rem;">พนักงาน SKT ที่ร่วมประชุม :</span>
+                        <strong>
+                            <span style="margin-right: 1rem;">พนักงาน SKT ที่ร่วมประชุม :</span>
+                        </strong>
                         <span>{{ vst.sktMember|default:"-" }}</span>
                     </li>
                     {% if vst.options %}
                     <li style="margin-bottom: 0.5rem;">
-                        <span style="margin-bottom: 0.5rem;">ความต้องการเพิ่มเติม :</span>
+                        <strong>
+                            <span style="margin-bottom: 0.5rem;">ความต้องการเพิ่มเติม :</span>
+                        </strong>
                         <ul style="margin-top: 0.5rem;">
                             {% for opt in vst.options %}
                             <li style="margin-bottom: 0.5rem;">{{ opt.name }}</li>
@@ -72,7 +84,9 @@
                     </li>
                     {% endif %}
                     <li style="margin-bottom: 0.5rem;">
-                        <span style="margin-right: 1rem;">ผู้บันทึกข้อมูล :</span>
+                        <strong>
+                            <span style="margin-right: 1rem;">ผู้บันทึกข้อมูล :</span>
+                        </strong>
                         <span>{{ vst.createBy.fullNameEN|default:"-" }}</span>
                     </li>
                 </ul>

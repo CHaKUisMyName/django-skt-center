@@ -239,7 +239,10 @@
                 method: "GET",
             }
             $.ajax(settings).done((response) => {
-                calendar.removeEvents($(e).data('vstid'));
+                const event = calendar.getEventById($(e).data('vstid'));
+                if (event) {
+                    event.remove();
+                }
                 Loading(false);
                 if(response.deleted == true){
                     PopMessage("Delete success", "success",true);

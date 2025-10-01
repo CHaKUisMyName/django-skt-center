@@ -74,7 +74,7 @@ def add(request: HttpRequest):
             messages.error(request, str(e))
             return response
     else:
-        users: List[User] = User.objects.filter(isActive = True)
+        users: List[User] = User.objects.filter(isActive = True).order_by('code')
         app: SystemApp = SystemApp.objects.filter(name = "app_visitor").first()
         if not app:
             messages.error(request, "App not found")
@@ -142,7 +142,7 @@ def edit(request: HttpRequest, id: str):
         if not id:
             messages.error(request, "Id is required")
             return response
-        users: List[User] = User.objects.filter(isActive = True)
+        users: List[User] = User.objects.filter(isActive = True).order_by('code')
         app: SystemApp = SystemApp.objects.filter(name = "app_visitor").first()
         if not app:
             messages.error(request, "App not found")
@@ -301,3 +301,14 @@ def exportExcelTemplate(request: HttpRequest):
         print(e)
         messages.error(request, str(e))
         return HttpResponseRedirect(reverse('indexSettingVst'))
+    
+def deleteVstSettingByUser(requester: User, user: User):
+    vstSetting: VisitorSetting = VisitorSetting.objects.filter(user = user.id).first()
+    if vstSetting:
+        vstSetting.isActive = False
+        vstSetting.updateDate = timezone.now()
+        if requester:
+            uUpdate = UserSnapshot().UserToSnapshot(requester)
+            if uUpdate:
+                vstSetting.updateBy = uUpdate
+        vstSetting.save()

@@ -9,13 +9,17 @@ from django.urls import reverse
 from django.contrib import messages
 from django.utils import timezone
 
+from app_car_schedule.views.setting_schedule_views import deleteCshSettingByUser
 from app_organization.models.organization import Organization
 from app_organization.models.position import Position
+from app_organization.views.setting_org_views import deleteOrgSettingByUser
 from app_user.models.auth_session import AuthSession
 from app_user.models.auth_user import AuthUser, VerifyPassword
 from app_user.models.user import EmpNation, RoleUser, User, UserStatus, UserType
 from app_user.models.user_setting import UserSetting
 from app_user.utils import HasUsPermission, requiredLogin
+from app_visitor.views.setting_visitor_views import deleteVstSettingByUser
+from app_welcome_board.views import deleteWbSettingByUser
 from base_models.basemodel import UserSnapshot
 
 # Create your views here.
@@ -468,6 +472,16 @@ def deleteUser(request: HttpRequest, id: str):
         user.isDelete = True
         user.isActive = False
         user.save()
+
+        # -- delete setting user car schedule
+        deleteCshSettingByUser(requester= request.currentUser, user = user)
+        # -- delete setting user Org
+        deleteOrgSettingByUser(requester= request.currentUser, user = user)
+        # -- delete setting user visitor
+        deleteVstSettingByUser(requester= request.currentUser, user = user)
+        # -- delete setting user welcome board
+        deleteWbSettingByUser(requester= request.currentUser, user = user)
+        
 
         authUser: AuthUser = AuthUser.objects.filter(refUser = user).first()
         if authUser:

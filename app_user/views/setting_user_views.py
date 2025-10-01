@@ -77,7 +77,7 @@ def addSettingUser(request: HttpRequest):
             return response
 
     else:
-        users: List[User] = User.objects.filter(isActive = True)
+        users: List[User] = User.objects.filter(isActive = True).order_by('code')
         app: SystemApp = SystemApp.objects.filter(name = "app_user").first()
         if not app:
             messages.error(request, "App not found")
@@ -146,7 +146,7 @@ def editSettingUser(request: HttpRequest, id: str):
             messages.error(request, str(e))
             return response
     else:
-        users: List[User] = User.objects.filter(isActive = True)
+        users: List[User] = User.objects.filter(isActive = True).order_by('code')
         app: SystemApp = SystemApp.objects.filter(name = "app_user").first()
         if not app:
             messages.error(request, "App not found")
