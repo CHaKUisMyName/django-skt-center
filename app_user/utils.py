@@ -3,10 +3,21 @@ from bson import ObjectId
 from django.http import HttpRequest, HttpResponseRedirect
 from django.utils.timezone import now
 from django.contrib import messages
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
+from django.conf import settings
+from django.utils.dateparse import parse_datetime
+import pytz
 
 from app_user.models.auth_session import AuthSession
+from app_user.models.immigration import Immigration
 from app_user.models.user import User
 from app_user.models.user_setting import UserSetting
+
+mail_it = settings.MAIL_IT
+mail_ga = settings.MAIL_GA
+
+tz = pytz.timezone("Asia/Bangkok")
 
 def requiredLogin(view_func):
     def wrapper(request: HttpRequest, *args, **kwargs):
@@ -75,3 +86,23 @@ def HasUsPermission(id: str, menu: str = None, checkAdmin: bool = False):
     except Exception as e:
         print(e)
         return False
+    
+def sendImmigration(immigration: Immigration):
+    subject = 'Immigration Data'
+    from_email = 'Immigration System <it.report@sanyo-kasei.co.th>'
+    to_email = [str(settings.MAIL_CHAKU)]
+    # to_email = [str(mail_ga)]
+    # cc = [str(mail_it)]
+    imm = immigration.serialize()
+    context = {
+        "imm": imm,
+        "dueDate": parse_datetime(imm["dueDate"]).astimezone(tz).strftime("%d/%m/%Y"),
+    }
+    html_content = render_to_string('email/immigration.html', context)
+    # เผื่อ fallback เป็น text
+    text_content = "Immigration This is an alternative message in plain text."
+    # สร้าง object email
+    # email = EmailMultiAlternatives(subject, text_content, from_email, to_email, cc= cc)
+    email = EmailMultiAlternatives(subject, text_content, from_email, to_email)
+    email.attach_alternative(html_content, "text/html")
+    email.send()

@@ -28,4 +28,9 @@ urlpatterns = [
     # ------------------- immigration --------------------
     # -----------------------------------------------------
     path('immigration/', view=immigration_views.index, name='indexImmigration'),
+    path('immigration/addjson/', view=immigration_views.addJson, name='addJson'),
+    path('immigration/editjson/', view=immigration_views.editJson, name='editJson'),
+    path('immigration/deletejson/<str:id>/', view=immigration_views.deleteJson, name='deleteJson'),
+    path('immigration/api/listjson/', view=immigration_views.listImmigrationJson, name='listImmigrationJson'),
+    path('immigration/api/getjson/<str:id>/', view=immigration_views.getImmigrationJson, name='getImmigrationJson'),
 ]

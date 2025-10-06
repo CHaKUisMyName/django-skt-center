@@ -2,7 +2,15 @@
 {% load static %}
 {% block title %}<title>Immigration User</title>{% endblock %}
 {% block css %}
-    
+    <link rel="stylesheet" href="{% static 'css/tempus-dominus.css' %}" />
+    <style>
+        /* ให้ label ภายใน Swal ชิดซ้าย */
+        .swal2-html-container label {
+            text-align: left !important;
+            display: block;  /* กัน margin/padding แปลกๆ */
+        }
+    </style>
+
 {% endblock %}
 {% block breadcrumb %}
 <div>
@@ -23,10 +31,10 @@
                     </div>
                     <div class="ms-auto my-auto mt-lg-0 mt-4">
                         <div class="ms-auto my-auto">
-                            <a href="#" class="btn btn-primary">
+                            <button id="add" class="btn btn-primary">
                                 <i class="bi bi-plus"></i>
                                 <span>Add user</span>
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -52,19 +60,29 @@
         </div>
     </div>
 </div>
-<div id="add" class="card d-none">
+<div id="detail" class="card d-none">
     <div class="card-body row mb-3">
         <div class="col-12">
             <div class="row mb-3">
                 <div class="col-sm-12 col-md-6">
+                    {% csrf_token %}
                     <label for="user" class="form-label">User</label>
-                    <select class="form-select" id="user">
-                        <option value="0"></option>
+                    <select class="form-select" name="uesr" id="user" required>
+                        <option value="0">Not Select</option>
+                        {% for user in users %}
+                        <option value="{{user.id}}">({{user.code}}) {{user.fNameEN}} {{user.lNameEN}}</option>
+                        {% endfor %}
                     </select>
+                    <div class="invalid-feedback">
+                        Please select a user.
+                    </div>
                 </div>
                 <div class="col-sm-12 col-md-6">
-                    <label for="passport" class="form-label">Passport No.</label>
-                    <input type="text" class="form-control" id="passport" name="passport" placeholder="Passport">
+                    <label for="duedate" class="form-label">Last Due Date</label>
+                    <input type="text" class="form-control" id="duedate" name="duedate" required>
+                    <div class="invalid-feedback">
+                        Please select a last date.
+                    </div>
                 </div>
             </div>
         </div>
@@ -72,10 +90,302 @@
 </div>
 {% endblock %}
 {% block script %}
+    <script src="{% static 'js/popper.min.js' %}"></script>
+    <script src="{% static 'js/tempus-dominus.js' %}"></script>
     <script type="text/javascript">
+        var table;
+        var listImm;
         $(document).ready(()=>{
             ActiveMenu("immigration");
-            $('#tb').DataTable();
+            table = $('#tb').DataTable({
+                ajax: {
+                    url: "{% url 'listImmigrationJson' %}",
+                    type: "GET",
+                    // headers: { "X-CSRFToken": getCSRFToken() },
+                    dataSrc: function(json) {
+                        Loading(false);
+                        if (!json.success) return [];
+                        listImm = json.data;
+                        return json.data;
+                    }
+                },
+                columns:[
+                    { data: "id", render: (data, type, row, meta) => meta.row + 1 }, // ลำดับ
+                    { data: "refUser.code" }, // โค้ด user
+                    { 
+                        data: "refUser", 
+                        render: (data, type, row) => `${data.fNameEN} ${data.lNameEN}` 
+                    }, // ชื่อ-นามสกุล
+                    { 
+                        data: "lastDueDate",
+                        render: (data) => data ? moment(data).format("YYYY-MM-DD") : "-"
+                    }, // Last Date
+                    { 
+                        data: "dueDate",
+                        render: (data) => data ? moment(data).format("YYYY-MM-DD") : "-"
+                    },
+                    { 
+                        data: "status",
+                        render: (data) => {
+                            if(data.name == "Normal"){
+                                return `<span class="badge bg-success">${data.name}</span>`;
+                            }else if(data.name == "Befor15"){
+                                return `<span class="badge bg-warning">Expired in 15 day</span>`;
+                            }else if(data.name == "Befor7"){
+                                return `<span class="badge bg-primary">Expired in 7 day</span>`;
+                            }else{
+                                return `<span class="badge bg-danger">${data.name}</span>`;
+                            }
+                        }
+                     }, // Status
+                     
+                    { 
+                        data: null,
+                        render: (data, type, row) => `
+                            <button class="btn btn-sm btn-info me-1" onclick="editImmigration('${row.id}')"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteImmigration('${row.id}')"><i class="bi bi-trash"></i></button>
+                        `
+                    } // Action
+                
+                ]
+            });
+            
         });
+        $("#add").click(function(e){
+            e.preventDefault();
+            Swal.fire({
+                title: `<p class="display-6">Immigration User</p>`,
+                html: $("#detail").html(),
+                showCloseButton: true,
+                showCancelButton: true,
+                showConfirmButton: true,
+                confirmButtonText: 'Save',   // 🔹 เปลี่ยนข้อความปุ่ม
+                customClass: {
+                    confirmButton: 'btn btn-primary me-2', // 🔹 ใช้ class bootstrap
+                    cancelButton: 'btn btn-secondary'
+                },
+                buttonsStyling: false, // 🔹 เพื่อให้ SweetAlert ไม่ override Bootstrap
+                focusConfirm: false,
+                width:'50rem',
+                didOpen: () => {
+                    $('.form-select').select2({
+                        theme: 'bootstrap-5',
+                        dropdownParent: $('.swal2-container') // Ensures dropdown appears above the modal
+                    });
+                    console.log(listImm);
+                    $.each(listImm, function(index, value){
+                        console.log(value);
+                        $('.swal2-container #user option[value="' + value.refUser.id + '"]').attr('disabled', 'disabled');
+                    });
+                    // ✅ init datetime picker (Tempus Dominus)
+                    const el = document.querySelector('.swal2-container #duedate');
+                    initialDatePk(el);
+                },
+                preConfirm: () => {
+                    let userEl = document.querySelector('.swal2-container #user');
+                    let duedateEl = document.querySelector('.swal2-container #duedate');
+
+                    let valid = true;
+
+                    // reset state
+                    userEl.classList.remove("is-invalid");
+                    duedateEl.classList.remove("is-invalid");
+
+                    // validate user
+                    if (!userEl.value || userEl.value === "0") {
+                        userEl.classList.add("is-invalid");
+                        valid = false;
+                    }
+
+                    // validate dudeDate
+                    if (!duedateEl.value) {
+                        duedateEl.classList.add("is-invalid");
+                        valid = false;
+                    }
+
+                    if (!valid) {
+                        return false; // ❌ block submit
+                    }
+
+                    return {
+                        user: userEl.value,
+                        dueDate: duedateEl.value
+                    };
+                },
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Loading(true);
+                    const settings = {
+                        url: window.location.origin + window.location.pathname + "addjson/",
+                        method: "POST",
+                        contentType: "application/json",
+                        headers: { "X-CSRFToken": getCSRFToken() },
+                        data: JSON.stringify({
+                            user: result.value.user,
+                            dueDate: result.value.dueDate
+                        })
+                    }
+                    await $.ajax(settings).done((response) => {
+                        
+                        Loading(false);
+                        if(response.success == true){
+                            PopMessage("Success", "success");
+                            table.ajax.reload();
+                        }else{
+                            PopMessage(response.message, "error");
+                        }
+                    }).fail((xjr, status, error) => {
+                        Loading(false);
+                        PopMessage(error, "error");
+                    });
+                }
+            });
+        });
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+        const editImmigration = async (id) => {
+            Loading(true);
+            const getData = await getImmigration(id);
+            if(getData){
+                console.log(getData);
+                Loading(false);
+                Swal.fire({
+                    title: `<p class="display-6">Immigration User</p>`,
+                    html: $("#detail").html(),
+                    showCloseButton: true,
+                    showCancelButton: true,
+                    showConfirmButton: true,
+                    confirmButtonText: 'Save',   // 🔹 เปลี่ยนข้อความปุ่ม
+                    customClass: {
+                        confirmButton: 'btn btn-primary me-2', // 🔹 ใช้ class bootstrap
+                        cancelButton: 'btn btn-secondary'
+                    },
+                    buttonsStyling: false, // 🔹 เพื่อให้ SweetAlert ไม่ override Bootstrap
+                    focusConfirm: false,
+                    width:'50rem',
+                    didOpen: () => {
+                        $('.form-select').select2({
+                            theme: 'bootstrap-5',
+                            dropdownParent: $('.swal2-container') // Ensures dropdown appears above the modal
+                        });
+                        // ✅ init datetime picker (Tempus Dominus)
+                        const el = document.querySelector('.swal2-container #duedate');
+                        let dueDatePK = initialDatePk(el);
+                        $('.swal2-container #user').val(getData.refUser.id).change();
+                        $('.swal2-container #user').attr("disabled", "disabled");
+                        dueDatePK.dates.setValue(tempusDominus.DateTime.convert(new Date(getData.dueDate)));
+                        datePkSetMinDate(dueDatePK, new Date(new Date(getData.dueDate)));
+
+                    },
+                    preConfirm: () => {
+                        let duedateEl = document.querySelector('.swal2-container #duedate');
+
+                        let valid = true;
+
+                        // reset state
+                        duedateEl.classList.remove("is-invalid");
+
+                        // validate dudeDate
+                        if (!duedateEl.value) {
+                            duedateEl.classList.add("is-invalid");
+                            valid = false;
+                        }
+
+                        if (!valid) {
+                            return false; // ❌ block submit
+                        }
+
+                        return {
+                            // user: getData.refUser.id,
+                            dueDate: duedateEl.value,
+                            immId: getData.id
+                        };
+                    },
+                }).then(async (result) => {
+                    if(result.isConfirmed){
+                        Loading(true);
+                        const settings = {
+                            url: window.location.origin + window.location.pathname + "editjson/",
+                            method: "POST",
+                            contentType: "application/json",
+                            headers: { "X-CSRFToken": getCSRFToken() },
+                            data: JSON.stringify({
+                                // user: result.value.user,
+                                dueDate: result.value.dueDate,
+                                immId: result.value.immId
+                            }),
+                        };
+                        await $.ajax(settings).done((response) => {
+                            Loading(false);
+                            if(response.success == true){
+                                PopMessage("Success", "success");
+                                table.ajax.reload();
+                            }else{
+                                PopMessage(response.message, "error");
+                            }
+                        }).fail((xjr, status, error) => {
+                            Loading(false);
+                            PopMessage(error, "error");
+                        });
+                    }
+                });
+            }
+            
+        };
+        const deleteImmigration = (id) => {
+            // Loading(true);
+            Swal.fire({
+                title: "Do you want to delete ?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#f97316",
+                confirmButtonText: "Delete",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if(result.isConfirmed){
+                    Loading(true);
+                    const settings = {
+                        url: window.location.origin + window.location.pathname + "deletejson/" + id,
+                        method: "GET",
+                    }
+                    $.ajax(settings).done((response) => {
+                        Loading(false);
+                        if(response.success == true){
+                            PopMessage("Delete success", "success");
+                        }else{
+                            PopMessage(response.message, "error");
+                        }
+                        table.ajax.reload();
+                    }).fail((xjr, status, error) => {
+                        Loading(false);
+                        PopMessage(error, "error");
+                        table.ajax.reload();
+                    });
+                }
+            });
+        };
+        const getImmigration = async (id) => {
+            let result;
+            const settings = {
+                url: window.location.origin + window.location.pathname + "api/getjson/" + id,
+                method: "GET",
+            };
+            await $.ajax(settings).done(function (response) {
+                
+                if (response.success == true) {
+                    result = response.data;
+                }
+            }).fail(function (xjr, status, error) {
+                console.log(error);
+                Loading(false);
+                PopMessage(error, "error");
+            });
+            return result;
+        };
+        const mailImmigration = (id) => {
+            window.location.href = window.location.origin + window.location.pathname + "send/" + id;
+        }
+
     </script>
 {% endblock %}

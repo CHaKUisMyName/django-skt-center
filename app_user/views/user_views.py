@@ -86,7 +86,11 @@ def addUser(request: HttpRequest):
             status = request.POST.get("status")
             isadmin = True if request.POST.get("isadmin") == 'on' else False
 
-            print(code, fNameTH, lNameTH, fNameEN, lNameEN, nickName, nation, email, phone, address, note, birthday, sDate, status, isadmin)
+            dupUser = User.objects.filter(code = code, isActive = True).first()
+            if dupUser:
+                messages.error(request, "Duplicate User")
+                return response
+
 
             posList = request.POST.getlist("pos")
             orgList = request.POST.getlist("org")

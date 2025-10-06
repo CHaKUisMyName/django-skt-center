@@ -16,6 +16,7 @@ from app_car_schedule.models.driver import Driver
 from app_user.models.user import User
 from app_user.utils import requiredLogin
 from base_models.basemodel import UserSnapshot
+from utilities.utility import dateStrAndTimeToDatetime
 
 tz = pytz.timezone("Asia/Bangkok")
 
@@ -72,7 +73,10 @@ def add(request: HttpRequest):
             if not eTime:
                 messages.error(request, "End Time is required")
                 return response
-            if dateStrAndTimeToDatetime(dpDate,sTime) >= dateStrAndTimeToDatetime(dpDate,eTime):
+            # แปลงเวลา
+            sDate = dateStrAndTimeToDatetime(dpDate, sTime)
+            eDate = dateStrAndTimeToDatetime(dpDate, eTime)
+            if sDate >= eDate:
                 messages.error(request, 'Start date must be before end date.')
                 return response
 
@@ -87,6 +91,18 @@ def add(request: HttpRequest):
             purpose = request.POST.get('purpose')
             destination = request.POST.get('destination')
             listPsg = request.POST.getlist('psgs[]')
+
+            # --- เช็คว่ามี schedule ที่เวลาทับกันไหม
+            conflict = CarSchedule.objects(
+                isActive=True,
+                driver__id=str(driverData.id)   # ถ้า driver เก็บ id ไว้ใน embedded doc
+            ).filter(
+                Q(sDate__lt=eDate) & Q(eDate__gt=sDate)
+            ).first()
+
+            if conflict:
+                messages.error(request, "Driver already has a booking in this time slot.")
+                return response
 
             schedule = CarSchedule()
 
@@ -122,8 +138,8 @@ def add(request: HttpRequest):
                         passengers.append(person)
 
             
-            schedule.sDate = dateStrAndTimeToDatetime(dpDate,sTime)
-            schedule.eDate = dateStrAndTimeToDatetime(dpDate,eTime)
+            schedule.sDate = sDate
+            schedule.eDate = eDate
             schedule.title = title
             schedule.purpose = purpose
             schedule.destination = destination
@@ -183,7 +199,10 @@ def edit(request: HttpRequest, id: str):
             if not eTime:
                 messages.error(request, "End Time is required")
                 return response
-            if dateStrAndTimeToDatetime(dpDate,sTime) >= dateStrAndTimeToDatetime(dpDate,eTime):
+            # แปลงเวลา
+            sDate = dateStrAndTimeToDatetime(dpDate, sTime)
+            eDate = dateStrAndTimeToDatetime(dpDate, eTime)
+            if sDate >= eDate:
                 messages.error(request, 'Start date must be before end date.')
                 return response
             driver = request.POST.get('driver')
@@ -197,6 +216,17 @@ def edit(request: HttpRequest, id: str):
             purpose = request.POST.get('purpose')
             destination = request.POST.get('destination')
             listPsg = request.POST.getlist('psgs[]')
+            # --- เช็คว่ามี schedule ที่เวลาทับกันไหม
+            conflict = CarSchedule.objects(
+                isActive=True,
+                driver__id=str(driverData.id)   # ถ้า driver เก็บ id ไว้ใน embedded doc
+            ).filter(
+                Q(sDate__lt=eDate) & Q(eDate__gt=sDate) & Q(id__ne=schedule.id)
+            ).first()
+
+            if conflict:
+                messages.error(request, "Driver already has a booking in this time slot.")
+                return response
 
             driverObj = ViewPersonCarSchedule()
             driverObj.id = str(driverData.id)
@@ -229,8 +259,8 @@ def edit(request: HttpRequest, id: str):
                         
                         passengers.append(person)
 
-            schedule.sDate = dateStrAndTimeToDatetime(dpDate,sTime)
-            schedule.eDate = dateStrAndTimeToDatetime(dpDate,eTime)
+            schedule.sDate = sDate
+            schedule.eDate = eDate
             schedule.title = title
             schedule.purpose = purpose
             schedule.destination = destination
@@ -321,14 +351,7 @@ def listPage(request: HttpRequest):
         }
         return render(request,'schedule/list.html', context)
 
-def dateStrAndTimeToDatetime(date: str, time: str):
-    try:
-        a = datetime.strptime(date+" "+time, "%d/%m/%Y %H:%M")
-        b = tz.localize(a)
-        return b.astimezone(pytz.utc)
-    except Exception as e:
-        print(e)
-        return None
+
     
 def filterCarScheduleJson(request: HttpRequest):
     try:

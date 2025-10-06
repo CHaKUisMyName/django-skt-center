@@ -1,6 +1,8 @@
 from typing import List
 from openpyxl import Workbook, styles
 from openpyxl.utils import get_column_letter
+import pytz
+from datetime import datetime
 
 from app_system_setting.models import SystemApp, SystemMenu
 from app_user.models.user import User
@@ -61,6 +63,31 @@ def CreateExcelTemplateSetting(title: str, sysAppStr: str, settingObjects):
         ws.column_dimensions['B'].width = 15
         ws.column_dimensions['C'].width = 15
         return wb
+    except Exception as e:
+        print(e)
+        return None
+    
+def printLogData(data):
+    print("-------------------------------------------------------")
+    print(f"print log : {data}")
+    print("-------------------------------------------------------")
+    
+def DateStrToDate(date: str):
+    tz = pytz.timezone("Asia/Bangkok")
+    try:
+        a = datetime.strptime(date, "%d/%m/%Y")
+        b = tz.localize(a)
+        return b.astimezone(pytz.utc)
+    except Exception as e:
+        print(e)
+        return None
+    
+def dateStrAndTimeToDatetime(date: str, time: str):
+    tz = pytz.timezone("Asia/Bangkok")
+    try:
+        a = datetime.strptime(date+" "+time, "%d/%m/%Y %H:%M")
+        b = tz.localize(a)
+        return b.astimezone(pytz.utc)
     except Exception as e:
         print(e)
         return None
