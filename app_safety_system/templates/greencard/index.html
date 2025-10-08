@@ -1,0 +1,149 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Green and Yellow Card System</title>{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/tempus-dominus.css' %}" />
+<style>
+    #greenCard:hover{
+        background-color: #1aa57b !important;
+    }
+    #yellowCard:hover{
+        background-color: #e1a627 !important;
+    }
+    /* ให้ label ภายใน Swal ชิดซ้าย */
+    .swal2-html-container label {
+        text-align: left !important;
+        display: block;  /* กัน margin/padding แปลกๆ */
+    }
+</style>
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span class="fw-bold">Green and Yellow Card</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-sm-12 col-md-6">
+        <div class="row mb-3">
+            <div class="col-sm-12 col-md-6">
+                <div id="greenCard" class="card text-bg-success cursor-pointer">
+                    <div class="card-body">
+                        <p>Card</p>
+                        <div class="row">
+                            <div class="col-6">
+                                <h1 class="mt-1">Green</h1>
+                            </div>
+                            <div class="align-content-center col-6 text-end">
+                                <i class="bi bi-plus-circle fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-12 col-md-6">
+                <div id="yellowCard" class="card text-bg-warning cursor-pointer">
+                    <div class="card-body">
+                        <p>Card</p>
+                        <div class="row">
+                            <div class="col-6">
+                                <h1 class="mt-1">Yellow</h1>
+                            </div>
+                            <div class="align-content-center col-6 text-end">
+                                <i class="bi bi-plus-circle fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <p class="display-1">Chart</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="gDetail" class="card d-none">
+    <div class="card-body row mb-3">
+        <div class="col-12">
+            {% csrf_token %}
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="issueDate" class="form-label">Issue Date<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <input type="text" class="form-control" id="issueDate" name="issueDate" required>
+                    <div class="invalid-feedback">
+                        Please select a issue date.
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="issuer" class="form-label">Issuer<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <input type="text" class="form-control" id="issuer" name="issuer" disabled readonly value="{{ request.currentUser.fNameEN}} {{ request.currentUser.lNameEN}}">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="issueTo" class="form-label">Issue To<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <select class="form-select" name="issueTo" id="issueTo" required>
+                        <option value="0">Not Select</option>
+                        <option value="1">Employee</option>
+                        <option value="2">Department</option>
+                        <option value="3">Vendor</option>
+                    </select>
+                    <div class="invalid-feedback">
+                        Please select a issue to.
+                    </div>
+                </div>
+            </div>
+            <div id="issueToDetail"></div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="detail" class="form-label">Detail<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <textarea id="detail" name="detail" class="form-control" style="height: 100px;" required></textarea>
+                    <div class="invalid-feedback">
+                        Please input data.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    <script src="{% static 'js/popper.min.js' %}"></script>
+    <script src="{% static 'js/tempus-dominus.js' %}"></script>
+    <script type="text/javascript">
+        $(document).ready(() => {
+            ActiveMenu("greenyellowcard");
+        });
+        $("#greenCard").click(function(e){
+            e.preventDefault();
+            Swal.fire({
+                title: `<p class="display-6">Green Card</p>`,
+                html: $("#gDetail").html(),
+                showCloseButton: true,
+                showCancelButton: true,
+                showConfirmButton: true,
+                confirmButtonText: 'Save',   // 🔹 เปลี่ยนข้อความปุ่ม
+                customClass: {
+                    confirmButton: 'btn btn-primary me-2', // 🔹 ใช้ class bootstrap
+                    cancelButton: 'btn btn-secondary'
+                },
+                buttonsStyling: false, // 🔹 เพื่อให้ SweetAlert ไม่ override Bootstrap
+                focusConfirm: false,
+                width:'40rem',
+                didOpen: () => {
+                    // ✅ init date picker (Tempus Dominus)
+                    const el = document.querySelector('.swal2-container #issueDate');
+                    initialDatePk(el);
+                }
+            });
+        });
+    </script>
+{% endblock %}

@@ -16,7 +16,7 @@ from asgiref.sync import async_to_sync
 import pytz
 
 from app_system_setting.models import SystemApp, SystemMenu
-from app_user.models.user import User
+from app_user.models.user import User, UserStatus
 from app_user.utils import requiredLogin
 from app_welcome_board.models.welcomboard_setting import WelcomeboardSetting
 from app_welcome_board.models.welcome_default import WelcomeBoardDefault
@@ -414,7 +414,7 @@ def addSetting(request: HttpRequest):
             messages.error(request, str(e))
             return response
     else:
-        users: List[User] = User.objects.filter(isActive = True).order_by('code')
+        users: List[User] = User.objects.filter(isActive = True, status = UserStatus.Hire.value).order_by('code')
         app: SystemApp = SystemApp.objects.filter(name = "app_welcome_board").first()
         if not app:
             messages.error(request, "App not found")

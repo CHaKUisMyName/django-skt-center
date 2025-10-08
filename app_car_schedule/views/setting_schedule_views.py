@@ -6,7 +6,7 @@ from django.urls import reverse
 from app_car_schedule.models.car_schedule_setting import CarScheduleSetting
 from app_car_schedule.utils import HasCshPermission
 from app_system_setting.models import SystemApp, SystemMenu
-from app_user.models.user import User
+from app_user.models.user import User, UserStatus
 from app_user.utils import requiredLogin
 from django.contrib import messages
 from django.utils import timezone
@@ -72,7 +72,7 @@ def add(request: HttpRequest):
             messages.error(request, str(e))
             return response
     else:
-        users: List[User] = User.objects.filter(isActive = True).order_by('code')
+        users: List[User] = User.objects.filter(isActive = True, status = UserStatus.Hire.value).order_by('code')
         app: SystemApp = SystemApp.objects.filter(name = "app_car_schedule").first()
         if not app:
             messages.error(request, "App not found")

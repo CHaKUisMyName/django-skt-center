@@ -8,7 +8,7 @@ from openpyxl import load_workbook
 from app_organization.models.org_setting import OrgSetting
 from app_organization.utils import HasOrgPermission, isSettingOrgAdmin
 from app_system_setting.models import SystemApp, SystemMenu
-from app_user.models.user import User
+from app_user.models.user import User, UserStatus
 from app_user.utils import requiredLogin
 from django.contrib import messages
 from django.utils import timezone
@@ -77,7 +77,7 @@ def addSettingOrg(request: HttpRequest):
             messages.error(request, str(e))
             return response
     else:
-        users: List[User] = User.objects.filter(isActive = True).order_by('code')
+        users: List[User] = User.objects.filter(isActive = True, status = UserStatus.Hire.value).order_by('code')
         app: SystemApp = SystemApp.objects.filter(name = "app_organization").first()
         if not app:
             messages.error(request, "App not found")

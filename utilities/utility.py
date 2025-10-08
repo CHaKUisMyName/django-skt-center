@@ -5,7 +5,7 @@ import pytz
 from datetime import datetime
 
 from app_system_setting.models import SystemApp, SystemMenu
-from app_user.models.user import User
+from app_user.models.user import User, UserStatus
 
 def CreateExcelTemplateSetting(title: str, sysAppStr: str, settingObjects):
     try:
@@ -32,7 +32,7 @@ def CreateExcelTemplateSetting(title: str, sysAppStr: str, settingObjects):
                     header.append(m.name)
         ws.append(header)
         # ใส่ข้อมูล
-        user: list[User] = User.objects.filter(isActive = True)
+        user: list[User] = User.objects.filter(isActive = True, status = UserStatus.Hire.value)
         if user:
             dupUser = []
             if settingObjects:

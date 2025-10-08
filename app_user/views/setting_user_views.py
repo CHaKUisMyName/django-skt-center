@@ -11,7 +11,7 @@ from openpyxl import Workbook, load_workbook, styles
 from openpyxl.utils import get_column_letter
 
 from app_system_setting.models import SystemApp, SystemMenu
-from app_user.models.user import User
+from app_user.models.user import User, UserStatus
 from app_user.models.user_setting import UserSetting
 from app_user.utils import HasUsPermission, requiredLogin
 from base_models.basemodel import UserSnapshot
@@ -77,7 +77,7 @@ def addSettingUser(request: HttpRequest):
             return response
 
     else:
-        users: List[User] = User.objects.filter(isActive = True).order_by('code')
+        users: List[User] = User.objects.filter(isActive = True, status = UserStatus.Hire.value).order_by('code')
         app: SystemApp = SystemApp.objects.filter(name = "app_user").first()
         if not app:
             messages.error(request, "App not found")

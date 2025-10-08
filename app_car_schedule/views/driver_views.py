@@ -206,3 +206,14 @@ def delete(request: HttpRequest, id: str):
             'message': str(e)
         }
         return JsonResponse(r)
+    
+def deleteDriverByUser(requester: User, user: User):
+    driver: Driver = Driver.objects.filter(user = user.id).first()
+    if driver:
+        driver.isActive = False
+        driver.updateDate = timezone.now()
+        if requester:
+            uUpdate = UserSnapshot().UserToSnapshot(requester)
+            if uUpdate:
+                driver.updateBy = uUpdate
+        driver.save()

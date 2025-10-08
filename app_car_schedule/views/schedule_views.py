@@ -13,7 +13,7 @@ from mongoengine.queryset.visitor import Q
 from app_car_schedule.models.car_schedule import CarSchedule, ViewPersonCarSchedule
 from app_car_schedule.models.car_schedule_setting import CarScheduleSetting
 from app_car_schedule.models.driver import Driver
-from app_user.models.user import User
+from app_user.models.user import User, UserStatus
 from app_user.utils import requiredLogin
 from base_models.basemodel import UserSnapshot
 from utilities.utility import dateStrAndTimeToDatetime
@@ -159,7 +159,7 @@ def add(request: HttpRequest):
         return response
     else:
         drivers = Driver.objects.filter(isActive = True)
-        passengers = User.objects.filter(isActive = True).order_by('code')
+        passengers = User.objects.filter(isActive = True, status = UserStatus.Hire.value).order_by('code')
         qDate = request.GET.get('d') # -- query string date
         if not qDate:
             qDate = ""

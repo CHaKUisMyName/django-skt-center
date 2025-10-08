@@ -9,7 +9,7 @@ import pytz
 from django.utils import timezone
 
 from app_user.models.immigration import ExpiredImmigration, Immigration
-from app_user.models.user import EmpNation, User
+from app_user.models.user import EmpNation, User, UserStatus
 from app_user.tasks import check_immigration_expired
 from app_user.utils import HasUsPermission, requiredLogin
 from base_models.basemodel import UserSnapshot
@@ -25,7 +25,7 @@ def index(request: HttpRequest):
         if hasPermission == False:
             messages.error(request, "Not Permission")
             return HttpResponseRedirect('/')
-    users: User = User.objects.filter(isActive = True, nation = EmpNation.Japan.value).order_by('code')
+    users: User = User.objects.filter(isActive = True, nation = EmpNation.Japan.value, status = UserStatus.Hire.value).order_by('code')
     check_immigration_expired()
     context = {
         "users": users
@@ -167,6 +167,19 @@ def deleteJson(request: HttpRequest, id: str):
     except Exception as e:
         print(e)
         return JsonResponse({'success': False, 'message': str(e)})
+    
+def deleteImmigrationByUser(requester: User, user: User):
+    immigration: Immigration = Immigration.objects.filter(refUser = user.id).first()
+    if immigration:
+        immigration.isActive = False
+        immigration.updateDate = timezone.now()
+        if requester:
+            uUpdate = UserSnapshot().UserToSnapshot(requester)
+            if uUpdate:
+                immigration.updateBy = uUpdate
+        immigration.save()
+        check_immigration_expired()
+
 
 
 

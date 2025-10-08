@@ -159,6 +159,14 @@
                         </a>
                     </li>
                     <li class="sidebar-item my-2 mx-3">
+                        <a class="sidebar-link" href="http://192.168.1.206/" target="_blank" data-active="esmart">
+                            <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
+                                <i class="bi bi-ticket-detailed-fill"></i>
+                            </div>
+                            <span class="fw-bold">IT Ticket</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item my-2 mx-3">
                         <a class="sidebar-link" href="http://192.168.1.230:8080/SANYOLAB/login.jsf" target="_blank" data-active="lims">
                             <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
                                 <i class="bi bi-droplet-half"></i>
@@ -192,6 +200,19 @@
                         </ul>
                     </li>
                     <li class="sidebar-item my-2 mx-3">
+                        <a data-bs-target="#mainsafety" data-bs-toggle="collapse" class="sidebar-link">
+                            <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
+                                <i class="bi bi-shield-shaded"></i>
+                            </div>
+                            <span class="fw-bold">Safety System</span>
+                        </a>
+                        <ul id="mainsafety" class="parent-menu-collapse sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="{% url 'indexGreenCard' %}" data-active="greenyellowcard">Green/Yellow Card</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="sidebar-item my-2 mx-3">
                         <a class="sidebar-link" href="http://192.168.1.214" target="_blank" data-active="sds">
                             <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
                                 <i class="bi bi-file-earmark-text-fill"></i>
@@ -199,15 +220,6 @@
                             <span class="fw-bold">SDS</span>
                         </a>
                     </li>
-                    <li class="sidebar-item my-2 mx-3">
-                        <a class="sidebar-link" href="http://192.168.1.206/" target="_blank" data-active="esmart">
-                            <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
-                                <i class="bi bi-ticket-detailed-fill"></i>
-                            </div>
-                            <span class="fw-bold">IT Ticket</span>
-                        </a>
-                    </li>
-                    
                     
                     <li class="sidebar-item my-2 mx-3">
                         <a data-bs-target="#visitor" data-bs-toggle="collapse" class="sidebar-link">

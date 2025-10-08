@@ -26,6 +26,7 @@ urlpatterns = [
     path('vst/', include('app_visitor.urls')),
     path('user/', include('app_user.urls')),
     path('org/', include('app_organization.urls')),
+    path('sft/', include('app_safety_system.urls')),
     path('sys/', include('app_system_setting.urls')),
     path('wb/', include('app_welcome_board.urls')),
     path('csh/', include('app_car_schedule.urls')),

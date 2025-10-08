@@ -9,7 +9,7 @@ from django.utils import timezone
 from openpyxl import load_workbook
 
 from app_system_setting.models import SystemApp, SystemMenu
-from app_user.models.user import User
+from app_user.models.user import User, UserStatus
 from app_user.utils import requiredLogin
 from app_visitor.models.visitor_setting import VisitorSetting
 from app_visitor.utils import HasVstPermission
@@ -74,7 +74,7 @@ def add(request: HttpRequest):
             messages.error(request, str(e))
             return response
     else:
-        users: List[User] = User.objects.filter(isActive = True).order_by('code')
+        users: List[User] = User.objects.filter(isActive = True, status = UserStatus.Hire.value).order_by('code')
         app: SystemApp = SystemApp.objects.filter(name = "app_visitor").first()
         if not app:
             messages.error(request, "App not found")

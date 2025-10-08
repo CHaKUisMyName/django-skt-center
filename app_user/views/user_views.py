@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.contrib import messages
 from django.utils import timezone
 
+from app_car_schedule.views.driver_views import deleteDriverByUser
 from app_car_schedule.views.setting_schedule_views import deleteCshSettingByUser
 from app_organization.models.organization import Organization
 from app_organization.models.position import Position
@@ -18,6 +19,7 @@ from app_user.models.auth_user import AuthUser, VerifyPassword
 from app_user.models.user import EmpNation, RoleUser, User, UserStatus, UserType
 from app_user.models.user_setting import UserSetting
 from app_user.utils import HasUsPermission, requiredLogin
+from app_user.views.immigration_views import deleteImmigrationByUser
 from app_visitor.views.setting_visitor_views import deleteVstSettingByUser
 from app_welcome_board.views import deleteWbSettingByUser
 from base_models.basemodel import UserSnapshot
@@ -249,6 +251,11 @@ def editUser(request: HttpRequest, id: str):
             status = request.POST.get("status") if request.POST.get("status") else user.status.value
             isadmin = True if request.POST.get("isadmin") == 'on' else False
 
+            if user.id == request.currentUser.id:
+                if UserStatus(int(status)) != UserStatus.Hire or UserStatus(int(status)) != UserStatus.Furlough:
+                    messages.error(request, "can not change status out of Hire or Furlough")
+                    return response
+
             # -- update data
             user.code = code
             user.fNameTH = fNameTH
@@ -307,9 +314,18 @@ def editUser(request: HttpRequest, id: str):
 
             authUser: AuthUser = AuthUser.objects.filter(refUser = user.id).first()
             if authUser:
-                if UserStatus(int(status)) != UserStatus.Hire:
+                if UserStatus(int(status)) != UserStatus.Hire or UserStatus(int(status)) != UserStatus.Furlough:
                     authUser.isActive = False
                     authUser.save()
+
+            # -- ถ้า status ไม่ใช่ จ้างงาน หรือพักงาน จะให้ disable พนักงานคนนี้
+            # -- หรือก้อคือเข้าเคส ลบ พนักงาน
+            if UserStatus(int(status)) != UserStatus.Hire or UserStatus(int(status)) != UserStatus.Furlough:
+                user.isActive = False
+                user.isDelete = True
+                user.save()
+                # -- ถ้ามีการลบ user ให้ไป disable ในระบบอื่นที่เกี่ยวข้องด้วย
+                diableUserNestSystem(requester= request.currentUser, user = user)
 
             messages.success(request, 'Save Success')
             return response
@@ -468,6 +484,9 @@ def deleteUser(request: HttpRequest, id: str):
         if not request.currentUser.isAdmin:
             if hasPermission == False:
                 return JsonResponse({'deleted': False, 'message': 'Not Permission'})
+            
+        if ObjectId(request.currentUser.id) == ObjectId(id):
+            return JsonResponse({'deleted': False, 'message': 'Not Delete yourself'})
         
         user: User = User.objects.filter(id = id).first()
         if not user:
@@ -477,16 +496,9 @@ def deleteUser(request: HttpRequest, id: str):
         user.isActive = False
         user.save()
 
-        # -- delete setting user car schedule
-        deleteCshSettingByUser(requester= request.currentUser, user = user)
-        # -- delete setting user Org
-        deleteOrgSettingByUser(requester= request.currentUser, user = user)
-        # -- delete setting user visitor
-        deleteVstSettingByUser(requester= request.currentUser, user = user)
-        # -- delete setting user welcome board
-        deleteWbSettingByUser(requester= request.currentUser, user = user)
+        # -- ถ้ามีการลบ user ให้ไป disable ในระบบอื่นที่เกี่ยวข้องด้วย
+        diableUserNestSystem(requester= request.currentUser, user = user)
         
-
         authUser: AuthUser = AuthUser.objects.filter(refUser = user).first()
         if authUser:
             authUser.isDelete = True
@@ -515,6 +527,20 @@ def listUser(request: HttpRequest):
         return JsonResponse({'success': True, 'data': [ user.serialize() for user in users], 'message': 'Success'})
     except Exception as e:
         return JsonResponse({'success': False, 'data': [], 'message': str(e)})
+    
+def diableUserNestSystem(requester: User, user: User):
+    # -- delete driver car schedule
+    deleteDriverByUser(requester= requester, user = user)
+    # -- delete setting user car schedule
+    deleteCshSettingByUser(requester= requester, user = user)
+    # -- delete setting user Org
+    deleteOrgSettingByUser(requester= requester, user = user)
+    # -- delete setting user visitor
+    deleteVstSettingByUser(requester= requester, user = user)
+    # -- delete setting user welcome board
+    deleteWbSettingByUser(requester= requester, user = user)
+    # -- delete immigration
+    deleteImmigrationByUser(requester= requester, user = user)
     
 # ---------------------------------------------------------------------------------
 # ------------------------------ user login ---------------------------------------
