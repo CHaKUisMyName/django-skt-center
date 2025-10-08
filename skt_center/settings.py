@@ -33,7 +33,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = True
 # DEBUG = False
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost","192.168.1.226"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost","192.168.1.226", "sanyo-kasei.center", "www.sanyo-kasei.center"]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://192.168.1.226', 'http://127.0.0.1',

@@ -138,12 +138,32 @@
                 buttonsStyling: false, // 🔹 เพื่อให้ SweetAlert ไม่ override Bootstrap
                 focusConfirm: false,
                 width:'40rem',
-                didOpen: () => {
+                didOpen: async () => {
                     // ✅ init date picker (Tempus Dominus)
                     const el = document.querySelector('.swal2-container #issueDate');
                     initialDatePk(el);
+                    await getUserAPI();
                 }
             });
         });
+        const createUserDropdown = async (users) => {}
+        const getUserAPI = async () => {
+            const url = window.location.origin + window.location.pathname + "api/userjson/"
+            const settings = {
+                url: url,
+                method: "GET",
+            };
+            await $.ajax(settings).done(function (response) {
+                if (response.success == true) {
+                    // createUserDropdown(response.data);
+                    console.log(response.data);
+                }
+            }).fail(function (xjr, status, error) {
+                console.log(error);
+                Loading(false);
+                PopMessage(error, "error");
+            });
+
+        }
     </script>
 {% endblock %}
