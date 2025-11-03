@@ -11,9 +11,13 @@
         background-color: #e1a627 !important;
     }
     /* ให้ label ภายใน Swal ชิดซ้าย */
-    .swal2-html-container label {
+    .swal2-html-container label, 
+    .swal2-html-container .select2-selection__rendered{
         text-align: left !important;
         display: block;  /* กัน margin/padding แปลกๆ */
+    }
+    .swal2-html-container .invalid-feedback {
+        text-align: left !important;
     }
 </style>
 {% endblock %}
@@ -58,43 +62,124 @@
             </div>
         </div>
     </div>
-</div>
-<div class="row mb-3">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <p class="display-1">Chart</p>
+    <div class="col-sm-12 col-md-6">
+        <div class="row mb-3">
+            <div class="col-sm-12 col-md-6"></div>
+            <div class="col-sm-12 col-md-6">
+                <div id="search" class="card text-bg-secondary cursor-pointer">
+                    <div class="card-body">
+                        <p>Page</p>
+                        <div class="row">
+                            <div class="col-6">
+                                <h1 class="mt-1 text-decoration-underline text-white">Search</h1>
+                            </div>
+                            <div class="align-content-center col-6 text-end">
+                                <i class="bi bi-search fs-1"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+<div class="row mb-3">
+    <div class="col-sm-12 col-md-4">
+        <div class="card">
+            <div class="card-header pt-3 pb-0 border-0">
+                <!-- <div class="card-actions float-end">
+                    <div class="dropdown position-relative">
+						<a href="#" data-bs-toggle="dropdown" aria-expanded="true">
+                             <i class="bi bi-three-dots text-dark-emphasis fs-3"></i>
+						</a>
+						<div class="dropdown-menu dropdown-menu-end">
+							<a class="dropdown-item" href="#">Filter</a>
+						</div>
+					</div>
+                </div> -->
+                <!-- <span class="h1 card-title mb-0">Your Data : </span>
+                <span>Sebtember 2025</span> -->
+                <h5 id="countTitle" class="card-title mb-0">Your Data : 0/0</h5>
+            </div>
+            <div class="card-body text-center">
+                <!-- <p class="display-1">Chart</p> -->
+                 <div class="row">
+                    <div class="col-6 border-end">
+                        <h1 id="countGreen" class="fw-bold text-success fa-4x">0</h1>
+                    </div>
+                    <div class="col-6 border-start">
+                        <h1 id="countYellow" class="fw-bold text-warning fa-4x">0</h1>
+                    </div>
+                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="col-sm-12 col-md-12 mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <span class="me-2">Data At :</span>
+                        <span id="barChartTitle" class="display-6"></span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <canvas id="myChart"></canvas>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+{% csrf_token %}
 <div id="gDetail" class="card d-none">
     <div class="card-body row mb-3">
         <div class="col-12">
-            {% csrf_token %}
             <div class="row mb-3">
                 <div class="col-12">
-                    <label for="issueDate" class="form-label">Issue Date<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <label for="issueDate" class="form-label">วันที่ให้ (Issue Date)<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
                     <input type="text" class="form-control" id="issueDate" name="issueDate" required>
                     <div class="invalid-feedback">
                         Please select a issue date.
                     </div>
                 </div>
             </div>
+            {% if isEmpThai == True %}
             <div class="row mb-3">
                 <div class="col-12">
-                    <label for="issuer" class="form-label">Issuer<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <label for="dept" class="form-label">หน่วยงานผู้ให้ (Department of Issuer)<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <select class="form-select" name="dept" id="dept" required>
+                        {% if selectRoles|length > 1 %}
+                        <option value="0">Not Select</option>
+                        {% endif %}
+                        {% for item in selectRoles %}
+                            <option value="{{ item.id }}">({{ item.levelNameEN }}) {{ item.nameEN }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">
+                        Please select a department.
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="issuer" class="form-label">ผู้มอบ (Issuer)<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
                     <input type="text" class="form-control" id="issuer" name="issuer" disabled readonly value="{{ request.currentUser.fNameEN}} {{ request.currentUser.lNameEN}}">
                 </div>
             </div>
             <div class="row mb-3">
                 <div class="col-12">
-                    <label for="issueTo" class="form-label">Issue To<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <label for="issueTo" class="form-label">ผู้รับ (Issue To)<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
                     <select class="form-select" name="issueTo" id="issueTo" required>
                         <option value="0">Not Select</option>
-                        <option value="1">Employee</option>
-                        <option value="2">Department</option>
-                        <option value="3">Vendor</option>
+                        {% for type in issueTypes %}
+                        <option value="{{ type.value }}">{{ type.name }}</option>
+                        {% endfor %}
                     </select>
                     <div class="invalid-feedback">
                         Please select a issue to.
@@ -104,24 +189,297 @@
             <div id="issueToDetail"></div>
             <div class="row mb-3">
                 <div class="col-12">
-                    <label for="detail" class="form-label">Detail<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <label for="detail" class="form-label">รายละเอียดความดี (Detail)<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
                     <textarea id="detail" name="detail" class="form-control" style="height: 100px;" required></textarea>
                     <div class="invalid-feedback">
                         Please input data.
                     </div>
                 </div>
             </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="image" class="form-label">Image (option.)</label>
+                    <input type="file" id="image" name="image" accept="image/*" class="form-control">
+                </div>
+            </div>
         </div>
     </div>
 </div>
+<div id="yDetail" class="card d-none">
+    <div class="card-body row mb-3">
+        <div class="col-12">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="yIssueDate" class="form-label">Issue Date<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <input type="text" class="form-control" id="yIssueDate" name="yIssueDate" required>
+                    <div class="invalid-feedback">
+                        Please select a issue date.
+                    </div>
+                </div>
+            </div>
+            {% if isEmpThai == True %}
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="ydept" class="form-label">หน่วยงานผู้ให้ (Department of Issuer)<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <select class="form-select" name="ydept" id="ydept" required>
+                        {% if selectRoles|length > 1 %}
+                        <option value="0">Not Select</option>
+                        {% endif %}
+                        {% for item in selectRoles %}
+                            <option value="{{ item.id }}">({{ item.levelNameEN }}) {{ item.nameEN }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">
+                        Please select a department.
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="provider" class="form-label">Provider<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <input type="text" class="form-control" id="provider" name="provider" disabled readonly value="{{ request.currentUser.fNameEN}} {{ request.currentUser.lNameEN}}">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="providerTo" class="form-label">Provider To<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <select class="form-select" name="providerTo" id="providerTo" required>
+                        <option value="0">Not Select</option>
+                        {% for type in issueTypes %}
+                        <option value="{{ type.value }}">{{ type.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">
+                        Please select a provider to.
+                    </div>
+                </div>
+            </div>
+            <div id="providerToDetail"></div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="yType" class="form-label">Type<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <select class="form-select" name="yType" id="yType" required>
+                        <option value="0">Not Select</option>
+                        {% for item in yellowCardTypes %}
+                        <option value="{{ item.value }}">{{ item.label }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">
+                        Please select a type.
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="yDetail" class="form-label">Warning Detail<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <textarea id="yDetail" name="yDetail" class="form-control" style="height: 100px;" required></textarea>
+                    <div class="invalid-feedback">
+                        Please input data.
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="yImage" class="form-label">Image (option.)</label>
+                    <input type="file" id="yImage" name="yImage" accept="image/*" class="form-control">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% if changeDept == True %}
+<div id="changeDept" class="card d-none">
+    <div class="card-body row mb-3">
+        <div class="col-12">
+            <div class="row mb-3">
+                <label for="chDept" class="form-label">หน่วยงานที่ต้องการย้ายใบเขียว-ใบเหลือง (Department of Issue)<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                <select class="form-select" name="chDept" id="chDept" required>
+                    {% for item in selectRoles %}
+                        <option value="{{ item.id }}">({{ item.levelNameEN }}) {{ item.nameEN }}</option>
+                    {% endfor %}
+                </select>
+                <div class="invalid-feedback">
+                    Please select a department.
+                </div>
+            </div>
+            <div>
+                <label class="small text-muted"><cite title="Source Title">* เกิดจากการย้ายหน่วยงานระหว่างปี</cite></label>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 {% block script %}
     <script src="{% static 'js/popper.min.js' %}"></script>
     <script src="{% static 'js/tempus-dominus.js' %}"></script>
     <script type="text/javascript">
-        $(document).ready(() => {
+        var showCountOrgObj;
+        var barChart;
+        $(document).ready(async () => {
             ActiveMenu("greenyellowcard");
+            updateCountCurrrentMonth();
+            const dateNow = new Date();
+            $("#countTitle").text(`Your Data : ${dateNow.getMonth() + 1}/${dateNow.getFullYear()}`);
+            $("#barChartTitle").text(`${dateNow.getMonth() + 1}/${dateNow.getFullYear()}`);
+
+            showCountOrgObj = await getCountOrgByAndMon();
+            // console.log(showCountOrgObj);
+            const ctx = document.getElementById('myChart');
+            barChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: showCountOrgObj.orgs ?? [],
+                    datasets: [
+                        {
+                            label: "green",
+                            backgroundColor: "#1aa57b",
+                            borderColor: "#1aa57b",
+                            // data: ['5','10','15']
+                            data: showCountOrgObj.countGreen
+                        },
+                        {
+                            label: "yellow",
+                            backgroundColor: "#e1a627",
+                            borderColor: "#e1a627",
+                            // data: ['10','15','20']
+                            data: showCountOrgObj.countYellow
+                        }
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                        },
+                    },
+                },
+            });
+            const changeDept = '{{changeDept}}';
+            if(changeDept == 'True'){
+                Swal.fire({
+                    title: `<p class="display-6">Select Department</p>`,
+                    html: $("#changeDept").html(),
+                    showCloseButton: false,
+                    showCancelButton: false,
+                    showConfirmButton: true,
+                    confirmButtonText: 'Save',   // 🔹 เปลี่ยนข้อความปุ่ม
+                    customClass: {
+                        confirmButton: 'btn btn-primary me-2', // 🔹 ใช้ class bootstrap
+                    },
+                    buttonsStyling: false, // 🔹 เพื่อให้ SweetAlert ไม่ override Bootstrap
+                    focusConfirm: false,
+                    width:'40rem',
+                    // 🔒 ปิดการปิด popup ด้วยวิธีอื่น
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: true, // กดยืนยันได้ด้วย Enter
+                    preConfirm: () =>{
+                        let valid = true;
+                        const chDeptEl = $(".swal2-container #chDept");
+                        chDeptEl.removeClass("is-invalid");
+                        if(!chDeptEl.val() || chDeptEl.val() == 0){
+                            chDeptEl.addClass("is-invalid");
+                            valid = false;
+                        }
+                        if(!valid){
+                            return false;
+                        }
+                        return {
+                            chDept: chDeptEl.val() ?? null,
+                        };
+                    },
+                }).then(async (result) => {
+                    if(result.isConfirmed){
+                        Loading(true);
+                        const data = result.value;
+                        const url = window.location.origin + window.location.pathname + "changedept/";
+                        const formData = new FormData();
+                        formData.append("csrfmiddlewaretoken", getCSRFToken());
+                        formData.append("orgid", data.chDept);
+                        formData.append("userid", '{{request.currentUser.id}}');
+                        const settings = {
+                            url: url,
+                            method: "POST",
+                            headers: { "X-CSRFToken": getCSRFToken() },
+                            data: formData,
+                            processData: false,
+                            contentType: false
+                        }
+                        await $.ajax(settings).done(async (response) => {
+                            Loading(false);
+                            if(response.success == true){
+                                PopMessage("Success", "success");
+                                updateCountCurrrentMonth();
+                                showCountOrgObj = await getCountOrgByAndMon();
+                                barChart.data.datasets[0].data = showCountOrgObj.countGreen;
+                                barChart.data.datasets[1].data = showCountOrgObj.countYellow;
+                                barChart.update();
+                            }else{
+                                PopMessage(response.message, "error");
+                            }
+                        }).fail((xjr, status, error) => {
+                            Loading(false);
+                            PopMessage(error, "error");
+                        });
+                    }
+                });
+            }
         });
+        const getCount = async () => {
+            let response;
+            const settings = {
+                url: window.location.origin + window.location.pathname + "api/count/",
+                method: "GET",
+            };
+            await $.ajax(settings).done((result)=>{
+                response = result.success == true ? result.data : null;
+            }).fail((xjr, status, error) => {
+                console.log(error);
+                // Loading(false);
+                // PopMessage(error, "error");
+            });
+            return response;
+        }
+        const getCountOrgByAndMon = async () => {
+            let response;
+            const dateNow = new Date();
+            const postData = JSON.stringify({
+                month: (dateNow.getMonth() + 1)
+            });
+            const settings ={
+                url: window.location.origin + window.location.pathname + "api/countorg/",
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken()
+                },
+                data: postData,
+            }
+            await $.ajax(settings).done((result)=>{
+                response = result.success == true ? result.data : null;
+            }).fail((xjr, status, error) => {
+                console.log(error);
+            });
+            return response;
+        }
+        const updateCountCurrrentMonth = async () => {
+            const showCountObj = await getCount();
+            if(showCountObj){
+                $("#countGreen").text(showCountObj.cGreen?? "0");
+                $("#countYellow").text(showCountObj.cYellow?? "0");
+            }
+        }
+
+            
         $("#greenCard").click(function(e){
             e.preventDefault();
             Swal.fire({
@@ -138,16 +496,449 @@
                 buttonsStyling: false, // 🔹 เพื่อให้ SweetAlert ไม่ override Bootstrap
                 focusConfirm: false,
                 width:'40rem',
+                willOpen: () => {
+                    const overlay = document.querySelector('.swal2-container');
+                    if (overlay) {
+                    overlay.style.backgroundColor = 'rgb(197 229 199 / 60%)';
+                    }
+                },
                 didOpen: async () => {
                     // ✅ init date picker (Tempus Dominus)
                     const el = document.querySelector('.swal2-container #issueDate');
                     initialDatePk(el);
-                    await getUserAPI();
+                    const users = await getUserAPI();
+                    const orgs = await getOrgAPI();
+
+                    // -- เวลาจะเข้าถึง element ใน swal ต้องเข้าผ่าน .swal2-container
+                    // -- เพราะ swal จะ clone มาจาก div detail จาก html ที่ config ไว้
+                    $(".swal2-container #issueTo").change(function(){
+                        const detailDiv = $(".swal2-container #issueToDetail");
+                        detailDiv.empty();
+                        
+                        if($(this).val() == 1){
+                            createUserDropdown(users, detailDiv);
+                        }else if($(this).val() == 2){
+                            createOrgDropdown(orgs, detailDiv);
+                        }else if($(this).val() == 3){
+                            vendorTextbox(detailDiv);
+                        }
+                    });
+                },
+                preConfirm: () => {
+                    let valid = true;
+                    const issueDateEl = $(".swal2-container #issueDate");
+                    const issueToEl = $(".swal2-container #issueTo");
+                    const userEl = $(".swal2-container #user");
+                    const orgEl = $(".swal2-container #org");
+                    const vendorEl = $(".swal2-container #vendor");
+                    const detailEl = $(".swal2-container #detail");
+                    const imageEl = $(".swal2-container #image");
+                    const deptEl = $(".swal2-container #dept");
+
+                    if(deptEl.html()){
+                        deptEl.removeClass("is-invalid");
+                        if(!deptEl.val() || deptEl.val() == 0){
+                            deptEl.addClass("is-invalid");
+                            valid = false;
+                        }
+                    }
+
+                    issueDateEl.removeClass("is-invalid");
+                    if(!issueDateEl.val()){
+                        issueDateEl.addClass("is-invalid");
+                        valid = false;
+                    }
+                    issueToEl.removeClass("is-invalid");
+                    if(!issueToEl.val() || issueToEl.val() == 0){
+                        issueToEl.addClass("is-invalid");
+                        valid = false;
+                    }
+                    if(issueToEl.val() == 1){
+                        userEl.removeClass("is-invalid");
+                        if(!userEl.val() || userEl.val() == 0){
+                            userEl.addClass("is-invalid");
+                            valid = false;
+                        }
+                    }else if(issueToEl.val() == 2){
+                        orgEl.removeClass("is-invalid");
+                        if(!orgEl.val() || orgEl.val() == 0){
+                            orgEl.addClass("is-invalid");
+                            valid = false;
+                        }
+                    }else if(issueToEl.val() == 3){
+                        vendorEl.removeClass("is-invalid");
+                        if(!vendorEl.val()){
+                            vendorEl.addClass("is-invalid");
+                            valid = false;
+                        }
+                    }
+
+                    detailEl.removeClass("is-invalid");
+                    if(!detailEl.val()){
+                        detailEl.addClass("is-invalid");
+                        valid = false;
+                    }
+
+                    // ✅ ตรวจสอบขนาดไฟล์รูปไม่เกิน 10 MB
+                    if (imageEl[0].files.length > 0) {
+                        const file = imageEl[0].files[0];
+                        const maxSize = 10 * 1024 * 1024; // 10 MB
+                        if (file.size > maxSize) {
+                            Swal.showValidationMessage("❌ Image size must not exceed 10 MB.");
+                            valid = false;
+                        }
+                    }
+
+                    if(!valid){
+                        return false;
+                    }
+
+                    // -- return file object 
+                    const file = imageEl[0].files.length > 0 ? imageEl[0].files[0] : null;
+
+                    return {
+                        issueDate: issueDateEl.val(),
+                        issueToType: issueToEl.val(),
+                        user: userEl.val() ?? null,
+                        org: orgEl.val() ?? null,
+                        vendor: vendorEl.val() ?? null,
+                        detail: detailEl.val(),
+                        image: file,
+                        dept: deptEl.val() ?? null,
+                    }
+                }
+            }).then(async (result) => {
+                if(result.isConfirmed){
+                    // console.log(getCSRFToken());
+                    Loading(true);
+                    const data = result.value;
+                    const url = window.location.origin + window.location.pathname + "addgreencardjson/";
+                    // ✅ ใช้ FormData แทน JSON
+                    const formData = new FormData();
+                    formData.append("csrfmiddlewaretoken", getCSRFToken());
+                    formData.append("issueDate", data.issueDate);
+                    formData.append("issueToType", data.issueToType);
+                    formData.append("user", data.user ?? "");
+                    formData.append("org", data.org ?? "");
+                    formData.append("vendor", data.vendor ?? "");
+                    formData.append("detail", data.detail);
+                    formData.append("dept", data.dept ?? null);
+
+                    // ✅ ถ้ามีไฟล์ให้แนบด้วย
+                    if (data.image) {
+                        formData.append("image", data.image);
+                    }
+                    const settings = {
+                        url: url,
+                        method: "POST",
+                        headers: { "X-CSRFToken": getCSRFToken() },
+                        data: formData,
+                        processData: false,
+                        contentType: false
+                    }
+                    await $.ajax(settings).done(async (response) => {
+                        Loading(false);
+                        if(response.success == true){
+                            PopMessage("Success", "success");
+                            updateCountCurrrentMonth();
+                            showCountOrgObj = await getCountOrgByAndMon();
+                            barChart.data.datasets[0].data = showCountOrgObj.countGreen;
+                            barChart.data.datasets[1].data = showCountOrgObj.countYellow;
+                            barChart.update();
+                        }else{
+                            PopMessage(response.message, "error");
+                        }
+                    }).fail((xjr, status, error) => {
+                        Loading(false);
+                        PopMessage(error, "error");
+                    });
                 }
             });
         });
-        const createUserDropdown = async (users) => {}
+        $("#yellowCard").click(function(e){
+            e.preventDefault();
+            Swal.fire({
+                title: `<p class="display-6">Yellow Card</p>`,
+                html: $("#yDetail").html(),
+                showCloseButton: true,
+                showCancelButton: true,
+                showConfirmButton: true,
+                confirmButtonText: 'Save',   // 🔹 เปลี่ยนข้อความปุ่ม
+                customClass: {
+                    confirmButton: 'btn btn-primary me-2', // 🔹 ใช้ class bootstrap
+                    cancelButton: 'btn btn-secondary'
+                },
+                buttonsStyling: false, // 🔹 เพื่อให้ SweetAlert ไม่ override Bootstrap
+                focusConfirm: false,
+                width:'40rem',
+                willOpen: () => {
+                    const overlay = document.querySelector('.swal2-container');
+                    if (overlay) {
+                    overlay.style.backgroundColor = 'rgb(232 228 181 / 60%)';
+                    }
+                },
+                didOpen: async () => {
+                    // ✅ init date picker (Tempus Dominus)
+                    const el = document.querySelector('.swal2-container #yIssueDate');
+                    initialDatePk(el);
+                    const users = await getUserAPI();
+                    const orgs = await getOrgAPI();
+                    $(".swal2-container #providerTo").change(function(){
+                        const detailDiv = $(".swal2-container #providerToDetail");
+                        detailDiv.empty();
+                        
+                        if($(this).val() == 1){
+                            createUserDropdown(users, detailDiv);
+                        }else if($(this).val() == 2){
+                            createOrgDropdown(orgs, detailDiv);
+                        }else if($(this).val() == 3){
+                            vendorTextbox(detailDiv);
+                        }
+                    });
+                },
+                preConfirm: () => {
+                    let valid = true;
+                    const yIssueDateEl = $(".swal2-container #yIssueDate");
+                    const providerToEl = $(".swal2-container #providerTo");
+                    const userEl = $(".swal2-container #user");
+                    const orgEl = $(".swal2-container #org");
+                    const vendorEl = $(".swal2-container #vendor");
+                    const detailEl = $(".swal2-container #yDetail");
+                    const imageEl = $(".swal2-container #yImage");
+                    const typeEl = $(".swal2-container #yType");
+                    const ydeptEl = $(".swal2-container #ydept");
+
+                    if(ydeptEl.html()){
+                        ydeptEl.removeClass("is-invalid");
+                        if(!ydeptEl.val() || ydeptEl.val() == 0){
+                            ydeptEl.addClass("is-invalid");
+                            valid = false;
+                        }
+                    }
+
+                    yIssueDateEl.removeClass("is-invalid");
+                    if(!yIssueDateEl.val()){
+                        yIssueDateEl.addClass("is-invalid");
+                        valid = false;
+                    }
+                    providerToEl.removeClass("is-invalid");
+                    if(!providerToEl.val() || providerToEl.val() == 0){
+                        providerToEl.addClass("is-invalid");
+                        valid = false;
+                    }
+                    if(providerToEl.val() == 1){
+                        userEl.removeClass("is-invalid");
+                        if(!userEl.val() || userEl.val() == 0){
+                            userEl.addClass("is-invalid");
+                            valid = false;
+                        }
+                    }else if(providerToEl.val() == 2){
+                        orgEl.removeClass("is-invalid");
+                        if(!orgEl.val() || orgEl.val() == 0){
+                            orgEl.addClass("is-invalid");
+                            valid = false;
+                        }
+                    }else if(providerToEl.val() == 3){
+                        vendorEl.removeClass("is-invalid");
+                        if(!vendorEl.val()){
+                            vendorEl.addClass("is-invalid");
+                            valid = false;
+                        }
+                    }
+                    detailEl.removeClass("is-invalid");
+                    if(!detailEl.val()){
+                        detailEl.addClass("is-invalid");
+                        valid = false;
+                    }
+                    typeEl.removeClass("is-invalid");
+                    if(!typeEl.val() || typeEl.val() == 0){
+                        typeEl.addClass("is-invalid");
+                        valid = false;
+                    }
+
+                    // ✅ ตรวจสอบขนาดไฟล์รูปไม่เกิน 10 MB
+                    if (imageEl[0].files.length > 0) {
+                        const file = imageEl[0].files[0];
+                        const maxSize = 10 * 1024 * 1024; // 10 MB
+                        if (file.size > maxSize) {
+                            Swal.showValidationMessage("❌ Image size must not exceed 10 MB.");
+                            valid = false;
+                        }
+                    }
+                    if(!valid){
+                        return false;
+                    }
+                    // -- return file object 
+                    const file = imageEl[0].files.length > 0 ? imageEl[0].files[0] : null;
+                    return {
+                        yellowIssueDate: yIssueDateEl.val(),
+                        providerToType: providerToEl.val(),
+                        user: userEl.val() ?? null,
+                        org: orgEl.val() ?? null,
+                        vendor: vendorEl.val() ?? null,
+                        detail: detailEl.val(),
+                        yellowType: typeEl.val(),
+                        image: file,
+                        ydept: ydeptEl.val() ?? null,
+                    }
+                },
+            }).then(async (result) => {
+                if(result.isConfirmed){
+                    Loading(true);
+                    const data = result.value;
+                    const url = window.location.origin + window.location.pathname + "addyellowcardjson/";
+                    const formData = new FormData();
+                    formData.append("csrfmiddlewaretoken", getCSRFToken());
+                    formData.append("yellowIssueDate", data.yellowIssueDate);
+                    formData.append("providerToType", data.providerToType);
+                    formData.append("user", data.user ?? "");
+                    formData.append("org", data.org ?? "");
+                    formData.append("vendor", data.vendor ?? "");
+                    formData.append("yellowType", data.yellowType);
+                    formData.append("detail", data.detail);
+                    formData.append("ydept", data.ydept ?? null);
+                    // ✅ ถ้ามีไฟล์ให้แนบด้วย
+                    if (data.image) {
+                        formData.append("image", data.image);
+                    }
+                    const settings = {
+                        url: url,
+                        method: "POST",
+                        headers: { "X-CSRFToken": getCSRFToken() },
+                        data: formData,
+                        processData: false,
+                        contentType: false
+                    }
+                    await $.ajax(settings).done(async (response) => {
+                        Loading(false);
+                        if(response.success == true){
+                            PopMessage("Success", "success");
+                            updateCountCurrrentMonth();
+                            showCountOrgObj = await getCountOrgByAndMon();
+                            barChart.data.datasets[0].data = showCountOrgObj.countGreen;
+                            barChart.data.datasets[1].data = showCountOrgObj.countYellow;
+                            barChart.update();
+                        }else{
+                            PopMessage(response.message, "error");
+                        }
+                    }).fail((xjr, status, error) => {
+                        Loading(false);
+                        PopMessage(error, "error");
+                    });
+                }
+            });
+        });
+        $('#search').click(function(e){
+            e.preventDefault();
+            Loading(true);
+            window.location.href = window.location.origin + window.location.pathname + "search/";
+        });
+        const createUserDropdown = (users, container) => {
+            const div = $("<div>");
+            const row = div.clone().addClass("row mb-3");
+            const col = div.clone().addClass("col-12");
+            const label = $("<label>", {
+                for:"user", 
+                class:"form-label",
+                text:"เลือกพนักงานผู้รับ (select User)",
+            });
+            label.append($("<span>", {
+                class:"text-danger fw-bold fs-1 ms-2",
+                text:"*"
+            }));
+            const select = $("<select>", {
+                class:"form-select", 
+                id:"user", 
+                name:"user",
+                required:true
+            });
+            col.append(label);
+            col.append(select);
+            row.append(col);
+            container.append(row);
+            select.append($("<option>", {
+                value:"0",
+                text:"Not Select"
+            }));
+            $.each(users, function(index, value){
+                select.append($("<option>", {
+                    value: value.id,
+                    text: `(${value.code}) ${value.fNameEN} ${value.lNameEN}`
+                }));
+            });
+            select.select2({
+                theme: 'bootstrap-5',
+                dropdownParent: $('.swal2-container') // Ensures dropdown appears above the modal
+            });
+
+        }
+        const vendorTextbox = (container) => {
+            const div = $("<div>");
+            const row = div.clone().addClass("row mb-3");
+            const col = div.clone().addClass("col-12");
+            const label = $("<label>", {
+                for:"vendor", 
+                class:"form-label",
+                text:"Please input Vendor",
+            });
+            label.append($("<span>", {
+                class:"text-danger fw-bold fs-1 ms-2",
+                text:"*"
+            }));
+            const textbox = $("<input>", {
+                type:"text", 
+                class:"form-control", 
+                id:"vendor", 
+                name:"vendor",
+                required:true
+            });
+            col.append(label);
+            col.append(textbox);
+            row.append(col);
+            container.append(row);
+        }
+        const createOrgDropdown = (orgs, container) => {
+            const div = $("<div>");
+            const row = div.clone().addClass("row mb-3");
+            const col = div.clone().addClass("col-12");
+            const label = $("<label>", {
+                for:"org", 
+                class:"form-label",
+                text:"เลือกหน่วยงานผู้รับ (select Org)",
+            });
+            label.append($("<span>", {
+                class:"text-danger fw-bold fs-1 ms-2",
+                text:"*"
+            }));
+            const select = $("<select>", {
+                class:"form-select", 
+                id:"org", 
+                name:"org",
+                required:true
+            });
+            col.append(label);
+            col.append(select);
+            row.append(col);
+            container.append(row);
+
+            select.append($("<option>", {
+                value:"0",
+                text:"Not Select"
+            }));
+            $.each(orgs, function(index, value){
+                select.append($("<option>", {
+                    value: value.id,
+                    text: `(${value.levelNameEN}) ${value.nameEN}`
+                }));
+            });
+            select.select2({
+                theme: 'bootstrap-5',
+                dropdownParent: $('.swal2-container') // Ensures dropdown appears above the modal
+            });
+
+        }
         const getUserAPI = async () => {
+            let result = [];
             const url = window.location.origin + window.location.pathname + "api/userjson/"
             const settings = {
                 url: url,
@@ -155,15 +946,35 @@
             };
             await $.ajax(settings).done(function (response) {
                 if (response.success == true) {
-                    // createUserDropdown(response.data);
-                    console.log(response.data);
+                    result = response.data;
                 }
             }).fail(function (xjr, status, error) {
                 console.log(error);
                 Loading(false);
                 PopMessage(error, "error");
             });
-
+            return result;
+        }
+        const getOrgAPI = async () => {
+            let result = [];
+            const url = window.location.origin + window.location.pathname + "api/orgjson"
+            const settings = {
+                url: url,
+                method: "GET",
+            };
+            await $.ajax(settings).done(function (response) {
+                if (response.success == true) {
+                    result = response.data;
+                }
+            }).fail(function (xjr, status, error) {
+                console.log(error);
+                Loading(false);
+                PopMessage(error, "error");
+            });
+            return result;
+        }
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
         }
     </script>
 {% endblock %}

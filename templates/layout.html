@@ -59,12 +59,10 @@
                             <span class="fw-bold">Home</span>
                         </a>
                     </li>
-                    {% has_menu_csh request.currentUser "Schedule" as can_view_cshSchedule %}
-                    {% has_menu_csh request.currentUser "Search" as can_view_cshSearch %}
                     {% has_menu_csh request.currentUser "Car" as can_view_cshCar %}
                     {% has_menu_csh request.currentUser "Driver" as can_view_cshDriver %}
                     {% has_menu_csh request.currentUser "SettingCarSchedule" as can_view_cshSettingCsh %}
-                    {% if can_view_cshSchedule or can_view_cshSearch or can_view_cshCar or can_view_cshDriver or can_view_cshSettingCsh %}
+                    
                     <li class="sidebar-item my-2 mx-3">
                         <a data-bs-target="#carschedule" data-bs-toggle="collapse" class="sidebar-link">
                             <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
@@ -73,16 +71,13 @@
                             <span class="fw-bold">Car Schedule</span>
                         </a>
                         <ul id="carschedule" class="parent-menu-collapse sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                            {% if can_view_cshSchedule %}
+                            
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'indexCarSchedule' %}" data-active="csh">Schedule</a>
                             </li>
-                            {% endif %}
-                            {% if can_view_cshSearch %}
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'listCarSchedule' %}" data-active="listcsh">Search</a>
                             </li>
-                            {% endif %}
                             {% if can_view_cshCar %}
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'indexCar' %}" data-active="car">Car</a>
@@ -100,7 +95,7 @@
                             {% endif %}
                         </ul>
                     </li>
-                    {% endif %}
+                    
                     <li class="sidebar-item my-2 mx-3">
                         <a class="sidebar-link" href="https://app.empeo.com/" target="_blank" data-active="esmart">
                             <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
@@ -123,6 +118,14 @@
                                 <i class="bi bi-building-fill-gear"></i>
                             </div>
                             <span class="fw-bold">Factorium CMMS</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item my-2 mx-3">
+                        <a class="sidebar-link" href="http://192.168.1.230:8080/SCSSY/" target="_blank" data-active="esmart">
+                            <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
+                                <i class="bi bi-boxes"></i>
+                            </div>
+                            <span class="fw-bold">FIFO System</span>
                         </a>
                     </li>
                     <li class="sidebar-item my-2 mx-3">
@@ -179,7 +182,7 @@
                             <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
                                 <i class="bi bi-diagram-3-fill"></i>
                             </div>
-                            <span class="fw-bold">Ogranization</span>
+                            <span class="fw-bold">Organization</span>
                         </a>
                         <ul id="mainorg" class="parent-menu-collapse sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                             <li class="sidebar-item my-2">
@@ -365,6 +368,7 @@
     <script src="{% static 'js/datatables.min.js' %}"></script>
     <script src="{% static 'js/dataTables.bootstrap5.js' %}"></script>
     <script src="{% static 'js/tempus-dominus.js' %}"></script>
+    <script src="https://cdnjs.com/libraries/Chart.js"></script>
     <script type="text/JavaScript">
       function ActiveMenu(menu) {
         // ลบ Active ออกจากทุกเมนูที่ไม่ตรงกับ data-active

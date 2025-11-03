@@ -31,6 +31,7 @@ class Organization(BaseClass, BaseOrganization):
         'collection': 'organization'  # 👈 ชื่อ collection ที่กำหนดเอง
     }
     def serialize_organization(self):
+        # print(self.level.nameEN)
         data = {
             "id": str(self.id),
             "code": self.code,

@@ -27,15 +27,7 @@
 </head>
 <body>
     <div class="container-fluid">
-        <div class="row my-2">
-            <div class="col-12">
-                {% for room in rooms %}
-                <button class="btn auto-contrast" data-color="{{ room.color }}">
-                    {{ room.name }}
-                </button>
-                {% endfor %}
-            </div>
-        </div>
+        
         <div class="row">
             <div class="col-12">
                 <div id="calendar"></div>
@@ -121,6 +113,8 @@
 
             calendar.render();
             setInterval(function() {
+                const currentDate = new Date();
+                calendar.gotoDate(currentDate); // โฟกัสวันที่ปัจจุบัน
                 calendar.refetchEvents();
             }, 10000);
         });

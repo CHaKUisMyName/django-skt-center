@@ -250,9 +250,9 @@ def editUser(request: HttpRequest, id: str):
             note = request.POST.get("note")
             status = request.POST.get("status") if request.POST.get("status") else user.status.value
             isadmin = True if request.POST.get("isadmin") == 'on' else False
-
+            
             if user.id == request.currentUser.id:
-                if UserStatus(int(status)) != UserStatus.Hire or UserStatus(int(status)) != UserStatus.Furlough:
+                if UserStatus(int(status)) != UserStatus.Hire and UserStatus(int(status)) != UserStatus.Furlough:
                     messages.error(request, "can not change status out of Hire or Furlough")
                     return response
 
@@ -311,16 +311,16 @@ def editUser(request: HttpRequest, id: str):
             # print(user.to_json())
             
             user.save()
-
+            
             authUser: AuthUser = AuthUser.objects.filter(refUser = user.id).first()
             if authUser:
-                if UserStatus(int(status)) != UserStatus.Hire or UserStatus(int(status)) != UserStatus.Furlough:
+                if UserStatus(int(status)) != UserStatus.Hire and UserStatus(int(status)) != UserStatus.Furlough:
                     authUser.isActive = False
                     authUser.save()
 
             # -- ถ้า status ไม่ใช่ จ้างงาน หรือพักงาน จะให้ disable พนักงานคนนี้
             # -- หรือก้อคือเข้าเคส ลบ พนักงาน
-            if UserStatus(int(status)) != UserStatus.Hire or UserStatus(int(status)) != UserStatus.Furlough:
+            if int(status) != UserStatus.Hire.value and int(status) != UserStatus.Furlough.value:
                 user.isActive = False
                 user.isDelete = True
                 user.save()

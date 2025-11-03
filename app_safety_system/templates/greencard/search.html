@@ -1,0 +1,468 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Green and Yellow Card System</title>{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/tempus-dominus.css' %}" />
+<style>
+    /* ให้ DataTables ใช้ขนาดคอลัมน์ที่เรากำหนดจริง */
+    table.dataTable {
+        table-layout: fixed !important;
+        width: 100% !important;
+    }
+
+    /* ทำให้ข้อความตัดบรรทัด */
+    table.dataTable td.text-wrap {
+        white-space: normal !important;
+        word-wrap: break-word;
+    }
+</style>
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span class="fw-bold">Green and Yellow Card</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">Search Panel</h3>
+                    </div>  
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    {% csrf_token %}
+                    <div class="col-12">
+                        <div class="row mb-3">
+                            <div class="col-sm-12 col-md-3">
+                                <label for="sDate" class="form-label fw-bold text-dark-emphasis">Start Date</label>
+                                <input type="text" class="form-control" id="sDate" name="sDate">
+                            </div>
+                            <div class="col-sm-12 col-md-3">
+                                <label for="eDate" class="form-label fw-bold text-dark-emphasis">End Date</label>
+                                <input type="text" class="form-control" id="eDate" name="eDate">
+                            </div>
+                            <div class="col-sm-12 col-md-6">
+                                <label for="" class="form-label fw-bold text-dark-emphasis">Card Type</label>
+                                <div>
+                                    {% for ct in cardTypes %}
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="cardType" id="{{ ct.name }}" value="{{ ct.value }}">
+                                        <label class="form-check-label" for="{{ ct.name }}">
+                                            {% if ct.value == 1 %}
+                                            Green cards
+                                            {% else %}
+                                            Yellow cards
+                                            {% endif %}
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-sm-12 col-md-4">
+                                <label for="emp" class="form-label fw-bold text-dark-emphasis">From User</label>
+                                <select id="emp" name="emp" class="form-select">
+                                    <option value="None">Not Select</option>
+                                    {% for user in users %}
+                                    <option value="{{ user.id }}">({{ user.code }}) {{ user.fNameEN }} {{ user.lNameEN }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-sm-12 col-md-4">
+                                <label for="org" class="form-label fw-bold text-dark-emphasis">Org</label>
+                                <select id="org" name="org" class="form-select">
+                                    <option value="None">Not Select</option>
+                                    {% for org in orgs %}
+                                    <option value="{{ org.id }}">({{ org.levelNameEN }}) {{ org.nameEN }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-sm-12 col-md-6">
+                                <label for="yellowCardTypes" class="form-label fw-bold text-dark-emphasis">Yellow Card Type</label>
+                                <select id="yellowCardTypes" name="yellowCardTypes" class="form-select">
+                                    <option value="None">Not Select</option>
+                                    {% for item in yellowCardTypes %}
+                                    <option value="{{ item.value }}">{{ item.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3 float-end">
+                            <div class="col-12">
+                                <a href="{% url 'indexGreenCard' %}" class="btn btn-secondary">Back Main Page</a>
+                                <button id="btnSearch" type="button" class="btn btn-primary ms-2">Search</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">List Green Yellow Cards</h3>
+                        <p class="text-sm mb-0">
+                            Report Green Yellow Cards
+                        </p>
+                    </div>
+                    <div class="ms-auto my-auto mt-lg-0 mt-4">
+                        <div class="ms-auto my-auto">
+                            <button id="export" type="button" class="btn btn-primary">
+                                <i class="bi bi-file-earmark-excel-fill"></i>
+                                <span>Export Excel</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table id="tb" class="table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>วันที่เขียนใบ</th>
+                                        <th>วันที่ให้</th>
+                                        <th>ผู้ให้</th>
+                                        <th>แผนกผู้ให้</th>
+                                        <th>ผู้รับ</th>
+                                        <th>ประเภท</th>
+                                        <th>รายละเอียด</th>
+                                        <th>เพิ่มเติม</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    <script src="{% static 'js/popper.min.js' %}"></script>
+    <script src="{% static 'js/tempus-dominus.js' %}"></script>
+    <!-- https://github.com/exceljs/exceljs -->
+    <script src="{% static 'js/exceljs.js' %}"></script>
+    <script type="text/javascript">
+        var table;
+        var greenYellowData;
+        $(document).ready(() => {
+            ActiveMenu("greenyellowcard");
+            const sDateEl = document.querySelector('#sDate');
+            const eDateEl = document.querySelector('#eDate');
+            initialDatePk(sDateEl);
+            initialDatePk(eDateEl);
+            
+            $('.form-select').select2({
+                theme: 'bootstrap-5',
+            });
+            table = $('#tb').DataTable({
+                ajax: {
+                    url: window.location.origin + "/sft/gy/api/filter/",
+                    type: "POST",
+                    contentType: "application/json",
+                    headers: { "X-CSRFToken": getCSRFToken() },
+                    data: function(d){
+                        return JSON.stringify({
+                            sDate: $('#sDate').val(),
+                            eDate: $('#eDate').val(),
+                            cardType: $('input[name="cardType"]:checked').val(),
+                            user: $('#emp').val(),
+                            org: $('#org').val(),
+                            yellowCardTypes: $('#yellowCardTypes').val()
+                        });
+                    },
+                    dataSrc: function(json) {
+                        Loading(false);
+                        // console.log(json);
+                        if (!json.success) return [];
+                        greenYellowData = json.data;
+                        return json.data;
+                    }
+                },
+                scrollX: true,          // ป้องกันตารางบีบแน่นเกินไป
+                autoWidth: false,       // ปิดการคำนวณความกว้างอัตโนมัติ
+                columnDefs: [
+                    { width: "4%", targets: 0, className: "text-center align-middle" },  // #
+                    { width: "8%", targets: 1, className: "text-center align-middle" },  // วันที่เขียนใบ
+                    { width: "8%", targets: 2, className: "text-center align-middle" },  // วันที่ให้
+                    { width: "8%", targets: 3, className: "text-wrap align-middle" },   // ผู้ให้
+                    { width: "8%", targets: 4, className: "text-wrap align-middle" },   // ผู้ให้
+                    { width: "8%", targets: 5, className: "text-wrap align-middle" },   // ผู้รับ
+                    { width: "12%", targets: 6, className: "text-wrap align-middle" },   // ประเภท
+                    { width: "12%", targets: 7, className: "text-wrap align-middle" },   // รายละเอียด
+                    { width: "8%", targets: 8, className: "text-center align-middle" },  // ปุ่ม
+                ],
+                columns: [
+                    {
+                        data: 'id',
+                        render: function(data, type, row, meta) {
+                            return meta.row + 1; // ลำดับ
+                        }
+                    },
+                    { 
+                        data: 'createDate',
+                        render: function(data) {
+                            if (!data) return '';
+                            const d = new Date(data);
+                            return d.toLocaleDateString('th-TH');
+                        }
+                    },
+                    { 
+                        data: 'issueDate',
+                        render: function(data) {
+                            if (!data) return '';
+                            const d = new Date(data);
+                            return d.toLocaleDateString('th-TH');
+                        }
+                    },
+                    {
+                        data: 'issuer',
+                        render: function(data, type, row, meta) {
+                            return data;
+                        }
+                    },
+                    {
+                        data: 'deptNameEN',
+                        render: function(data, type, row, meta) {
+                            if(data){
+                                return data;
+                            }
+                            return "-";
+                        }
+                    },
+                    {
+                        data: 'issueTo',
+                        render: function(data, type, row, meta) {
+                            return data;
+                        }
+                    },
+                    {
+                        data: 'displayTypeCol',
+                        render: function(data, type, row, meta) {
+                            // return data.label ?? "-";
+                            responseText = ``;
+                            if(data.type.value == 1){
+                                responseText = `<p>
+                                    <span class="ms-1 badge text-bg-success text-white">${data.type.label}</span>
+                                    </p>`;
+                            }else{
+                                responseText = `<p>
+                                    <span class="ms-1 badge text-bg-warning text-white">${data.type.label}</span>
+                                </p>
+                                <p>${data.yellowCardType.label}</p>`;
+                            }
+                            return responseText;
+                        }
+                    },
+                    {
+                        data: 'detail',
+                        render: function(data, type, row, meta) {
+                            return data;
+                        }
+                    },
+                    {
+                        data: 'id',
+                        render: function(data, type, row, meta) {
+                            return `
+                            <button class="btn btn-sm btn-danger m-1" onclick="deleteGY('${data}')"><i class="bi bi-trash"></i></button>
+                            `;
+                        }
+                    },
+                ]
+            });
+        });
+        $('#btnSearch').click(function(e){
+            e.preventDefault();
+            Loading(true);
+            table.ajax.reload();
+        });
+        $('#export').click(async function(e){
+            e.preventDefault();
+            console.log(greenYellowData);
+            Loading(true);
+            if(greenYellowData && greenYellowData.length > 0){
+                await exportExcel(greenYellowData);
+            }
+            Loading(false);
+        });
+        function deleteGY(id){
+            const url = window.location.origin + "/sft/gy/delete/"+id+"/";
+            console.log(url);
+            const settings = {
+                url: url,
+                method: "DELETE",
+                headers: { "X-CSRFToken": getCSRFToken() },   
+            };
+            Swal.fire({
+                title: "Do you want to delete ?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#f97316",
+                confirmButtonText: "Delete",
+                cancelButtonText: "Cancel"
+            }).then(async (result) => {
+                if(result.isConfirmed){
+                    Loading(true);
+                    await $.ajax(settings).done(async (response) => {
+                        Loading(false);
+                        if(response.success == true){
+                            PopMessage("Success", "success");
+                        }else{
+                            PopMessage(response.message, "error");
+                        }
+                    }).fail((xjr, status, error) => {
+                        Loading(false);
+                        PopMessage(error, "error");
+                    });
+                    table.ajax.reload();
+                    Loading(false);
+                }
+            });
+            
+        }
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+        const exportExcel = async (arrParam) => {
+            
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet("My Sheet", {
+            views: [{ state: "frozen", ySplit: 1 }],
+            });
+            
+            worksheet.columns = [
+                {
+                    header: "No.",
+                    key: "no",
+                    width: 5,
+                    alignment: { wrapText: true },
+                },
+                {
+                    header: "ประเภทใบ",
+                    key: "cardType",
+                    width: 10,
+                    alignment: { wrapText: true },
+                },
+                {
+                    header: "วันที่เขียนใบ",
+                    key: "createDate",
+                    width: 15,
+                    alignment: { wrapText: true },
+                },
+                {
+                    header: "วันที่ให้",
+                    key: "issueDate",
+                    width: 15,
+                    alignment: { wrapText: true },
+                },
+                {
+                    header: "ผู้ให้",
+                    key: "issuer",
+                    width: 25,
+                    alignment: { wrapText: true },
+                },
+                {
+                    header: "แผนกผู้ให้",
+                    key: "orgIssuer",
+                    width: 25,
+                    alignment: { wrapText: true },
+                },
+                {
+                    header: "ผู้รับ",
+                    key: "issueTo",
+                    width: 25,
+                    alignment: { wrapText: true },
+                },
+                {
+                    header: "ประเภท",
+                    key: "type",
+                    width: 30,
+                    alignment: { wrapText: true },
+                },
+                {
+                    header: "รายละเอียด",
+                    key: "detail",
+                    width: 35,
+                    alignment: { wrapText: true },
+                },
+            ];
+
+            arrParam.forEach((item, index) => {
+                const row = worksheet.addRow({
+                    no: index + 1,
+                    cardType: item.type.label,
+                    createDate: formatDate(item.createDate),
+                    issueDate: formatDate(item.issueDate),
+                    issuer: item.issuer,
+                    orgIssuer: item.deptNameEN,
+                    issueTo: item.issueTo,
+                    type: item.yellowCardType?.label,
+                    // type: "-",
+                    detail: item.detail,
+                });
+                // เปิดการตัดบรรทัดอัตโนมัติ (wrapText)
+                row.alignment = { wrapText: true };
+            });
+
+
+            // write to a new buffer
+            const buffer = await workbook.xlsx.writeBuffer();
+            // Convert buffer to a Blob
+            const blob = new Blob([buffer], {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            });
+            await exportFileFromBlob(blob, "report-greenyellowcard.xlsx");
+            Loading(false);
+
+        }
+        const exportFileFromBlob = async (blob, fileName) => {
+            // Create a link element
+            const link = document.createElement("a");
+
+            // Create an object URL for the blob
+            const url = URL.createObjectURL(blob);
+
+            // Set the download attribute with a filename
+            link.href = url;
+            link.download = fileName;
+
+            // Append the link to the body (it's necessary for Firefox)
+            document.body.appendChild(link);
+
+            // Programmatically click the link to trigger the download
+            link.click();
+
+            // Clean up and remove the link
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        };
+        function formatDate(dateString) {
+            if (!dateString) return "";
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, "0");
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+    </script>
+{% endblock %}

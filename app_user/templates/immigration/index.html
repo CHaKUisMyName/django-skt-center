@@ -47,7 +47,7 @@
                                 <th>#</th>
                                 <th>Code</th>
                                 <th>User</th>
-                                <th>Last Date</th>
+                                <th>Input Date</th>
                                 <th>Due Date</th>
                                 <th>Status</th>
                                 <th>Action</th>
@@ -78,8 +78,8 @@
                     </div>
                 </div>
                 <div class="col-sm-12 col-md-6">
-                    <label for="duedate" class="form-label">Last Due Date</label>
-                    <input type="text" class="form-control" id="duedate" name="duedate" required>
+                    <label for="inputdate" class="form-label">Input Date</label>
+                    <input type="text" class="form-control" id="inputdate" name="inputdate" required>
                     <div class="invalid-feedback">
                         Please select a last date.
                     </div>
@@ -117,9 +117,9 @@
                         render: (data, type, row) => `${data.fNameEN} ${data.lNameEN}` 
                     }, // ชื่อ-นามสกุล
                     { 
-                        data: "lastDueDate",
+                        data: "inputDate",
                         render: (data) => data ? moment(data).format("YYYY-MM-DD") : "-"
-                    }, // Last Date
+                    }, // input Date
                     { 
                         data: "dueDate",
                         render: (data) => data ? moment(data).format("YYYY-MM-DD") : "-"
@@ -178,18 +178,18 @@
                         $('.swal2-container #user option[value="' + value.refUser.id + '"]').attr('disabled', 'disabled');
                     });
                     // ✅ init datetime picker (Tempus Dominus)
-                    const el = document.querySelector('.swal2-container #duedate');
+                    const el = document.querySelector('.swal2-container #inputdate');
                     initialDatePk(el);
                 },
                 preConfirm: () => {
                     let userEl = document.querySelector('.swal2-container #user');
-                    let duedateEl = document.querySelector('.swal2-container #duedate');
+                    let inputdateEl = document.querySelector('.swal2-container #inputdate');
 
                     let valid = true;
 
                     // reset state
                     userEl.classList.remove("is-invalid");
-                    duedateEl.classList.remove("is-invalid");
+                    inputdateEl.classList.remove("is-invalid");
 
                     // validate user
                     if (!userEl.value || userEl.value === "0") {
@@ -198,8 +198,8 @@
                     }
 
                     // validate dudeDate
-                    if (!duedateEl.value) {
-                        duedateEl.classList.add("is-invalid");
+                    if (!inputdateEl.value) {
+                        inputdateEl.classList.add("is-invalid");
                         valid = false;
                     }
 
@@ -209,7 +209,7 @@
 
                     return {
                         user: userEl.value,
-                        dueDate: duedateEl.value
+                        inputDate: inputdateEl.value
                     };
                 },
             }).then(async (result) => {
@@ -222,7 +222,7 @@
                         headers: { "X-CSRFToken": getCSRFToken() },
                         data: JSON.stringify({
                             user: result.value.user,
-                            dueDate: result.value.dueDate
+                            inputDate: result.value.inputDate
                         })
                     }
                     await $.ajax(settings).done((response) => {
@@ -270,25 +270,24 @@
                             dropdownParent: $('.swal2-container') // Ensures dropdown appears above the modal
                         });
                         // ✅ init datetime picker (Tempus Dominus)
-                        const el = document.querySelector('.swal2-container #duedate');
-                        let dueDatePK = initialDatePk(el);
+                        const el = document.querySelector('.swal2-container #inputdate');
+                        let inputDatePK = initialDatePk(el);
                         $('.swal2-container #user').val(getData.refUser.id).change();
                         $('.swal2-container #user').attr("disabled", "disabled");
-                        dueDatePK.dates.setValue(tempusDominus.DateTime.convert(new Date(getData.dueDate)));
-                        datePkSetMinDate(dueDatePK, new Date(new Date(getData.dueDate)));
+                        inputDatePK.dates.setValue(tempusDominus.DateTime.convert(new Date(getData.inputDate)));
 
                     },
                     preConfirm: () => {
-                        let duedateEl = document.querySelector('.swal2-container #duedate');
+                        let inputdateEl = document.querySelector('.swal2-container #inputdate');
 
                         let valid = true;
 
                         // reset state
-                        duedateEl.classList.remove("is-invalid");
+                        inputdateEl.classList.remove("is-invalid");
 
                         // validate dudeDate
-                        if (!duedateEl.value) {
-                            duedateEl.classList.add("is-invalid");
+                        if (!inputdateEl.value) {
+                            inputdateEl.classList.add("is-invalid");
                             valid = false;
                         }
 
@@ -298,7 +297,7 @@
 
                         return {
                             // user: getData.refUser.id,
-                            dueDate: duedateEl.value,
+                            inputDate: inputdateEl.value,
                             immId: getData.id
                         };
                     },
@@ -312,7 +311,7 @@
                             headers: { "X-CSRFToken": getCSRFToken() },
                             data: JSON.stringify({
                                 // user: result.value.user,
-                                dueDate: result.value.dueDate,
+                                inputDate: result.value.inputDate,
                                 immId: result.value.immId
                             }),
                         };

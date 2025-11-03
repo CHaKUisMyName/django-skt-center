@@ -17,7 +17,7 @@ class Immigration(BaseClass):
     id = me.ObjectIdField(primary_key= True, default= lambda: ObjectId())
     refUser = me.ReferenceField(User)
     dueDate = me.DateTimeField(null=True, required=False, default=None)
-    lastDueDate = me.DateTimeField(null=True, required=False, default=None)
+    inputDate = me.DateTimeField(null=True, required=False, default=None)
     note = me.StringField(null= True, required= False, default = None)
     isActive = me.BooleanField(null= True, required= False, default = None)
     status = me.EnumField(ExpiredImmigration)
@@ -30,7 +30,7 @@ class Immigration(BaseClass):
             "id": str(self.id),
             "refUser": self.refUser.serialize() if self.refUser else {},
             "dueDate": self.dueDate.astimezone(datetime.timezone.utc).isoformat() if self.dueDate else None,
-            "lastDueDate": self.lastDueDate.astimezone(datetime.timezone.utc).isoformat() if self.lastDueDate else None,
+            "inputDate": self.inputDate.astimezone(datetime.timezone.utc).isoformat() if self.inputDate else None,
             "note": self.note,
             "isActive": self.isActive,
             # "status": self.status if self.status else None,
