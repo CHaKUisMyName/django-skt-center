@@ -74,6 +74,7 @@ class User(BaseClass):
     note = me.StringField(null= True, required= False, default = None)
     address = me.StringField(null= True, required= False, default = None)
     roles = me.EmbeddedDocumentListField(RoleUser)
+    imgProfilePath = me.StringField(null= True, required= False, default = None)
 
     @property
     def phone_thai(self):
@@ -113,6 +114,7 @@ class User(BaseClass):
             "note": self.note,
             "address": self.address,
             "roles": [role.serialize() for role in self.roles],  # <-- เรียก serialize จาก RoleUser
+            "imgProfilePath": self.imgProfilePath if self.imgProfilePath else None,
         }
 
 

@@ -2,8 +2,47 @@
 {% load static %}
 {% block title %}<title>User Edit</title>{% endblock %}
 {% block css %}
+<link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet">
 <!-- Tempus Dominus Styles -->
 <link rel="stylesheet" href="{% static 'css/tempus-dominus.css' %}" />
+<style>
+    .profile-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .profile-pic-wrapper {
+        position: relative;
+        width: 300px;
+        height: 300px;
+        border-radius: 6px;  /* <-- สี่เหลี่ยมมุมโค้ง */
+        overflow: hidden;
+        border: 2px solid #ccc;
+    }
+
+    .profile-pic-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .upload-button {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        background-color: rgba(0,0,0,0.6);
+        color: white;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+    }
+
+</style>
 {% endblock %}
 {% block breadcrumb %}
 <div>
@@ -14,36 +53,56 @@
 <div class="row mb-3">
     <div class="col-sm-12 col-lg-10 mx-auto">
         <div class="card">
-            <form method="post" class="card-body mb-3" novalidate>
+            <form method="post" enctype="multipart/form-data" class="card-body mb-3" novalidate>
                 <h3 class="display-6 fw-bold">Edit User</h3>
                 <p class="text-sm">Edit data User</p>
                 {% csrf_token %}
                 <input type="hidden" name="usid" value="{{ user.id }}" />
                 <div class="col-12">
                     <div class="row mb-3">
-                        <div class="col-12">
-                            <label for="fnameth" class="form-label fw-bold text-dark-emphasis">First Name (Thai)</label>
-                            <input type="text" class="form-control" id="fnameth" name="fnameth" value="{{ user.fNameTH|default:'' }}" />
+                        <div class="col-sm-12 col-md-6">
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div class="profile-container">
+                                        <div class="profile-pic-wrapper">
+                                            <!-- <img id="preview" {% if imgProfilePath %} src="{{ user.imgProfilePath }}" {% else %} src="{% static 'images/profile-icon.png' %}" {% endif %} alt="Profile" /> -->
+                                            <img id="preview" src="{% static 'images/profile-icon.png' %}" alt="Profile" />
+                                            <label class="upload-button" for="fileInput">
+                                                <i class="fa fa-camera"></i>
+                                            </label>
+                                            <input type="file" id="fileInput" name="fileInput" accept="image/*" hidden>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <label for="lnameth" class="form-label fw-bold text-dark-emphasis">Last Name (Thai)</label>
-                            <input type="text" class="form-control" id="lnameth" name="lnameth" value="{{ user.lNameTH|default:'' }}" />
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <label for="fnameeng" class="form-label fw-bold text-dark-emphasis">First Name (English)</label>
-                            <input type="text" class="form-control" id="fnameeng" name="fnameeng" value="{{ user.fNameEN }}" required />
-                            <div class="invalid-feedback">Please input data</div>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-12">
-                            <label for="lnameeng" class="form-label fw-bold text-dark-emphasis">Last Name (English)</label>
-                            <input type="text" class="form-control" id="lnameeng" name="lnameeng" value="{{ user.lNameEN }}" required />
-                            <div class="invalid-feedback">Please input data</div>
+                        <div class="col-sm-12 col-md-6">
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label for="fnameth" class="form-label fw-bold text-dark-emphasis">First Name (Thai)</label>
+                                    <input type="text" class="form-control" id="fnameth" name="fnameth" value="{{ user.fNameTH|default:'' }}" />
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label for="lnameth" class="form-label fw-bold text-dark-emphasis">Last Name (Thai)</label>
+                                    <input type="text" class="form-control" id="lnameth" name="lnameth" value="{{ user.lNameTH|default:'' }}" />
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label for="fnameeng" class="form-label fw-bold text-dark-emphasis">First Name (English)</label>
+                                    <input type="text" class="form-control" id="fnameeng" name="fnameeng" value="{{ user.fNameEN }}" required />
+                                    <div class="invalid-feedback">Please input data</div>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <label for="lnameeng" class="form-label fw-bold text-dark-emphasis">Last Name (English)</label>
+                                    <input type="text" class="form-control" id="lnameeng" name="lnameeng" value="{{ user.lNameEN }}" required />
+                                    <div class="invalid-feedback">Please input data</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="row mb-3">
@@ -197,6 +256,7 @@
 </div>
 {% endblock %}
 {% block script %}
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
 <!-- Popperjs -->
 <script src="{% static 'js/popper.min.js' %}"></script>
 <!-- Tempus Dominus JavaScript -->
@@ -212,6 +272,13 @@
                 event.preventDefault();
                 event.stopPropagation();
                 Loading(false);
+            }
+            if(blob){
+                const flName = `emp-${$("#code").val()}.png`;
+                const file = new File([blob], flName,{type:'image/png'});
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                document.getElementById('fileInput').files = dt.files;
             }
             this.classList.add('was-validated');
         }, false);
@@ -245,7 +312,12 @@
                 }
             });
         }
-
+        
+        const imgPathController = '{{ user.imgProfilePath }}';
+        if(imgPathController && imgPathController != "" && imgPathController != "None"){
+            const imgUrl = window.location.origin + '{{ mediaRoot }}{{ user.imgProfilePath }}' + '?t=' + new Date().getTime();
+            $('#preview').attr('src', imgUrl);
+        }
         Loading(false);
     });
     $("#addRole").click(async (e) => {
@@ -264,5 +336,68 @@
     $(document).on("click", ".delete", function(e) {
         $(e.currentTarget).parent('td').parent("tr").remove();
     });
+    let cropper;
+    let blob;
+    $("#fileInput").change(async function(e){
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = async function(event){
+            const imageUrl = event.target.result;
+            const { value: confirm } = await Swal.fire({
+                title: 'Crop your image',
+                html: `
+                    <div style="
+                    display:flex;
+                    justify-content:center;
+                    align-items:center;
+                    height:70vh;
+                    overflow:hidden;
+                    ">
+                    <img id="cropImage"
+                        src="${imageUrl}"
+                        style="max-height:100%; max-width:auto; border-radius:6px;">
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonColor: "#f97316",
+                confirmButtonText: 'Crop Image',
+                width: 600,
+                didOpen: () => {
+                    const image = Swal.getPopup().querySelector('#cropImage');
+                    cropper = new Cropper(image, {
+                        aspectRatio: 4 / 5,  // สัดส่วนสี่เหลี่ยมแนวตั้ง
+                        viewMode: 1,
+                    });
+                },
+                preConfirm: async () => {
+                    await new Promise(resolve => {
+                        if(cropper){
+                            if(cropper.ready) return resolve();
+                            cropper.element.addEventListener("ready", resolve, { once: true });
+                        }else{
+                            resolve();
+                        }
+                    });
+                    const canvas = cropper.getCroppedCanvas({
+                        width: 800,
+                        height: 1000,
+                    });
+                    if(!canvas) {
+                        Swal.showValidationMessage('⚠️ Image is still loading, please wait...');
+                        return false;
+                    }
+                    blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg'));
+                    const preview = document.getElementById("preview");
+                    preview.src = canvas.toDataURL("image/jpeg");
+                },
+                willClose: () => {
+                    if (cropper) cropper.destroy();
+                }
+            });
+        };
+        reader.readAsDataURL(file);
+    });
+
 </script>
 {% endblock %}

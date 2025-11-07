@@ -22,31 +22,66 @@ tz = pytz.timezone("Asia/Bangkok")
 def requiredLogin(view_func):
     def wrapper(request: HttpRequest, *args, **kwargs):
         clientSession = request.COOKIES.get("session")
+        clientIP = request.META.get('REMOTE_ADDR', '')
+        clientUA = request.META.get('HTTP_USER_AGENT', '')
 
-        # ลบข้อมูล session ที่เกินเวลาทั้งหมดแแกจาก DB
-        expireSeession = AuthSession.objects.filter(expireDate__lt = now())
-        if expireSeession:
-            expireSeession.delete()
+        # ไม่มี cookie หรือ session key
+        if not clientSession:
+            response = HttpResponseRedirect('/login')
+            response.delete_cookie('session')
+            return response
 
         # หา session
         session: AuthSession = AuthSession.objects.filter(session = clientSession).first()
         if not session:
-            return HttpResponseRedirect('/login')
+            response = HttpResponseRedirect('/login')
+            response.delete_cookie('session')
+            return response
         
+        # 🔐 ดึงข้อมูลใน token (ซึ่งคุณเก็บ user data ไว้)
+        data = session.GetSessionData()
+        if not data:
+            session.DeleteSessionData()
+            response = HttpResponseRedirect('/login')
+            response.delete_cookie('session')
+            return response
+        
+        # 🧍 ตรวจสอบ IP / User-Agent ตรงกับตอนสร้าง session ไหม
+        savedIP = data.get("ip", "")
+        savedUA = data.get("ua", "")
+        if savedIP != clientIP or savedUA != clientUA:
+            # ป้องกัน cookie ถูกขโมยแล้วนำไปใช้จากเครื่องอื่น
+            session.DeleteSessionData()
+            response = HttpResponseRedirect('/login')
+            response.delete_cookie('session')
+            return response
+        
+        # ⏰ ตรวจสอบว่าหมดอายุหรือยัง
         if session.IsExpired():
             session.DeleteSessionData()
             response = HttpResponseRedirect('/login')
             response.delete_cookie('session')
             return response
-        else:
-            if session.ContinueSession() == True:
-                print("continue session")
-                session.expireDate = session.expireDate + timedelta(days = 1)
-                session.save()
-                response = view_func(request, *args, **kwargs)
-                response.set_cookie('session', session.session, expires = session.expireDate)
-                return response
-            return view_func(request, *args, **kwargs)
+
+        # 🔁 ต่ออายุ session ถ้ายัง active ภายในวันเดียวกัน
+        if session.ContinueSession():
+            session.expireDate = session.expireDate + timedelta(days=1)
+            session.save()
+
+        # ✅ เข้าถึง view ปกติ
+        response = view_func(request, *args, **kwargs)
+
+        # 🍪 ตั้งค่า cookie แบบปลอดภัย
+        response.set_cookie(
+            'session',
+            session.session,
+            expires=session.expireDate,
+            # secure=True,      # ✅ ส่งเฉพาะผ่าน HTTPS
+            # httponly=True,    # ✅ JS อ่านไม่ได้
+            # samesite='Lax'    # ✅ ป้องกัน CSRF จาก site อื่น
+        )
+        return response
+        
     return wrapper
 
 def requiredSuperAdmin(view_func):
@@ -106,3 +141,9 @@ def sendImmigration(immigration: Immigration):
     email = EmailMultiAlternatives(subject, text_content, from_email, to_email)
     email.attach_alternative(html_content, "text/html")
     email.send()
+
+def jobDeleteSessionExpired():
+    # ลบข้อมูล session ที่เกินเวลาทั้งหมดแแกจาก DB
+        expireSeession = AuthSession.objects.filter(expireDate__lt = now())
+        if expireSeession:
+            expireSeession.delete()

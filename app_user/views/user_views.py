@@ -8,6 +8,9 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.contrib import messages
 from django.utils import timezone
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+import os
 
 from app_car_schedule.views.driver_views import deleteDriverByUser
 from app_car_schedule.views.setting_schedule_views import deleteCshSettingByUser
@@ -23,6 +26,9 @@ from app_user.views.immigration_views import deleteImmigrationByUser
 from app_visitor.views.setting_visitor_views import deleteVstSettingByUser
 from app_welcome_board.views import deleteWbSettingByUser
 from base_models.basemodel import UserSnapshot
+
+imgPathProfileDir = 'emp-profile'
+MAX_UPLOAD_SIZE = 50 * 1024 * 1024  # 50 MB
 
 # Create your views here.
 @requiredLogin
@@ -147,6 +153,20 @@ def addUser(request: HttpRequest):
                     user.createBy = uCreate
             
             user.save()
+
+            img = request.FILES.get("fileInput")
+            if img:
+                if img.size > MAX_UPLOAD_SIZE:
+                    messages.error(request, "Image size is too large exceeds 50 MB")
+                    return response
+                fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, imgPathProfileDir))
+                filename = fs.save(img.name, img)  # จะเก็บไฟล์และ return filename
+                file_path = os.path.join(imgPathProfileDir, filename)  # เช่น emp-profile/emp-xxx.jpg
+                if not file_path:
+                    messages.error(request, "Upload failed")
+                    return response
+                user.imgProfilePath = file_path
+                user.save()
 
             messages.success(request, 'Save Success')
             return response
@@ -311,10 +331,26 @@ def editUser(request: HttpRequest, id: str):
             # print(user.to_json())
             
             user.save()
+
+            img = request.FILES.get("fileInput")
+            if img:
+                if img.size > MAX_UPLOAD_SIZE:
+                    messages.error(request, "Image size is too large exceeds 50 MB")
+                    return response
+                fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, imgPathProfileDir))
+                if user.imgProfilePath:
+                    fs.delete(os.path.join(settings.MEDIA_ROOT, user.imgProfilePath))# -- delete old image
+                filename = fs.save(img.name, img)  # จะเก็บไฟล์และ return filename
+                file_path = os.path.join(imgPathProfileDir, filename)  # เช่น emp-profile/emp-xxx.jpg
+                if not file_path:
+                    messages.error(request, "Upload failed")
+                    return response
+                user.imgProfilePath = file_path
+                user.save()
             
             authUser: AuthUser = AuthUser.objects.filter(refUser = user.id).first()
             if authUser:
-                if UserStatus(int(status)) != UserStatus.Hire and UserStatus(int(status)) != UserStatus.Furlough:
+                if int(status) != UserStatus.Hire.value and int(status) != UserStatus.Furlough.value:
                     authUser.isActive = False
                     authUser.save()
 
@@ -354,6 +390,7 @@ def editUser(request: HttpRequest, id: str):
                 "hasPermission": hasPermission,
                 "userNation": userNation,
                 "userType": userType,
+                'mediaRoot': settings.MEDIA_URL,
             }
             return render(request, 'user/edit.html', context= context)
     except Exception as e:
@@ -566,11 +603,20 @@ def login(request: HttpRequest):
             if VerifyPassword(password, authUser.passWord) == False:
                 return HttpResponseRedirect(reverse('login'))
             
+            # ✅--- สร้าง session ใหม่แบบปลอดภัย
+            clientIP = request.META.get('REMOTE_ADDR')
+            clientUA = request.META.get('HTTP_USER_AGENT', '')[:500]  # truncate ป้องกัน log overflow
+            print(clientIP, clientUA)
+            
             session = AuthSession()
             session.session = secrets.token_hex(20)
             session.expireDate = timezone.now() + timezone.timedelta(days=1)
             
-            session.SaveSessionData({"userId": str(authUser.refUser.id)})
+            session.SaveSessionData({
+                "userId": str(authUser.refUser.id),
+                "ip": clientIP,
+                "ua": clientUA,
+                })
             session.save()
 
             authUser.lastLogin = timezone.now()
