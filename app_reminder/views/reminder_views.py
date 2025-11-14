@@ -29,7 +29,8 @@ def filter(request: HttpRequest):
     try:
         if not request.method == "GET":
             return JsonResponse({'success': False, 'message': 'Method not allowed'})
-        listReminder: List[Reminder] = Reminder.objects.filter(isActive = True).order_by('-createDate')
+        curUser:User = request.currentUser
+        listReminder: List[Reminder] = Reminder.objects.filter(isActive = True, createBy__userId = curUser.id).order_by('-createDate')
         
         data = [reminder.serailize_for_datatable() for reminder in listReminder]
         return JsonResponse({'success': True, 'data': data, 'message': 'Success'})
