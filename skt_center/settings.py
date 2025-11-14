@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'app_deploy',
     'app_car_schedule',
     'app_safety_system',
+    'app_reminder',
 ]
 
 INSTALLED_APPS += ["channels"]

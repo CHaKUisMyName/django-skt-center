@@ -1,0 +1,454 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Reminder System</title>{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/tempus-dominus.css' %}" />
+<style>
+    /* ให้ label ภายใน Swal ชิดซ้าย */
+    .swal2-html-container label, 
+    .swal2-html-container .select2-selection__rendered{
+        text-align: left !important;
+        display: block;  /* กัน margin/padding แปลกๆ */
+    }
+    .swal2-html-container .invalid-feedback {
+        text-align: left !important;
+    }
+    /* ให้ DataTables ใช้ขนาดคอลัมน์ที่เรากำหนดจริง */
+    table.dataTable {
+        table-layout: fixed !important;
+        width: 100% !important;
+    }
+
+    /* ทำให้ข้อความตัดบรรทัด */
+    table.dataTable td.text-wrap {
+        white-space: normal !important;
+        word-wrap: break-word;
+    }
+</style>
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span class="fw-bold">Reminder</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">List Reminder</h3>
+                    </div>
+                    <div class="ms-auto my-auto mt-lg-0 mt-4">
+                        <div class="ms-auto my-auto">
+                            <button id="addBtn" type="button" class="btn btn-primary">
+                                <i class="bi bi-plus"></i>
+                                <span>Add Reminder</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table id="tb" class="table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Receivers</th>
+                                        <th>Detail</th>
+                                        <th>Option</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="add-reminder" class="card d-none">
+    {% csrf_token %}
+    <div class="card-body row mb-3">
+        <div class="col-12">
+            <div class="row mb-3">
+                <div class="col-12 text-center">
+                    <small class="text-muted">*** Support Only ENGLISH ***</small>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="subject" class="form-label">Subject (Max 30 chars)<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <input type="text" id="subject" name="subject" class="form-control" maxlength="30" required>
+                    <div class="invalid-feedback">
+                        Please input subject.
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="detail" class="form-label">Detail (Max 120 chars)<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <textarea id="detail" name="detail" class="form-control" style="height: 100px;" maxlength="120" required></textarea>
+                    <div class="invalid-feedback">
+                        Please input detail.
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="fReceiver" class="form-label">Receiver 1 <span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <select class="form-select" name="fReceiver" id="fReceiver" required>
+                        <option value="0">Not Select</option>
+                        {% for u in users %}
+                        <option value="{{ u.id }}">({{ u.code }}) {{ u.fNameEN }} {{ u.lNameEN }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">
+                        Please select a receiver.
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="sReceiver" class="form-label">Receiver 2</label>
+                    <select class="form-select" name="sReceiver" id="sReceiver">
+                        <option value="0">Not Select</option>
+                        {% for u in users %}
+                        <option value="{{ u.id }}">({{ u.code }}) {{ u.fNameEN }} {{ u.lNameEN }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="expiredDate" class="form-label">Expired Date<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <input type="text" class="form-control" id="expiredDate" name="expiredDate" required>
+                    <div class="invalid-feedback">
+                        Please select a expired date.
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="count" class="form-label">Alert before due date(max 999)<span class="text-danger fw-bold fs-1 ms-2">*</span></label>
+                    <input type="text" id="count" name="count" class="form-control" maxlength="3" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');" required>
+                    <div class="invalid-feedback">
+                        Please input Data.
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="mb-2">
+                        <label class="form-label">Send By</label>
+                    </div>
+                    <div class="form-check ms-4">
+                        <input class="form-check-input" type="checkbox" value="" id="email" checked disabled>
+                        <label class="form-check-label" for="email">
+                            Email
+                        </label>
+                    </div>
+                    <div class="form-check ms-4 d-none">
+                        <input class="form-check-input" type="checkbox" value="sms" id="sms" name="sms">
+                        <label class="form-check-label" for="sms">
+                            SMS (Receiver 1) <span class="text-danger">(Don't have number, please contact GA)</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    <script src="{% static 'js/popper.min.js' %}"></script>
+    <script src="{% static 'js/tempus-dominus.js' %}"></script>
+    <script type="text/javascript">
+        var table;
+        var reminderData;
+        $(document).ready(function(){
+            ActiveMenu("reminder");
+            table = $('#tb').DataTable({
+                ajax: {
+                    url: `${window.location.origin}${window.location.pathname}api/filter/`,
+                    type: "GET",
+                    contentType: "application/json",
+                    dataSrc: function(json) {
+                        Loading(false);
+                        if (!json.success) return [];
+                        reminderData = json.data;
+                        return json.data;
+                    },
+                },
+                scrollX: true,          // ป้องกันตารางบีบแน่นเกินไป
+                autoWidth: false,       // ปิดการคำนวณความกว้างอัตโนมัติ
+                columnDefs: [
+                    { width: "4%", targets: 0, className: "text-center align-middle" },  // #
+                    { width: "8%", targets: 1,  },  // receiver
+                    { width: "15%", targets: 2,  },   // detail
+                    { width: "6%", targets: 3,  },  // Option
+                    { width: "4%", targets: 4, className: "text-center align-middle" },  // status
+                    { width: "4%", targets: 5, className: "text-center align-middle" },  // action
+                ],
+                columns: [
+                    {
+                        data: 'id',
+                        render: function(data, type, row, meta) {
+                            return meta.row + 1; // ลำดับ
+                        }
+                    },
+                    {
+                        // -- receiver
+                        data: 'receiver',
+                        render: function(data, type, row, meta) {
+                            if(data.length > 0){
+                                // return data[0].code;
+                                let ul = $("<ul>", { class: "ps-0 mb-0" });
+                                $.each(data, function(i, item){
+                                    const li = $("<li>", { text: `(${item.code}) ${item.fNameEN} ${item.lNameEN}` });
+                                    ul.append(li);
+                                });
+                                return ul.html();   
+                            }
+                            return "-";
+                        }
+                    },
+                    {
+                        // -- details
+                        data: 'details',
+                        render: function(data, type, row, meta) {
+                            let dueDate = "-";
+                            let subject = "-";
+                            let detail = "-";
+                            // -- due date
+                            if(data.expiredDate){
+                                const d = new Date(data.expiredDate);
+                                dueDate = `<div class="mb-3"><span class="fw-bold me-2">Due Date :</span><span>${d.toLocaleDateString('en-GB')}</span></div>`;
+                            }
+                            // -- subject
+                            if(data.subject){
+                                subject = `<div class="mb-3"><span class="fw-bold me-2">Subject :</span><span>${data.subject}</span></div>`;
+                            }
+                            // -- detail
+                            if(data.detail){
+                                detail = `<div class="mb-3"><span class="fw-bold me-2">Detail :</span><span>${data.detail}</span></div>`;
+                            }
+                            return dueDate+subject+detail;
+                        }
+                    },
+                    {
+                        // -- options
+                        data: 'options',
+                        render: function(data, type, row, meta) {
+                            let divEmail = "-";
+                            let divSms = "-";
+                            // -- send email
+                            if(data.isSendMail == true){
+                                divEmail = `<div class="mb-2"><i class="bi bi-check2-square text-success me-2"></i><span class="text-success">Send Email</span></div>`;
+                            }else{
+                                divEmail = `<div class="mb-2"><i class="bi bi-square me-2"></i><span class="">Send Email</span></div>`;
+                            }
+                            // -- send sms
+                            if(data.isSendSms == true){
+                                divSms = `<div class="mb-2"><i class="bi bi-check2-square text-success me-2"></i><span class="text-success">Send SMS</span></div>`;
+                                
+                            }else{
+                                divSms = `<div class="mb-2"><i class="bi bi-square me-2"></i><span class="">Send SMS</span></div>`;
+                            }
+                            
+                            return divEmail+divSms;
+                        }
+                    },
+                    {
+                        // -- status
+                        data: 'status',
+                        render: function(data, type, row, meta) {
+                            if(data == true){
+                                return '<p class="badge text-bg-success">Finished</p>';
+                            }else{
+                                return '<p class="badge text-bg-warning">Waiting</p>';
+                            }
+                        }
+                    },
+                    {
+                        // -- action
+                        data: 'id',
+                        render: function(data, type, row, meta) {
+                            // return "-";
+                            return `<button type="button" class="btn btn-danger" onclick="deleteReminder(event, '${data}')"><i class="bi bi-trash3"></i></button>`;
+                        }
+                    },
+                ]
+            });
+        });
+        $('#addBtn').click(function(e){
+            e.preventDefault();
+            Swal.fire({
+                title: `<p class="display-6 mb-0">Add Reminder</p>`,
+                html: $("#add-reminder").html(),
+                showCloseButton: true,
+                showCancelButton: true,
+                showConfirmButton: true,
+                confirmButtonText: 'Save',   // 🔹 เปลี่ยนข้อความปุ่ม
+                customClass: {
+                    confirmButton: 'btn btn-primary me-2', // 🔹 ใช้ class bootstrap
+                    cancelButton: 'btn btn-secondary'
+                },
+                buttonsStyling: false, // 🔹 เพื่อให้ SweetAlert ไม่ override Bootstrap
+                focusConfirm: false,
+                width:'40rem',
+                didOpen: () => {
+                    $('.form-select').select2({
+                        theme: 'bootstrap-5',
+                        dropdownParent: $('.swal2-container') // Ensures dropdown appears above the modal
+                    });
+                    const el = document.querySelector('.swal2-container #expiredDate');
+                    initialDatePk(el);
+                },
+                preConfirm: () => {
+                    let valid = true;
+                    const subjectEl = $(".swal2-container #subject");
+                    const detailEl = $(".swal2-container #detail");
+                    const fReceiverEl = $(".swal2-container #fReceiver");
+                    const sReceiverEl = $(".swal2-container #sReceiver");
+                    const expiredDateEl = $(".swal2-container #expiredDate");
+                    const countEl = $(".swal2-container #count");
+                    const smsCheckedEl = $(".swal2-container #sms:checked");
+
+                    subjectEl.removeClass("is-invalid");
+                    if(!subjectEl.val() || subjectEl.val().length < 1 || subjectEl.val().length > 30){
+                        subjectEl.addClass("is-invalid");
+                        valid = false;
+                    }
+
+                    detailEl.removeClass("is-invalid");
+                    if(!detailEl.val()){
+                        detailEl.addClass("is-invalid");
+                        valid = false;
+                    }
+
+                    fReceiverEl.removeClass("is-invalid");
+                    if(!fReceiverEl.val() || fReceiverEl.val() == "0"){
+                        fReceiverEl.addClass("is-invalid");
+                        valid = false;
+                    }
+
+                    expiredDateEl.removeClass("is-invalid");
+                    if(!expiredDateEl.val()){
+                        expiredDateEl.addClass("is-invalid");
+                        valid = false;
+                    }
+
+                    countEl.removeClass("is-invalid");
+                    if(!countEl.val() || countEl.val() < 1 || countEl.val() > 999){
+                        countEl.addClass("is-invalid");
+                        valid = false;
+                    }
+
+                    let smsCheckedValue = false;
+                    if(smsCheckedEl.length > 0){
+                        smsCheckedValue = true;
+                    }
+
+                    if(!valid){
+                        return false;
+                    }
+
+                    return {
+                        subject: subjectEl.val(),
+                        detail: detailEl.val(),
+                        fReceiver: fReceiverEl.val(),
+                        sReceiver: sReceiverEl.val() ?? null,
+                        expiredDate: expiredDateEl.val(),
+                        count: countEl.val(),
+                        smsChecked: smsCheckedValue
+                    };
+                },
+            }).then(async (result) => {
+                if(result.isConfirmed){
+                    Loading(true);
+                    const data = result.value;
+                    const url = window.location.origin + window.location.pathname + "add/";
+                    
+                    // ✅ ใช้ FormData แทน JSON
+                    const formData = new FormData();
+                    formData.append("csrfmiddlewaretoken", getCSRFToken());
+                    formData.append("subject", data.subject);
+                    formData.append("detail", data.detail);
+                    formData.append("fReceiver", data.fReceiver);
+                    formData.append("sReceiver", data.sReceiver);
+                    formData.append("expiredDate", data.expiredDate);
+                    formData.append("count", data.count);
+                    formData.append("smsChecked", data.smsChecked);
+
+                    const settings = {
+                        url: url,
+                        method: "POST",
+                        processData: false,
+                        contentType: false,
+                        data: formData,
+                        headers: { "X-CSRFToken": getCSRFToken() },
+                    };
+                    await $.ajax(settings).done(async (response) => {
+                        Loading(false);
+                        if(response.success == true){
+                            PopMessage("Success", "success");
+                        }else{
+                            PopMessage(response.message, "error");
+                        }
+                        table.ajax.reload();
+                    }).fail((xjr, status, error) => {
+                        Loading(false);
+                        PopMessage(error, "error");
+                    })
+                }
+            });
+        });
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+        const deleteReminder = async (e, id) => {
+            e.preventDefault();
+            // console.log(id);
+            Swal.fire({
+                title: "Do you want to delete ?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#f97316",
+                confirmButtonText: "Delete",
+                cancelButtonText: "Cancel"
+            }).then(async (result) => {
+                if(result.isConfirmed){
+                    Loading(true);
+                    // const url = window.location.origin + window.location.pathname + "add/";
+                    const url = `${window.location.origin}${window.location.pathname}delete/${id}/`;
+                    const settings = {
+                        url: url,
+                        method: "GET",
+                    }
+                    await $.ajax(settings).done((response) => {
+                        // Loading(false);
+                        if(response.success == true){
+                            PopMessage("Delete success", "success");
+                        }else{
+                            PopMessage(response.message, "error");
+                        }
+                        Loading(false);
+                    }).fail((xjr, status, error) => {
+                        Loading(false);
+                        PopMessage(error, "error");
+                    });
+                    table.ajax.reload();
+                }
+            });
+        };
+
+    </script>
+{% endblock %}

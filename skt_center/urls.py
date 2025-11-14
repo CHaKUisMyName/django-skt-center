@@ -30,6 +30,7 @@ urlpatterns = [
     path('sys/', include('app_system_setting.urls')),
     path('wb/', include('app_welcome_board.urls')),
     path('csh/', include('app_car_schedule.urls')),
+    path('reminder/', include('app_reminder.urls')),
     path('deploy/', include('app_deploy.urls')),
     path('login/', userViews.login, name= 'login'),
     path('logout/', userViews.logout, name= 'logout'),
