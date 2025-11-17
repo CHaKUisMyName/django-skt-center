@@ -84,9 +84,9 @@ def addJson(request: HttpRequest):
         immigration.refUser = ObjectId(refUser)
         immigration.inputDate = DateStrToDate(inputDate)
         #  immigration.dueDate = DateStrToDate(duedate)
-        # ✅ ตั้งค่า duedate = 90 วันหลังจาก inputDate
+        # ✅ ตั้งค่า duedate = 90 วันนับ inputDate ด้วย
         if immigration.inputDate:
-            immigration.dueDate = immigration.inputDate + datetime.timedelta(days=90)
+            immigration.dueDate = immigration.inputDate + datetime.timedelta(days=89)
         immigration.status = ExpiredImmigration.Normal
         immigration.isActive = True
         immigration.hasNoti15 = False
@@ -133,9 +133,9 @@ def editJson(request: HttpRequest):
         immigration: Immigration = Immigration()
         immigration.refUser = oldImmigration.refUser
         immigration.inputDate = DateStrToDate(inputDate)
-        # ✅ ตั้งค่า duedate = 90 วันหลังจาก inputDate
+        # ✅ ตั้งค่า duedate = 90 วันนับ inputDate ด้วย
         if immigration.inputDate:
-            immigration.dueDate = immigration.inputDate + datetime.timedelta(days=90)
+            immigration.dueDate = immigration.inputDate + datetime.timedelta(days=89)
         # immigration.updateDate = timezone.now()
         immigration.status = ExpiredImmigration.Normal
         immigration.hasNoti15 = False
