@@ -113,9 +113,15 @@
 
             calendar.render();
             setInterval(function() {
-                const currentDate = new Date();
-                calendar.gotoDate(currentDate); // โฟกัสวันที่ปัจจุบัน
+                
                 calendar.refetchEvents();
+                const todayCell = document.querySelector('.fc-day-today');
+                if (todayCell) {
+                    todayCell.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
             }, 10000);
         });
 
