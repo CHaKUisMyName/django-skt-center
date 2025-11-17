@@ -114,15 +114,28 @@
             calendar.render();
             setInterval(function() {
                 
+                const now = new Date();
+
+                // 1) เปลี่ยนเดือนให้ตรงกับวันที่ปัจจุบัน
+                calendar.gotoDate(now);
+
+                // 2) โหลด events ใหม่
                 calendar.refetchEvents();
-                const todayCell = document.querySelector('.fc-day-today');
-                if (todayCell) {
-                    todayCell.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
-                }
-            }, 10000);
+
+                // 3) รอ render เสร็จก่อนแล้ว scroll ไปที่วันนี้แบบ smooth
+                setTimeout(() => {
+                    const todayCell = document.querySelector('.fc-day-today');
+                    if (todayCell) {
+                        const rect = todayCell.getBoundingClientRect();
+                        const offset = rect.top + window.pageYOffset - (window.innerHeight / 2);
+
+                        window.scrollTo({
+                            top: offset,
+                            behavior: 'smooth'
+                        });
+                    }
+                }, 300);
+            }, 60000);
         });
 
         const getVisitorAPI = async (url) => {
