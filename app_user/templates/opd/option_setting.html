@@ -1,0 +1,452 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>User</title>{% endblock %}
+{% block css %}
+    <style>
+        /* ให้ label ภายใน Swal ชิดซ้าย */
+        .swal2-html-container label,
+        .swal2-html-container legend,
+        .swal2-html-container .select2-selection__rendered{
+            text-align: left !important;
+            display: block;  /* กัน margin/padding แปลกๆ */
+        }
+        .swal2-html-container .invalid-feedback {
+            text-align: left !important;
+        }
+        /* ให้ DataTables ใช้ขนาดคอลัมน์ที่เรากำหนดจริง */
+        table.dataTable {
+            table-layout: fixed !important;
+            width: 100% !important;
+        }
+
+        /* ทำให้ข้อความตัดบรรทัด */
+        table.dataTable td.text-wrap {
+            white-space: normal !important;
+            word-wrap: break-word;
+        }
+    </style>
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>OPD /</span><span class="fw-bold">Option Settings</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">Option OPD Settings</h3>
+                        <p class="text-sm mb-0">List Of Option OPD setting</p>
+                    </div>
+                    <div class="ms-auto my-auto mt-lg-0 mt-4">
+                        <div class="ms-auto my-auto">
+                            <button type="button" id="add" class="btn btn-primary">
+                                <i class="bi bi-plus"></i>
+                                <span>Add Option</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="tb" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Option</th>
+                                <th>Use for</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% csrf_token %}
+<div id="detail" class="card d-none">
+    <div class="card-body row mb-3">
+        <div class="col-12">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="name" class="form-label fw-bold text-dark-emphasis">Option Name</label>
+                    <input type="text" id="name" name="name" class="form-control" required>
+                    <div class="invalid-feedback">
+                        Please input Data.
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <legend class="col-form-label col-sm-3 pt-0 form-label fw-bold text-dark-emphasis">Use For :</legend>
+                <div class="col-sm-9">
+                    {% for item in opdTypes %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="chk" id="{{item.name}}" value="{{item.value}}">
+                        <label class="form-check-label" for="{{item.name}}">{{item.name}}</label>
+                        <div class="invalid-feedback">
+                            Please check one or more
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="description" class="form-label fw-bold text-dark-emphasis">Description</label>
+                    <textarea id="description" name="description" class="form-control" style="height: 100px;"></textarea>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="form-check">
+                        <input type="checkbox" id="status" name="status" class="form-check-input" />
+                        <label for="status" class="form-label fw-bold text-dark-emphasis">Active</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    var table;
+    $(document).ready(() => {
+        ActiveMenu('optionsettingopd');
+        table = $('#tb').DataTable({
+            ajax:{
+                url: `${window.location.origin}${window.location.pathname}api/filter/`,
+                type: "GET",
+                contentType: "application/json",
+                dataSrc: function(json) {
+                    Loading(false);
+                    if (!json.success) return [];
+                    return json.data;
+                },
+            },
+            scrollX: true,          // ป้องกันตารางบีบแน่นเกินไป
+            autoWidth: false,       // ปิดการคำนวณความกว้างอัตโนมัติ
+            columnDefs: [
+                { width: "4%", targets: 0, className: "text-center align-middle" },  // #
+                { width: "15%", targets: 1,  className:""},  // Option
+                { width: "10%", targets: 2,  className:""},  // use for
+                { width: "8%", targets: 3,  className: "text-center align-middle"},  // status
+                { width: "8%", targets: 4, className: "text-center align-middle" },  // action
+            ],
+            columns: [
+                {
+                    data: 'id',
+                    render: function(data, type, row, meta){
+                        return meta.row + 1; // ลำดับ
+                    }
+                },
+                {
+                    data: 'name',
+                    render: function(data, type, row, meta){
+                        return data;
+                    }
+                },
+                {
+                    data: 'useTypes',
+                    render: function(data, type, row, meta){
+                        if(data.length > 0){
+                            let emp = `<div class="mb-2"><i class="bi bi-square me-2"></i><span class="">Employee</span></div>`;
+                            let family = `<div class="mb-2"><i class="bi bi-square me-2"></i><span class="">Family</span></div>`;
+                            $.each(data, function(index, value){
+                                if(value.value == 1){
+                                    emp = `<div class="mb-2"><i class="bi bi-check2-square me-2 text-success"></i><span class="text-success">${value.name}</span></div>`;
+                                }
+                                if(value.value == 2){
+                                    family = `<div class="mb-2"><i class="bi bi-check2-square me-2 text-success"></i><span class="text-success">${value.name}</span></div>`;
+                                }
+                            });
+                            return emp+family;
+                        }
+                        return "-";
+                    }
+                },
+                {
+                    data: 'status',
+                    render: function(data, type, row, meta){
+                        if(data == true){
+                            return '<p class="badge text-bg-success m-0 text-white">Active</p>';
+                        } else {
+                            return '<p class="badge text-bg-danger m-0">Inactive</p>';
+                        }
+
+                    }
+                },
+                {
+                    data: 'id',
+                    render: function(data, type, row, meta){
+                        return `
+                        <button type="button" class="btn btn-info me-1" onclick="editClick(event, '${data}')"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-danger" onclick="deleteClick(event, '${data}')"><i class="bi bi-trash3"></i></button>
+                        `;
+                    }
+                },
+            ]
+        });
+    });
+    $('#add').click(function(e){
+        e.preventDefault();
+        Swal.fire({
+            title: `<p class="display-6">Option OPD</p>`,
+            html: $("#detail").html(),
+            showCloseButton: true,
+            showCancelButton: true,
+            showConfirmButton: true,
+            confirmButtonText: 'Save',   // 🔹 เปลี่ยนข้อความปุ่ม
+            customClass: {
+                confirmButton: 'btn btn-primary me-2', // 🔹 ใช้ class bootstrap
+                cancelButton: 'btn btn-secondary'
+            },
+            buttonsStyling: false, // 🔹 เพื่อให้ SweetAlert ไม่ override Bootstrap
+            focusConfirm: false,
+            width:'40rem',
+            preConfirm: () => {
+                let valid = true;
+                const nameEl = document.querySelector('.swal2-container #name');
+                // ได้ checkbox ทุกตัวใน Swal
+                const useForEls = document.querySelectorAll('.swal2-container [name="chk"]');
+
+                // ดึงค่า value เฉพาะที่ถูกเช็ค
+                const selectedValues = Array.from(useForEls)
+                    .filter(el => el.checked)
+                    .map(el => el.value);
+
+                console.log(selectedValues);
+
+                const descEl = document.querySelector('.swal2-container #description');
+                const statusEl = document.querySelector('.swal2-container #status');
+
+                nameEl.classList.remove('is-invalid');
+                if(!nameEl.value){
+                    nameEl.classList.add('is-invalid');
+                    valid = false;
+                }
+
+                useForEls.forEach(el => el.classList.remove('is-invalid'));
+                if(selectedValues.length < 1){
+                    useForEls.forEach(el => el.classList.add('is-invalid'));
+                    valid = false;
+                }
+
+                if (!valid){ return false };
+                return {
+                    name: nameEl.value,
+                    usefor: selectedValues,
+                    desc: descEl.value,
+                    status: statusEl.checked,
+                };
+            },
+        }).then(async (result) => {
+            if(result.isConfirmed){
+                Loading(true);
+                const data = result.value;
+                const url = `${window.location.origin}${window.location.pathname}add/`
+                // ✅ ใช้ FormData แทน JSON
+                const formData = new FormData();
+                formData.append("csrfmiddlewaretoken", getCSRFToken());
+                formData.append("name", data.name);
+                data.usefor.forEach(v => formData.append("usefor", v));
+                formData.append("desc", data.desc);
+                formData.append("status", data.status);
+                const settings = {
+                    url: url,
+                    method: "POST",
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    headers: { "X-CSRFToken": getCSRFToken() },
+                };
+                await $.ajax(settings).done(async (response) => {
+                    Loading(false);
+                    if(response.success == true){
+                        PopMessage("Success", "success");
+                    }else{
+                        PopMessage(response.message, "error");
+                    }
+                    table.ajax.reload();
+                }).fail((xjr, status, error) => {
+                    Loading(false);
+                    PopMessage(error, "error");
+                });
+            }
+            
+        });
+    });
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+    const getOptionOpd = async (id) => {
+        let result = false;
+        const url = `${window.location.origin}${window.location.pathname}api/get/${id}/`;
+        const settings = {
+            url: url,
+            method: "GET",
+            headers: { "X-CSRFToken": getCSRFToken() },
+        };
+        await $.ajax(settings).done(function (response) {
+            if (response.success == true) {
+                result = response.data;
+            }else if(response.success == false){
+                console.log(response);
+                result = false;
+            }
+            result = response;
+        }).fail(function (xjr, status, error) {
+            console.log(error);
+            const erData = {
+                success: false,
+                message: error,
+            };
+            result = erData;
+        });
+        return result;
+    };
+    const editClick = async (e, id) => {
+        e.preventDefault();
+        const getData = await getOptionOpd(id);
+        if(getData.success == false){
+            PopMessage(getData.message, "error");
+            return;
+        }
+        const dataOption = getData.data;
+        Swal.fire({
+            title: `<p class="display-6">Option OPD</p>`,
+            html: $("#detail").html(),
+            showCloseButton: true,
+            showCancelButton: true,
+            showConfirmButton: true,
+            confirmButtonText: 'Save',   // 🔹 เปลี่ยนข้อความปุ่ม
+            customClass: {
+                confirmButton: 'btn btn-primary me-2', // 🔹 ใช้ class bootstrap
+                cancelButton: 'btn btn-secondary'
+            },
+            buttonsStyling: false, // 🔹 เพื่อให้ SweetAlert ไม่ override Bootstrap
+            focusConfirm: false,
+            width:'40rem',
+            didOpen: () => {
+                $('.swal2-container #name').val(dataOption.name);
+                $('.swal2-container #description').text(dataOption.description);
+                $('.swal2-container #status').prop('checked', dataOption.status);
+                $.each(dataOption.useTypes, function(index, value){
+                    $(`.swal2-container [name="chk"][value="${value.value}"]`).prop('checked', true);
+                });
+            },
+            preConfirm: () => {
+                let valid = true;
+                const nameEl = document.querySelector('.swal2-container #name');
+                // ได้ checkbox ทุกตัวใน Swal
+                const useForEls = document.querySelectorAll('.swal2-container [name="chk"]');
+
+                // ดึงค่า value เฉพาะที่ถูกเช็ค
+                const selectedValues = Array.from(useForEls)
+                    .filter(el => el.checked)
+                    .map(el => el.value);
+
+                console.log(selectedValues);
+
+                const descEl = document.querySelector('.swal2-container #description');
+                const statusEl = document.querySelector('.swal2-container #status');
+
+                nameEl.classList.remove('is-invalid');
+                if(!nameEl.value){
+                    nameEl.classList.add('is-invalid');
+                    valid = false;
+                }
+
+                useForEls.forEach(el => el.classList.remove('is-invalid'));
+                if(selectedValues.length < 1){
+                    useForEls.forEach(el => el.classList.add('is-invalid'));
+                    valid = false;
+                }
+
+                if (!valid){ return false };
+                return {
+                    name: nameEl.value,
+                    usefor: selectedValues,
+                    desc: descEl.value,
+                    status: statusEl.checked,
+                };
+            },
+        }).then(async (result) => {
+            if(result.isConfirmed){
+                Loading(true);
+                const data = result.value;
+                const url = `${window.location.origin}${window.location.pathname}edit/`
+                // ✅ ใช้ FormData แทน JSON
+                const formData = new FormData();
+                formData.append("csrfmiddlewaretoken", getCSRFToken());
+                formData.append("id", id);
+                formData.append("name", data.name);
+                data.usefor.forEach(v => formData.append("usefor", v));
+                formData.append("desc", data.desc);
+                formData.append("status", data.status);
+                const settings = {
+                    url: url,
+                    method: "POST",
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    headers: { "X-CSRFToken": getCSRFToken() },
+                };
+                await $.ajax(settings).done(async (response) => {
+                    Loading(false);
+                    if(response.success == true){
+                        PopMessage("Success", "success");
+                    }else{
+                        PopMessage(response.message, "error");
+                    }
+                    table.ajax.reload();
+                }).fail((xjr, status, error) => {
+                    Loading(false);
+                    PopMessage(error, "error");
+                });
+            }
+        });
+    };
+    const deleteClick = async (e, id) => {
+        e.preventDefault();
+        Swal.fire({
+            title: "Do you want to delete ?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#f97316",
+            confirmButtonText: "Delete",
+            cancelButtonText: "Cancel"
+        }).then(async (result) => {
+            if(result.isConfirmed){
+                Loading(true);
+                const url = `${window.location.origin}${window.location.pathname}delete/${id}/`;
+                const settings = {
+                    url: url,
+                    method: "DELETE",
+                    headers: { "X-CSRFToken": getCSRFToken() },
+                };
+                await $.ajax(settings).done(async (response) => {
+                    Loading(false);
+                    if(response.success == true){
+                        PopMessage("Success", "success");
+                    }else{
+                        PopMessage(response.message, "error");
+                    }
+                    table.ajax.reload();
+                }).fail((xjr, status, error) => {
+                    Loading(false);
+                    PopMessage(error, "error");
+                });
+            }
+        });
+    };
+</script>
+{% endblock %}

@@ -125,9 +125,10 @@ def HasUsPermission(id: str, menu: str = None, checkAdmin: bool = False):
 def sendImmigration(immigration: Immigration):
     subject = 'Immigration Data'
     from_email = 'Immigration System <it.report@sanyo-kasei.co.th>'
-    to_email = [str(settings.MAIL_CHAKU)]
+    to_email = ["jaruwan@sanyo-chemical.group"]
+    # to_email = [str(settings.MAIL_CHAKU)]
     # to_email = [str(mail_ga)]
-    # cc = [str(mail_it)]
+    cc = [str(mail_it)]
     imm = immigration.serialize()
     context = {
         "imm": imm,
@@ -137,8 +138,8 @@ def sendImmigration(immigration: Immigration):
     # เผื่อ fallback เป็น text
     text_content = "Immigration This is an alternative message in plain text."
     # สร้าง object email
-    # email = EmailMultiAlternatives(subject, text_content, from_email, to_email, cc= cc)
-    email = EmailMultiAlternatives(subject, text_content, from_email, to_email)
+    email = EmailMultiAlternatives(subject, text_content, from_email, to_email, cc= cc)
+    # email = EmailMultiAlternatives(subject, text_content, from_email, to_email)
     email.attach_alternative(html_content, "text/html")
     email.send()
 

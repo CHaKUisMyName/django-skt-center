@@ -1,0 +1,565 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>User</title>{% endblock %}
+{% block css %}
+    <style>
+        /* ให้ label ภายใน Swal ชิดซ้าย */
+        .swal2-html-container label, 
+        .swal2-html-container .select2-selection__rendered{
+            text-align: left !important;
+            display: block;  /* กัน margin/padding แปลกๆ */
+        }
+        .swal2-html-container .invalid-feedback {
+            text-align: left !important;
+        }
+    </style>
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>OPD /</span><span class="fw-bold">Budget Settings</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">Budget OPD Settings (Thai Employee)</h3>
+                        <p class="text-sm mb-0">List Of Year budget/person OPD setting</p>
+                    </div>
+                    <div class="ms-auto my-auto mt-lg-0 mt-4">
+                        <div class="ms-auto my-auto">
+                            <button type="button" id="addThai" class="btn btn-primary">
+                                <i class="bi bi-plus"></i>
+                                <span>Add Budget (Thai Employee)</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="tb" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Year</th>
+                                <th>Budget / Person</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">Budget OPD Settings (Foreigner Employee)</h3>
+                        <p class="text-sm mb-0">List Of Year budget/person OPD setting</p>
+                    </div>
+                    <div class="ms-auto my-auto mt-lg-0 mt-4">
+                        <div class="ms-auto my-auto">
+                            <button type="button" id="addFor" class="btn btn-primary">
+                                <i class="bi bi-plus"></i>
+                                <span>Add Budget (Foreigner Employee)</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="tbFor" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Year</th>
+                                <th>Budget / Person</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% csrf_token %}
+<div id="detail" class="card d-none">
+    <div class="card-body row mb-3">
+        <div class="col-12">
+            <div class="row mb-5">
+                <div class="col-sm-12 col-md-6">
+                    <label for="year" class="form-label fw-bold text-dark-emphasis">Year</label>
+                    <input type="text" class="form-control" id="year" name="year" required>
+                    <div class="invalid-feedback">
+                        Please select a year.
+                    </div>
+                </div>
+                <div class="col-sm-12 col-md-6">
+                    <label for="budget" class="form-label fw-bold text-dark-emphasis">Budget/Person (THB)</label>
+                    <input type="text" class="form-control" id="budget" name="budget" required oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');">
+                    <div class="invalid-feedback">
+                        Please enter a budget.
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="form-check">
+                        <input type="checkbox" id="status" name="status" class="form-check-input" />
+                        <label for="status" class="form-label fw-bold text-dark-emphasis">Active</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    var table;
+    var tableFor;
+    $(document).ready(()=>{
+        ActiveMenu("budgetsettingopd");
+        table = $('#tb').DataTable({
+            ajax: {
+                url: `${window.location.origin}${window.location.pathname}api/filter/1`,
+                type: "GET",
+                contentType: "application/json",
+                dataSrc: function(json) {
+                    Loading(false);
+                    if (!json.success) return [];
+                    return json.data;
+                },
+            },
+            scrollX: true,          // ป้องกันตารางบีบแน่นเกินไป
+            autoWidth: false,       // ปิดการคำนวณความกว้างอัตโนมัติ
+            columnDefs: [
+                { width: "4%", targets: 0, className: "text-center align-middle" },  // #
+                { width: "8%", targets: 1,  className:"text-end"},  // year
+                { width: "15%", targets: 2,  className:"text-end"},   // budget
+                { width: "8%", targets: 3,  className: "text-center align-middle"},  // status
+                { width: "8%", targets: 4, className: "text-center align-middle" },  // action
+            ],
+            columns: [
+                {
+                    data: 'id',
+                    render: function(data, type, row, meta){
+                        return meta.row + 1; // ลำดับ
+                    }
+                },
+                {
+                    data: 'year',
+                    render: function(data, type, row, meta){
+                        return data;
+                    }
+                },
+                {
+                    data: 'budget',
+                    render: function(data, type, row, meta){
+                        let moneyFormat = new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(data);
+                        return moneyFormat;
+                    }
+                },
+                {
+                    data: 'status',
+                    render: function(data, type, row, meta){
+                        if(data == true){
+                            return '<p class="badge text-bg-success m-0 text-white">Active</p>';
+                        } else {
+                            return '<p class="badge text-bg-danger m-0">Inactive</p>';
+                        }
+
+                    }
+                },
+                {
+                    data: 'id',
+                    render: function(data, type, row, meta){
+                        return `
+                        <button type="button" class="btn btn-info me-1" onclick="editClick(event, '${data}',1)"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-danger" onclick="deleteClick(event, '${data}', 1)"><i class="bi bi-trash3"></i></button>
+                        `;
+                    }
+                },
+            ],
+        });
+
+        tableFor = $('#tbFor').DataTable({
+            ajax: {
+                url: `${window.location.origin}${window.location.pathname}api/filter/2`,
+                type: "GET",
+                contentType: "application/json",
+                dataSrc: function(json) {
+                    Loading(false);
+                    if (!json.success) return [];
+                    return json.data;
+                },
+            },
+            scrollX: true,          // ป้องกันตารางบีบแน่นเกินไป
+            autoWidth: false,       // ปิดการคำนวณความกว้างอัตโนมัติ
+            columnDefs: [
+                { width: "4%", targets: 0, className: "text-center align-middle" },  // #
+                { width: "8%", targets: 1,  className:"text-end"},  // year
+                { width: "15%", targets: 2,  className:"text-end"},   // budget
+                { width: "8%", targets: 3,  className: "text-center align-middle"},  // status
+                { width: "8%", targets: 4, className: "text-center align-middle" },  // action
+            ],
+            columns: [
+                {
+                    data: 'id',
+                    render: function(data, type, row, meta){
+                        return meta.row + 1; // ลำดับ
+                    }
+                },
+                {
+                    data: 'year',
+                    render: function(data, type, row, meta){
+                        return data;
+                    }
+                },
+                {
+                    data: 'budget',
+                    render: function(data, type, row, meta){
+                        let moneyFormat = new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(data);
+                        return moneyFormat;
+                    }
+                },
+                {
+                    data: 'status',
+                    render: function(data, type, row, meta){
+                        if(data == true){
+                            return '<p class="badge text-bg-success m-0 text-white">Active</p>';
+                        } else {
+                            return '<p class="badge text-bg-danger m-0">Inactive</p>';
+                        }
+
+                    }
+                },
+                {
+                    data: 'id',
+                    render: function(data, type, row, meta){
+                        return `
+                        <button type="button" class="btn btn-info me-1" onclick="editClick(event, '${data}', 2)"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-danger" onclick="deleteClick(event, '${data}', 2)"><i class="bi bi-trash3"></i></button>
+                        `;
+                    }
+                },
+            ],
+        });
+    });
+    $('#addThai').click(function(e){
+        e.preventDefault();
+        addBudget(1);
+    });
+    $('#addFor').click(function(e){
+        e.preventDefault();
+        addBudget(2);
+    });
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+    const getBudgetOpd = async (id) =>{
+        let result = false;
+        const url = `${window.location.origin}${window.location.pathname}api/get/${id}/`
+        const settings = {
+            url: url,
+            method: "GET",
+            headers: { "X-CSRFToken": getCSRFToken() },
+        };
+        await $.ajax(settings).done(function (response) {
+            if (response.success == true) {
+                result = response.data;
+            }else if(response.success == false){
+                console.log(response);
+                result = false;
+            }
+            result = response;
+        }).fail(function (xjr, status, error) {
+            console.log(error);
+            const erData = {
+                success: false,
+                message: error,
+            };
+            result = erData;
+        });
+        return result;
+    };
+    const editClick = async (e, id, type) => {
+        e.preventDefault();
+        console.log(id);
+        const getData = await getBudgetOpd(id);
+        
+        if(getData.success == false){
+            PopMessage(getData.message, "error");
+            return;
+        }
+        const dataBudget = getData.data;
+
+        Swal.fire({
+            title: `<p class="display-6">Budget OPD</p>`,
+            html: $("#detail").html(),
+            showCloseButton: true,
+            showCancelButton: true,
+            showConfirmButton: true,
+            confirmButtonText: 'Save',   // 🔹 เปลี่ยนข้อความปุ่ม
+            customClass: {
+                confirmButton: 'btn btn-primary me-2', // 🔹 ใช้ class bootstrap
+                cancelButton: 'btn btn-secondary'
+            },
+            buttonsStyling: false, // 🔹 เพื่อให้ SweetAlert ไม่ override Bootstrap
+            focusConfirm: false,
+            width:'50rem',
+            didOpen: () => {
+                const el = document.querySelector('.swal2-container #year');
+                let td = new tempusDominus.TempusDominus(el, {
+                    // Set the format to only show the year
+                    localization: {
+                        format: "yyyy",
+                    },
+                    // Other options can be set here to customize the picker
+                    display: {
+                        buttons: {
+                            today: true,
+                            clear: true,
+                            close: true,
+                        },
+                        viewMode: "calendar",
+                        components: {
+                            decades: true,
+                            year: true,
+                            month: false,
+                            date: false,
+                            hours: false,
+                            minutes: false,
+                            seconds: false,
+                        },
+                    },
+                });
+                $('.swal2-container #budget').val(dataBudget.budget);
+                // ⭐ สำคัญ: รอให้ TempusDominus init เสร็จ
+                setTimeout(() => {
+                    // กำหนดปี 2025
+                    const dt = new tempusDominus.DateTime(dataBudget.year, 1, 1);
+                    td.dates.setValue(dt);
+                    $('.swal2-container #year').prop('readonly', true);
+                    $('.swal2-container #year').prop('disabled', true);
+                }, 50);
+                $('.swal2-container #status').prop('checked', dataBudget.status);
+            },
+            preConfirm: () => {
+                let valid = true;
+                const budgetEl = document.querySelector('.swal2-container #budget');
+                const statusEl = document.querySelector('.swal2-container #status');
+
+                budgetEl.classList.remove('is-invalid');
+                if(!budgetEl.value){
+                    budgetEl.classList.add('is-invalid');
+                    valid = false;
+                }
+                if(!valid){
+                    return false;
+                }
+                return {
+                    budget: budgetEl.value,
+                    status: statusEl.checked,
+                }
+            },
+        }).then(async (result) => {
+            if(result.isConfirmed){
+                Loading(true);
+                const data = result.value;
+                const url = `${window.location.origin}${window.location.pathname}edit/`
+                // ✅ ใช้ FormData แทน JSON
+                const formData = new FormData();
+                formData.append("csrfmiddlewaretoken", getCSRFToken());
+                formData.append("id", id);
+                formData.append("budget", data.budget);
+                formData.append("status", data.status);
+                formData.append("edittype", type);
+                const settings = {
+                    url: url,
+                    method: "POST",
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    headers: { "X-CSRFToken": getCSRFToken() },
+                };
+                await $.ajax(settings).done(async (response) => {
+                    Loading(false);
+                    if(response.success == true){
+                        PopMessage("Success", "success");
+                    }else{
+                        PopMessage(response.message, "error");
+                    }
+                    if(type == 1){
+                        table.ajax.reload();
+                    }else{
+                        tableFor.ajax.reload();
+                    }
+                    
+                }).fail((xjr, status, error) => {
+                    Loading(false);
+                    PopMessage(error, "error");
+                });
+            }
+        });
+    }
+    const deleteClick = async (e, id, type) => {
+        e.preventDefault();
+        Swal.fire({
+            title: "Do you want to delete ?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#f97316",
+            confirmButtonText: "Delete",
+            cancelButtonText: "Cancel"
+        }).then(async (result) => {
+            if(result.isConfirmed){
+                Loading(true);
+                const url = `${window.location.origin}${window.location.pathname}delete/${id}/`;
+                const settings = {
+                    url: url,
+                    method: "DELETE",
+                    headers: { "X-CSRFToken": getCSRFToken() },
+                };
+                await $.ajax(settings).done(async (response) => {
+                    Loading(false);
+                    if(response.success == true){
+                        PopMessage("Success", "success");
+                    }else{
+                        PopMessage(response.message, "error");
+                    }
+                    if(type == 1){
+                        table.ajax.reload();
+                    }else{
+                        tableFor.ajax.reload();
+                    }
+                }).fail((xjr, status, error) => {
+                    Loading(false);
+                    PopMessage(error, "error");
+                });
+            }
+        });       
+    }
+    const addBudget = (type) => {
+        Swal.fire({
+            title: `<p class="display-6">Budget OPD</p>`,
+            html: $("#detail").html(),
+            showCloseButton: true,
+            showCancelButton: true,
+            showConfirmButton: true,
+            confirmButtonText: 'Save',   // 🔹 เปลี่ยนข้อความปุ่ม
+            customClass: {
+                confirmButton: 'btn btn-primary me-2', // 🔹 ใช้ class bootstrap
+                cancelButton: 'btn btn-secondary'
+            },
+            buttonsStyling: false, // 🔹 เพื่อให้ SweetAlert ไม่ override Bootstrap
+            focusConfirm: false,
+            width:'50rem',
+            didOpen: () => {
+                const el = document.querySelector('.swal2-container #year');
+                const tempusDominusInstance = new tempusDominus.TempusDominus(el, {
+                    // Set the format to only show the year
+                    localization: {
+                        format: "yyyy",
+                    },
+                    // Other options can be set here to customize the picker
+                    display: {
+                        buttons: {
+                            today: true,
+                            clear: true,
+                            close: true,
+                        },
+                        viewMode: "calendar",
+                        components: {
+                            decades: true,
+                            year: true,
+                            month: false,
+                            date: false,
+                            hours: false,
+                            minutes: false,
+                            seconds: false,
+                        },
+                    },
+                });
+            },
+            preConfirm: () => {
+                let valid = true;
+                const yearEl = document.querySelector('.swal2-container #year');
+                const budgetEl = document.querySelector('.swal2-container #budget');
+                const statusEl = document.querySelector('.swal2-container #status');
+                
+                yearEl.classList.remove('is-invalid');
+                if(!yearEl.value){
+                    yearEl.classList.add('is-invalid');
+                    valid = false;
+                }
+                budgetEl.classList.remove('is-invalid');
+                if(!budgetEl.value){
+                    budgetEl.classList.add('is-invalid');
+                    valid = false;
+                }
+                if(!valid){
+                    return false;
+                }
+                return {
+                    year: yearEl.value,
+                    budget: budgetEl.value,
+                    status: statusEl.checked,
+                }
+            },
+        }).then(async (result) => {
+            if(result.isConfirmed){
+                Loading(true);
+                const data = result.value;
+                const url = `${window.location.origin}${window.location.pathname}add/`
+                
+                // ✅ ใช้ FormData แทน JSON
+                const formData = new FormData();
+                formData.append("csrfmiddlewaretoken", getCSRFToken());
+                formData.append("year", data.year);
+                formData.append("budget", data.budget);
+                formData.append("status", data.status);
+                formData.append("addtype", type);
+                const settings = {
+                    url: url,
+                    method: "POST",
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    headers: { "X-CSRFToken": getCSRFToken() },
+                };
+                await $.ajax(settings).done(async (response) => {
+                    Loading(false);
+                    if(response.success == true){
+                        PopMessage("Success", "success");
+                    }else{
+                        PopMessage(response.message, "error");
+                    }
+                    if(type == 1){
+                        table.ajax.reload();
+                    }else{
+                        tableFor.ajax.reload();
+                    }
+                }).fail((xjr, status, error) => {
+                    Loading(false);
+                    PopMessage(error, "error");
+                });
+            }
+        });
+    };
+</script>
+{% endblock %}

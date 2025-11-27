@@ -1,0 +1,43 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>User</title>{% endblock %}
+{% block css %}
+    <style>
+        /* ให้ label ภายใน Swal ชิดซ้าย */
+        .swal2-html-container label,
+        .swal2-html-container legend,
+        .swal2-html-container .select2-selection__rendered{
+            text-align: left !important;
+            display: block;  /* กัน margin/padding แปลกๆ */
+        }
+        .swal2-html-container .invalid-feedback {
+            text-align: left !important;
+        }
+        /* ให้ DataTables ใช้ขนาดคอลัมน์ที่เรากำหนดจริง */
+        table.dataTable {
+            table-layout: fixed !important;
+            width: 100% !important;
+        }
+
+        /* ทำให้ข้อความตัดบรรทัด */
+        table.dataTable td.text-wrap {
+            white-space: normal !important;
+            word-wrap: break-word;
+        }
+    </style>
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span class="fw-bold">OPD</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3"></div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    $(document).ready(()=>{
+        ActiveMenu('opd');
+    });
+</script>
+{% endblock %}
