@@ -24,53 +24,60 @@ def index(request: HttpRequest):
         if hasPermission == False:
             messages.error(request, "Not Permission")
             return HttpResponseRedirect('/')
-    listUser: List[User] = User.objects.filter(isActive = True, status = UserStatus.Hire, userType = UserType.Employee)
-    listBudget = BudgetOpd.objects.filter(isActive = True)
-    budgTH = listBudget.filter(type = BudgetEmpType.Thai).first()
-    budgFore = listBudget.filter(type = BudgetEmpType.Foreigner).first()
-    users = []
-    for us in listUser:
-        listDept = findDeptUser(us)
-        depts = []
-        if len(listDept) > 0:
-            for de in listDept:
-                depts.append(de['nameEN'])
-        budget = 0
-        if us.nation == EmpNation.Thai:
-            budget = budgTH.budget
-        else:
-            budget = budgFore.budget
-        actual = 0
-        year = timezone.now().year
-        start_date = datetime.datetime(year, 1, 1, tzinfo=pytz.UTC)
-        end_date = datetime.datetime(year + 1, 1, 1, tzinfo=pytz.UTC)
-        findOpdRecord: List[OPDRecord] = OPDRecord.objects.filter(
-            isActive = True,
-            employee = us,
-            inputDate__gte = start_date,
-            inputDate__lt = end_date,
-            ).order_by('-inputDate')
-        if findOpdRecord and len(findOpdRecord) > 0:
-            for opd in findOpdRecord:
-                actual += opd.totalAmount if opd.totalAmount else 0
-        balance = budget - actual
-        userObj = {
-            'id': str(us.id),
-            'code': us.code if us.code else "-",
-            'fNameEN': us.fNameEN if us.fNameEN else "-",
-            'lNameEN': us.lNameEN if us.lNameEN else "-",
-            'dept': depts if len(depts) > 0 else "-",
-            'budget': f"{budget:,.2f}",
-            'actual': f"{actual:,.2f}",
-            'balance': balance,
-            'balance_display': f"{balance:,.2f}" if balance is not None else "-"
+    try:
+        listUser: List[User] = User.objects.filter(isActive = True, status = UserStatus.Hire, userType = UserType.Employee)
+        listBudget = BudgetOpd.objects.filter(isActive = True)
+        if not listBudget or len(listBudget) < 1:
+            messages.error(request, "Budget OPD not found.")
+            return HttpResponseRedirect('/')
+        budgTH = listBudget.filter(type = BudgetEmpType.Thai).first()
+        budgFore = listBudget.filter(type = BudgetEmpType.Foreigner).first()
+        users = []
+        for us in listUser:
+            listDept = findDeptUser(us)
+            depts = []
+            if len(listDept) > 0:
+                for de in listDept:
+                    depts.append(de['nameEN'])
+            budget = 0
+            if us.nation == EmpNation.Thai:
+                budget = budgTH.budget
+            else:
+                budget = budgFore.budget
+            actual = 0
+            year = timezone.now().year
+            start_date = datetime.datetime(year, 1, 1, tzinfo=pytz.UTC)
+            end_date = datetime.datetime(year + 1, 1, 1, tzinfo=pytz.UTC)
+            findOpdRecord: List[OPDRecord] = OPDRecord.objects.filter(
+                isActive = True,
+                employee = us,
+                inputDate__gte = start_date,
+                inputDate__lt = end_date,
+                ).order_by('-inputDate')
+            if findOpdRecord and len(findOpdRecord) > 0:
+                for opd in findOpdRecord:
+                    actual += opd.totalAmount if opd.totalAmount else 0
+            balance = budget - actual
+            userObj = {
+                'id': str(us.id),
+                'code': us.code if us.code else "-",
+                'fNameEN': us.fNameEN if us.fNameEN else "-",
+                'lNameEN': us.lNameEN if us.lNameEN else "-",
+                'dept': depts if len(depts) > 0 else "-",
+                'budget': f"{budget:,.2f}",
+                'actual': f"{actual:,.2f}",
+                'balance': balance,
+                'balance_display': f"{balance:,.2f}" if balance is not None else "-"
+            }
+            users.append(userObj)
+        context = {
+            'users': users
         }
-        users.append(userObj)
-    context = {
-        'users': users
-    }
 
-    return render(request, 'opd/index_opd.html', context)
+        return render(request, 'opd/index_opd.html', context)
+    except Exception as e:
+        messages.error(request, str(e))
+        return HttpResponseRedirect('/')
 
 @requiredLogin
 def historyOpd(request: HttpRequest, id: str):
