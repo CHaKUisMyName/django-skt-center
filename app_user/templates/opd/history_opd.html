@@ -1,0 +1,167 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>OPD</title>{% endblock %}
+{% block css %}
+
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span class="">OPD /</span><span class="fw-bold">Histories</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-sm-12 col-lg-8">
+        <div class="card {% if balance > 0 %}text-bg-success{% else %}text-bg-danger{% endif %}">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-12 col-lg-6">
+                        <p class="display-6 fw-bold">OPD-{{year}}</p>
+                        <p class="fs-3">({{ employee.code }}) {{ employee.fNameEN }} {{ employee.lNameEN }}</p>
+                    </div>
+                    <div class="col-sm-12 col-lg-6 mt-6">
+                        <p class="text-end">Balance</p>
+                        <p class="text-end display-6 fw-bold mb-0">{{ balance_display }} ฿</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-12 col-lg-4">
+        <div class="card bg-warning-subtle">
+            <div class="card-body">
+                <div class="row p-2 mt-2">
+                    <div class="col-6">
+                        <p class="fs-3 mb-0">Budget</p>
+                    </div>
+                    <div class="col-6 text-end">
+                        <p class="fs-3 mb-0">{{ budget }}</p>
+                    </div>
+                </div>
+                <div class="row p-2">
+                    <div class="col-6">
+                        <p class="fs-3 mb-0">Actual</p>
+                    </div>
+                    <div class="col-6 text-end">
+                        <p class="fs-3 text-danger mb-0">- {{actual}}</p>
+                    </div>
+                </div>
+                <div class="row p-2 mb-2">
+                    <div class="col-6">
+                        <p class="fs-3 mb-0">Balance</p>
+                    </div>
+                    <div class="col-6 text-end">
+                        <p class="fs-3 fw-bold mb-0 {% if balance > 0 %}text-success{% else %}text-danger{% endif %}">
+                            {{ balance_display }}
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="col-sm-12 col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="col-12">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <span class="display-6">Histories</span>
+                            <span class="ms-2 display-6">-</span>
+                            <span class="ms-2 display-6 text-primary">{{ year }}</span>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-12">
+                            <div class="table-responsive">
+                                <table id="tb" class="table">
+                                    <thead class="table-info">
+                                        <tr>
+                                            <th>InputDate</th>
+                                            <th>Person</th>
+                                            <th>Type</th>
+                                            <th>Option</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for history in histories %}
+                                        <tr>
+                                            <td>{{ history.inputDate }}</td>
+                                            <td>{{ history.person }}</td>
+                                            <td>{{ history.type }}</td>
+                                            <td>{{ history.option }}</td>
+                                            <td>{{ history.amount }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <p></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-12 col-lg-4">
+        <div class="card">
+            <div class="card-header border-0">
+                <div class="row">
+                    <div class="col-12">
+                        <span class="display-6">Summarize</span>
+                        <span class="ms-2 display-6 text-primary">{{ year }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body overflow-auto" style="max-height: 71vh;">
+                {% for item in summarize %}
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card bg-light shadow-lg">
+                            <div class="card-body">
+                                <div class="row mb-4">
+                                    <div class="col-8">
+                                        <p class="fs-4 fw-bold mb-0 text-dark-emphasis">{{item.relation}}</p>
+                                    </div>
+                                    <div class="col-4 text-end">
+                                        <button class="btn btn-lg btn-secondary shadow-lg" type="button">
+                                            <i class="bi bi-person rounded-3"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <p class="mb-2 text-dark-emphasis">- Total Amount -</p>
+                                        <p class="mb-0 text-dark-emphasis">{{item.amount}} ฿</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    $(document).ready(()=>{
+        ActiveMenu('histories');
+        $('#tb').DataTable({
+            paging: false,
+            scrollCollapse: true,
+            scrollY: '50vh',
+            order: [[0, 'desc']],
+        });
+    });
+</script>
+{% endblock %}

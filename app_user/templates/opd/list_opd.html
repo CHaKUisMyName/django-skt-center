@@ -1,0 +1,237 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>OPD</title>{% endblock %}
+{% block css %}
+
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span class="">OPD / </span><span class="fw-bold">List</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">Search Panel</h3>
+                    </div>  
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    {% csrf_token %}
+                    <div class="col-12">
+                        <div class="row mb-3">
+                            <div class="col-sm-12 col-md-3">
+                                <label for="sDate" class="form-label fw-bold text-dark-emphasis">Start Date</label>
+                                <input type="text" class="form-control" id="sDate" name="sDate">
+                            </div>
+                            <div class="col-sm-12 col-md-3">
+                                <label for="eDate" class="form-label fw-bold text-dark-emphasis">End Date</label>
+                                <input type="text" class="form-control" id="eDate" name="eDate">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-sm-12 col-md-6">
+                                <label for="emp" class="form-label fw-bold text-dark-emphasis">From User</label>
+                                <select id="emp" name="emp" class="form-select">
+                                    <option value="None">Not Select</option>
+                                    {% for user in users %}
+                                    <option value="{{ user.id }}">({{ user.code }}) {{ user.fNameEN }} {{ user.lNameEN }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3 mt-4">
+                            <div class="col-12 text-end">
+                                <button id="btnReset" type="button" class="btn btn-secondary ms-2">Reset</button>
+                                <button id="btnSearch" type="button" class="btn btn-primary ms-2">Search</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">OPD List</h3>
+                    </div>  
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="tb" class="table" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Input Date</th>
+                                <th>Code</th>
+                                <th>Employee</th>
+                                <th>Amount</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+{% if messages %}
+    {% for message in messages %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            const mssTag = "{{message.tags}}";
+            const mssMsg = "{{message}}";
+            PopMessage(mssMsg, mssTag);
+        });
+    </script>
+    {% endfor %}
+{% endif %}
+<script type="text/javascript">
+    var table;
+    $(document).ready(()=>{
+        ActiveMenu('listopd');
+        const sDateEl = document.querySelector('#sDate');
+        const eDateEl = document.querySelector('#eDate');
+        initialDatePk(sDateEl);
+        initialDatePk(eDateEl);
+        
+        $('.form-select').select2({
+            theme: 'bootstrap-5',
+        });
+        console.log(`${window.location.origin}/user/opd/api/filter/`);
+        table = $('#tb').DataTable({
+            ajax:{
+                url: `${window.location.origin}/user/opd/api/filter/`,
+                type: "POST",
+                contentType: "application/json",
+                headers: { "X-CSRFToken": getCSRFToken() },
+                data: function(d){
+                    return JSON.stringify({
+                        sDate: $('#sDate').val(),
+                        eDate: $('#eDate').val(),
+                        user: $('#emp').val()
+                    });
+                },
+                dataSrc: function(json){
+                    Loading(false);
+                    console.log(json);
+                    return json.data;
+                },
+            },
+            scrollX: true,          // ป้องกันตารางบีบแน่นเกินไป
+            autoWidth: false,       // ปิดการคำนวณความกว้างอัตโนมัติ
+            columnDefs: [
+                { width: "10%", targets: 0, className: "text-center align-middle" },  // วันที่
+                { width: "10%", targets: 1, className: "text-left" },  // รหัส
+                { width: "20%", targets: 2, className: "text-left" },  // ชื่อ
+                { width: "10%", targets: 3, className: "text-end" },  // จำนวน
+                { width: "10%", targets: 4, className: "text-center align-middle" },  // ปุ่ม
+            ],
+            columns: [
+                {
+                    data: 'inputDate',
+                    render: function(data){
+                        if(!data) return '';
+                        // const d = new Date(data);
+                        // return d.toLocaleDateString('th-TH');
+                        return data;
+                    }
+                },
+                {
+                    data: 'empCode',
+                    render: function(data){
+                        return data;
+                    }
+                },
+                {
+                    data: 'empName',
+                    render: function(data){
+                        return data;
+                    }
+                },
+                {
+                    data: 'totalAmount',
+                    render: function(data){
+                        return data;
+                    }
+                },
+                {
+                    data: 'id',
+                    render: function(data){
+                        // return "-";
+                        return `
+                            <button class="btn btn-sm btn-info m-1" onclick="editOpd('${data}')"><i class="bi bi-pencil-square"></i></button>
+                            <button class="btn btn-sm btn-danger m-1" onclick="deleteOpd(event, '${data}')"><i class="bi bi-trash"></i></button>
+                            `;
+                    }
+                }
+            ],
+            order: [[0, 'desc']],
+        });
+    });
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+    $('#btnSearch').click((e) => {
+        e.preventDefault();
+        Loading(true);
+        table.ajax.reload();
+    });
+    $('#btnReset').click((e) => {
+        e.preventDefault();
+        $('#sDate').val('');
+        $('#eDate').val('');
+        $('#emp').val('None');
+        Loading(true);
+        table.ajax.reload();
+    });
+    const editOpd = (id) => {
+        Loading(true);
+        window.location.href = `${window.location.origin}/user/opd/edit/${id}/`;
+    }
+    const deleteOpd = (e,id) => {
+        e.preventDefault();
+        Swal.fire({
+            title: "Do you want to delete ?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#f97316",
+            confirmButtonText: "Delete",
+            cancelButtonText: "Cancel"
+        }).then((result) => {
+            if(result.isConfirmed){
+                Loading(true);
+                const settings = {
+                    url: `${window.location.origin}/user/opd/api/delete/${id}/`,
+                    method: "GET",
+                }
+                $.ajax(settings).done((response) => {
+                    Loading(false);
+                    if(response.success == true){
+                        PopMessage("Delete success", "success");
+                    }else{
+                        PopMessage(response.message, "error");
+                    }
+                    table.ajax.reload();
+                }).fail((xjr, status, error) => {
+                    Loading(false);
+                    PopMessage(error, "error");
+                });
+            }
+        });
+    }
+</script>
+{% endblock %}

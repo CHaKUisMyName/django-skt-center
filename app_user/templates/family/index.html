@@ -1,0 +1,223 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Family</title>{% endblock %}
+{% block css %}
+    <style>
+        /* ให้ label ภายใน Swal ชิดซ้าย */
+        .swal2-html-container label,
+        .swal2-html-container legend,
+        .swal2-html-container p,
+        .swal2-html-container figcaption,
+        .swal2-html-container .select2-selection__rendered{
+            text-align: left !important;
+            display: block;  /* กัน margin/padding แปลกๆ */
+        }
+        .swal2-html-container .invalid-feedback {
+            text-align: left !important;
+        }
+        /* ให้ DataTables ใช้ขนาดคอลัมน์ที่เรากำหนดจริง */
+        table.dataTable {
+            table-layout: fixed !important;
+            width: 100% !important;
+        }
+
+        /* ทำให้ข้อความตัดบรรทัด */
+        table.dataTable td.text-wrap {
+            white-space: normal !important;
+            word-wrap: break-word;
+        }
+    </style>
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span class="fw-bold">Family</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">Family</h3>
+                        <p class="text-sm mb-0">List Family of Employee</p>
+                    </div>
+                    <div class="ms-auto my-auto mt-lg-0 mt-4">
+                        <div class="ms-auto my-auto">
+                            <a href="{% url 'addFamily' %}" class="btn btn-primary">
+                                <i class="bi bi-plus"></i>
+                                <span>Add Family Data</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="tb" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Employee Code</th>
+                                <th>Employee</th>
+                                <th>Family</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for us in userFamilies %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ us.employee.code }}</td>
+                                <td>{{ us.employee.fNameEN }} {{ us.employee.lNameEN }}</td>
+                                <td>
+                                    <button 
+                                        type="button"
+                                        class="bg-light btn view-detail" 
+                                        data-emp="({{us.employee.code}}){{us.employee.fNameEN}} {{us.employee.lNameEN}}"
+                                        data-father="{{us.fatherProfile}}"
+                                        data-mother="{{us.motherProfile}}"
+                                        data-spouse="{{us.spouseProfile}}"
+                                        data-child='{{us.childrenProfile|safe}}'
+                                        >
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                                <td>
+                                    <a href="{% url 'editFamily' us.id %}" class="btn btn-info me-1">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-danger delete" data-famid="{{us.id}}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="detail" class="card d-none">
+    <div class="card-body row">
+        <div id="dt-body" class="col-md-11 col-sm-12 m-auto"></div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    var table;
+    $(document).ready(()=>{
+        ActiveMenu('family');
+        table = $('#tb').DataTable();
+    });
+    $('.view-detail').click(async (e) => {
+        $("#dt-body").empty();
+        const emp = $(e.currentTarget).data('emp');
+        const father = $(e.currentTarget).data('father');
+        const mother = $(e.currentTarget).data('mother');
+        const spouse = $(e.currentTarget).data('spouse');
+        const child = $(e.currentTarget).data('child');
+        console.log(child);
+        if(father != "-"){
+            await initialDetailToHTML(father, "Father");
+        }
+        if(mother != "-"){
+            await initialDetailToHTML(mother, "Mother");
+        }
+        if(spouse != "-"){
+            await initialDetailToHTML(spouse, "Spouse");
+        }
+        if(child != "-"){
+            await initialDetailToHTML(child, "Children");
+        }
+
+        Swal.fire({
+            title: `<p class="display-6">Family</p><p>${emp}</p>`,
+            html: $("#detail").html(),
+            showCloseButton: true,
+            showCancelButton: false,
+            showConfirmButton: false,
+            focusConfirm: false,
+            width:'40rem',
+        });
+    });
+    const initialDetailToHTML = async (data, tag) => {
+        const $div = $("<div>");
+        const $row = $div.clone();
+        $row.addClass('row');
+
+        const $card = $div.clone();
+        $card.addClass('card bg-body-tertiary');
+
+        const $cardBody = $div.clone();
+        $cardBody.addClass('card-body pb-3');
+
+        const $col12 = $div.clone();
+        $col12.addClass('col-12');
+        
+        const $figure = $('<figure>');
+        const $blockquote = $("<blockquote>", {class: 'blockquote mb-4'});
+        if(tag != "Children"){
+            const $name = $("<p>", {class: "fw-bold", text: data});
+            $blockquote.append($name);
+        }else{
+            if(Array.isArray(data)){
+                $.each(data, (i, e) => {
+                    console.log(e);
+                    $blockquote.append($("<p>", {class: "fw-bold", text: e}));
+                });
+            }
+        }
+
+        const $figcaption = $("<figcaption>", {class: 'blockquote-footer'});
+        const $cite = $('<cite>', {class: 'fs-5', title: tag, text: tag});
+        $figcaption.append($cite);
+
+        $figure.append($blockquote);
+        $figure.append($figcaption);
+
+        $col12.append($figure);
+        $cardBody.append($col12);
+        $card.append($cardBody);
+        $row.append($card);
+        $("#dt-body").append($row);
+    };
+    $(".delete").click(async (e)=>{
+        e.preventDefault();
+        const id = $(e.currentTarget).data('famid');
+        
+        Swal.fire({
+            title: "Do you want to delete ?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#f97316",
+            confirmButtonText: "Delete",
+            cancelButtonText: "Cancel"
+        }).then(async (result) => {
+            if(result.isConfirmed){
+                Loading(true);
+                const url = `${window.location.origin}/user/family/api/delete/${id}`;
+                const settings = {
+                    url: url,
+                    method: "GET",
+                };
+                await $.ajax(settings).done(async (response) => {
+                    Loading(false);
+                    if(response.success == true){
+                        PopMessage("Success", "success", true);
+                    }else{
+                        PopMessage(response.message, "error");
+                    }
+                }).fail((xjr, status, error) => {
+                    Loading(false);
+                    PopMessage(error, "error");
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

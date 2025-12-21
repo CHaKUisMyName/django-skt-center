@@ -605,8 +605,7 @@ def login(request: HttpRequest):
             
             # ✅--- สร้าง session ใหม่แบบปลอดภัย
             clientIP = request.META.get('REMOTE_ADDR')
-            clientUA = request.META.get('HTTP_USER_AGENT', '')[:500]  # truncate ป้องกัน log overflow
-            print(clientIP, clientUA)
+            # clientUA = request.META.get('HTTP_USER_AGENT', '')[:500]  # truncate ป้องกัน log overflow
             
             session = AuthSession()
             session.session = secrets.token_hex(20)
@@ -615,7 +614,6 @@ def login(request: HttpRequest):
             session.SaveSessionData({
                 "userId": str(authUser.refUser.id),
                 "ip": clientIP,
-                "ua": clientUA,
                 })
             session.save()
 

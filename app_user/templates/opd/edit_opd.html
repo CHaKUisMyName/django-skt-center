@@ -1,0 +1,387 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>OPD</title>{% endblock %}
+{% block css %}
+
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span class="">OPD /</span><span class="fw-bold">Edit</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12 m-auto">
+        <div class="card">
+            <form id="fm" method="post" class="card-body mb-3" novalidate>
+                <h3 class="display-6 fw-bold">Edit OPD</h3>
+                <p class="text-sm">Medical Expense Claim Information</p>
+                {% csrf_token %}
+                <input type="hidden" id="opdId" name="opdId" value="{{ opdRecord.id }}">
+                <div class="col-12">
+                    <div class="row mb-3">
+                        <div class="col-12 text-center">
+                            <p class="display-6 text-dark-emphasis">({{employee.code}}) {{employee.fNameEN}} {{employee.lNameEN}}</p>
+                            <p class="fs-4">{{ depts|join:", "  }} Dept</p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-12 col-md-6">
+                            <label for="inputdate" class="form-label fw-bold text-dark-emphasis">Input Date</label>
+                            <input type="text" class="form-control" id="inputdate" name="inputdate" placeholder="dd/MM/yyyy" required>
+                            <div class="invalid-feedback">
+                                Please input date format (DD/MM/YYYY)
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-5">
+                        <div class="col-sm-12 col-md-8">
+                            <label for="hospital" class="form-label fw-bold text-dark-emphasis">Treatment location</label>
+                            <input type="text" id="hospital" name="hospital" class="form-control" placeholder="Hospital or clinic etc." value="{{ opdRecord.hospital }}" required>
+                            <div class="invalid-feedback">
+                                Please enter a treatment location.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <p class="display-6">Disbursement</p>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="table-responsive">
+                                <table id="empTb" class="table table-bordered">
+                                    <thead class="bg-success-subtle">
+                                        <tr>
+                                            <th class="text-center text-dark-emphasis fw-bold" colspan="{{empOptionLength}}">
+                                                <span class="fs-2">Employee</span>
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            {% for emp in empOptions %}
+                                            <th class="text-center text-dark-emphasis fw-bold">{{ emp.name }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            {% for emp in empOptions %}
+                                            <th class="emp">
+                                                <input id="emp-{{emp.name}}" name="emp-{{emp.name}}" class="form-control" value="{{emp.amount}}" data-op="emp-{{emp.id}}" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');">
+                                            </th>
+                                            {% endfor %}
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% if usFamily != "-" %}
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="table-responsive">
+                                <table id="famTb" class="table table-bordered">
+                                    <thead class="bg-warning-subtle">
+                                        <tr>
+                                            <th class="text-center text-dark-emphasis fw-bold" colspan="{{famOptionLength}}">
+                                                <span class="fs-2">Family</span>
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-center text-dark-emphasis fw-bold">Person</th>
+                                            {% for fam in familyOptions %}
+                                            <th class="text-center text-dark-emphasis fw-bold">{{ fam.name }}</th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% if usFamily.fatherProfile != "-" %}
+                                        <tr>
+                                            <td>{{usFamily.fatherProfile}}</td>
+                                            {% for fam in familyOptions %}
+                                            <td class="father">
+                                                <input id="father-{{fam.name}}" name="father-{{fam.name}}" class="form-control" value="{% if fam.relation == 'Father' and usFamily.fatherProfile == fam.famProf %} {{fam.amount}}{% endif %}" data-op="father-{{fam.id}}" data-fname="{{usFamily.fatherProfile_v2.fName}}" data-lname="{{usFamily.fatherProfile_v2.lName}}" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');">
+                                            </td>
+                                            {% endfor %}
+                                        </tr>
+                                        {% endif %}
+                                        {% if usFamily.motherProfile != "-" %}
+                                        <tr>
+                                            <td>{{usFamily.motherProfile}}</td>
+                                            {% for fam in familyOptions %}
+                                            <td class="mother">
+                                                <input id="mother-{{fam.name}}" name="mother-{{fam.name}}" class="form-control" value="{% if fam.relation == 'Mother' and usFamily.motherProfile == fam.famProf %} {{fam.amount}}{% endif %}" data-op="mother-{{fam.id}}" data-fname="{{usFamily.motherProfile_v2.fName}}" data-lname="{{usFamily.motherProfile_v2.lName}}" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');">
+                                            </td>
+                                            {% endfor %}
+                                        </tr>
+                                        {% endif %}
+                                        {% if usFamily.spouseProfile != "-" %}
+                                        <tr>
+                                            <td>{{usFamily.spouseProfile}}</td>
+                                            {% for fam in familyOptions %}
+                                            <td class="spouse">
+                                                <input id="spouse-{{fam.name}}" name="spouse-{{fam.name}}" class="form-control" value="{% if fam.relation == 'Spouse' and usFamily.spouseProfile == fam.famProf %} {{fam.amount}}{% endif %}" data-op="spouse-{{fam.id}}" data-fname="{{usFamily.spouseProfile_v2.fName}}" data-lname="{{usFamily.spouseProfile_v2.lName}}" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');">
+                                            </td>
+                                            {% endfor %}
+                                        </tr>
+                                        {% endif %}
+                                        {% if usFamily.childrenProfile != "-" %}
+                                            {% for ch in usFamily.childrenProfile_v2 %}
+                                            <tr class="child-row" data-fname="{{ch.fName}}" data-lname="{{ch.lName}}">
+                                                <td>{{ch.fName}} {{ch.lName}}</td>
+                                                {% for fam in familyOptions %}
+                                                <td class="child-option">
+                                                    <input
+                                                    id="child-{{ fam.name }}-{{ forloop.parentloop.counter }}"
+                                                    name="child-{{ fam.name }}-{{ forloop.parentloop.counter }}"
+                                                    value="{% if fam.relation == 'Children' and ch.fName|add:' '|add:ch.lName == fam.famProf %}{{ fam.amount }}{% endif %}"
+                                                    class="form-control"
+                                                    data-op="child-{{ fam.id }}"
+                                                    oninput="this.value = this.value
+                                                        .replace(/[^0-9.]/g, '')
+                                                        .replace(/(\..*)\./g, '$1');">
+                                                </td>
+                                                {% endfor %}
+                                            </tr>
+                                            {% endfor %}
+                                        {% endif %}
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="row mb-3 float-md-end">
+                        <div class="col-12">
+                            <a href="{% url 'listOpd' %}" id="btnBack" class="btn btn-light">
+                                <sapn>Cancel</sapn>
+                            </a>
+                            <button id="btnAdd" type="button" class="btn btn-primary">
+                                <sapn>Save</sapn>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="col-12 m-auto">
+        <div class="card">
+            <div class="card-body">
+                <div class="col-12">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <span class="display-6">Summarize</span>
+                            <span class="ms-2 display-6">-</span>
+                            <span class="ms-2 display-6 text-primary">{{ year }}</span>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="table-responsive">
+                                <table id="sumTb" class="table table-bordered">
+                                    <thead class="table-info">
+                                        <tr>
+                                            <th>InputDate</th>
+                                            <th>Person</th>
+                                            <th>Type</th>
+                                            <th>Option</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for history in histories %}
+                                        <tr>
+                                            <td>{{ history.inputDate }}</td>
+                                            <td>{{ history.person }}</td>
+                                            <td>{{ history.type }}</td>
+                                            <td>{{ history.option }}</td>
+                                            <td>{{ history.amount }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                        <tr>
+                                            <td colspan="4" class="text-end fw-bold table-info">Total</td>
+                                            <td class="fw-bold">{{actual}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="justify-content-end mb-3 row">
+                        <div class="bg-body-tertiary card col-lg-4 col-sm-12 pt-3">
+                            <div class="row text-end">
+                                <div class="col-6">
+                                    <span class="fw-bold fs-4">Budget</span>
+                                </div>
+                                <div class="col-6">
+                                    <span class="fw-bold fs-2">{{ budget }}</span>
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            <div class="row text-end">
+                                <div class="col-6">
+                                    <span class="fw-bold fs-4">Actual</span>
+                                </div>
+                                <div class="col-6">
+                                    <span class="text-danger fs-2">- {{actual}}</span>
+                                </div>
+                            </div>
+                            <hr class="my-2">
+                            <div class="row mb-3 text-end">
+                                <div class="col-6">
+                                    <span class="fw-bold fs-2">Balace</span>
+                                </div>
+                                <div class="col-6">
+                                    <span class="{% if balance > 0 %}text-success{% else %}text-danger{% endif %} fw-bold fs-2">
+                                        {{ balance_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    $(document).ready(()=>{
+        ActiveMenu('opd');
+        // ✅ init datetime picker (Tempus Dominus)
+        const elDate = initialDatePk(document.querySelector('#inputdate'));
+        let inputDate = "{{ opdRecord.inputDate }}";
+        console.log("inputDate:", tempusDominus.DateTime.convert(new Date(inputDate)));
+        if(inputDate === ""){
+            elDate.dates.clear();
+        }
+        elDate.dates.setValue(tempusDominus.DateTime.convert(new Date(inputDate)));
+    });
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+    $('#btnBack').click(()=>{
+        Loading(true);
+    });
+    $('#btnAdd').click((e)=>{
+        e.preventDefault();
+        Loading(true);
+        SubmitEditOPD(getCSRFToken());
+    });
+    function SubmitEditOPD(csrfToken){
+        let valid = true;
+        let objData = {};
+
+        const opdId = $('#opdId').val();
+        objData['opdId'] = opdId;
+
+        const $inputdate = $('#inputdate');
+        const $hospital = $('#hospital');
+        $inputdate.removeClass('is-invalid');
+        if(!$inputdate.val()){
+            $inputdate.addClass('is-invalid');
+            Loading(false);
+            valid = false;
+        }
+        $hospital.removeClass('is-invalid');
+        if(!$hospital.val()){
+            $hospital.addClass('is-invalid');
+            Loading(false);
+            valid = false;
+        }
+        objData['inputdate'] = $inputdate.val();
+        objData['hospital'] = $hospital.val();
+        const employee = controllToArrData($('.emp input'));
+        objData['employee'] = employee;
+
+        const father = controllToArrData($('.father input'));
+        objData['father'] = father;
+
+        const mother = controllToArrData($('.mother input'));
+        objData['mother'] = mother;
+
+        const spouse = controllToArrData($('.spouse input'));
+        objData['spouse'] = spouse;
+
+        let children = [];
+        $.each($('.child-row'), (i, row)=>{
+            const fname = $(row).data('fname');
+            const lname = $(row).data('lname');
+            $.each($(row).find('.child-option input'), (j, el)=>{
+                if($(el).val()){
+                    children.push({id: $(el).attr('id'), amount: $(el).val(), fName: fname, lName: lname, opId: $(el).data('op')});
+                } 
+            });
+        });
+        objData['children'] = children;
+        $("th input").removeClass('is-invalid');
+        $("td input").removeClass('is-invalid');
+        if((!objData.employee || objData.employee.length == 0) && 
+        (!objData.father || objData.father.length == 0) && 
+        (!objData.mother || objData.mother.length == 0) && 
+        (!objData.spouse || objData.spouse.length == 0) && 
+        (!objData.children || objData.children.length == 0)){
+            alert('Please enter at least one amount.');
+            $("th input").addClass('is-invalid');
+            $("td input").addClass('is-invalid');
+            Loading(false);
+            valid = false;
+        }
+        if(!valid){
+            return false;
+        }
+        const url = `${window.location.origin}/user/opd/api/edit/`;
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: JSON.stringify(objData),
+            contentType: 'application/json',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            success: (response)=>{
+                if(response.success == true){
+                    Loading(false);
+                    // alert('OPD record added successfully.');
+                    // window.location.href = "{% url 'indexOpd' %}";
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'OPD record added successfully.',
+                        confirmButtonColor: "#f97316",
+                    }).then((result) => {
+                        Loading(true);
+                        window.location.href = "{% url 'indexOpd' %}";
+                    });
+                } else {
+                    Loading(false);
+                    PopMessage(response.message, "error");
+                }
+            },
+            error: (err)=>{
+                Loading(false);
+                // alert('An error occurred while processing the data. Please try again.');
+                // console.error('Error:', err);
+                PopMessage(error, "error");
+            }
+        });
+    };
+    const controllToArrData = (el) => {
+        let arrData = [];
+        $.each($(el), (i, item)=>{
+            if($(item).val()){
+                const fname = $(item).data('fname') ? $(item).data('fname') : "-";
+                const lname = $(item).data('lname') ? $(item).data('lname') : "-";
+                arrData.push({id: $(item).attr('id'), amount: $(item).val(), fName: fname, lName: lname, opId: $(item).data('op')});
+            }
+        });
+        return arrData;
+    };
+</script>
+{% endblock %}

@@ -3,10 +3,13 @@ from bson import ObjectId
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
+from django.contrib import messages
+from django.urls import reverse
+from django.http import HttpResponseRedirect
 
 from app_user.models.opd import BudgetEmpType, BudgetOpd, OpdType, OptionOpd
 from app_user.models.user import User
-from app_user.utils import requiredLogin
+from app_user.utils import HasUsPermission, requiredLogin
 from base_models.basemodel import UserSnapshot
 
 # ------------------------------------
@@ -15,6 +18,11 @@ from base_models.basemodel import UserSnapshot
 
 @requiredLogin
 def budgetOpd(request: HttpRequest):
+    hasPermission = HasUsPermission(id = str(request.currentUser.id), menu = "Opd-Admin")
+    if not request.currentUser.isAdmin:
+        if hasPermission == False:
+            messages.error(request, "Not Permission")
+            return HttpResponseRedirect('/')
     return render(request, "opd/budget_setting.html")
 
 @requiredLogin
@@ -66,9 +74,10 @@ def addBudgetOpd(request: HttpRequest):
         dup = BudgetOpd.objects.filter(year=year, isActive = True, type = int(addtype))
         if dup:
             return JsonResponse({'success': False, 'message': 'Year already exists'})
-        findActive  = BudgetOpd.objects.filter(status = True, type = int(addtype))
-        if findActive:
-            return JsonResponse({'success': False, 'message': 'Can not add, Other Budget has Active'})
+        if status == "true":
+            findActive  = BudgetOpd.objects.filter(status = True, type = int(addtype))
+            if findActive:
+                return JsonResponse({'success': False, 'message': 'Can not add, Other Budget has Active'})
         budgetOpd = BudgetOpd()
         budgetOpd.year = year
         budgetOpd.budget = float(budget)
@@ -160,6 +169,11 @@ def deleteBudgetOpd(request: HttpRequest, id: str):
 # ------------------------------------
 @requiredLogin
 def optionOpd(request: HttpRequest):
+    hasPermission = HasUsPermission(id = str(request.currentUser.id), menu = "Opd-Admin")
+    if not request.currentUser.isAdmin:
+        if hasPermission == False:
+            messages.error(request, "Not Permission")
+            return HttpResponseRedirect('/')
     opdTypes = []
     for ut in OpdType:
         opdTypes.append({

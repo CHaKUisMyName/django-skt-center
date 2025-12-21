@@ -1,16 +1,15 @@
 {% extends 'layout.html' %}
 {% load static %}
-{% block title %}<title>User</title>{% endblock %}
+{% block title %}<title>OPD</title>{% endblock %}
 {% block css %}
     <style>
         /* ให้ label ภายใน Swal ชิดซ้าย */
         .swal2-html-container label,
-        .swal2-html-container legend,
         .swal2-html-container .select2-selection__rendered{
             text-align: left !important;
             display: block;  /* กัน margin/padding แปลกๆ */
         }
-        .swal2-html-container .invalid-feedback {
+        .swal2-html-container .invalid-feedback{
             text-align: left !important;
         }
         /* ให้ DataTables ใช้ขนาดคอลัมน์ที่เรากำหนดจริง */
@@ -24,6 +23,9 @@
             white-space: normal !important;
             word-wrap: break-word;
         }
+        tr{
+            cursor: pointer;
+        }
     </style>
 {% endblock %}
 {% block breadcrumb %}
@@ -32,12 +34,79 @@
 </div>
 {% endblock %}
 {% block content %}
-<div class="row mb-3"></div>
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">OPD</h3>
+                        <p class="text-sm mb-0">List Of Employee</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="tb" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Employee</th>
+                                <th data-dt-order="disable">Dept</th>
+                                <th>Budget</th>
+                                <th>Actual</th>
+                                <th>Balace</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for us in users %}
+                            <tr>
+                                <td>{{ us.code }}</td>
+                                <td>{{ us.fNameEN }} {{ us.lNameEN }}</td>
+                                <td class="text-truncate">{{ us.dept|join:", "  }}</td>
+                                <td>{{ us.budget }}</td>
+                                <td>{{ us.actual }}</td>
+                                <td class="{% if us.balance > 0 %}text-success{% else %}text-danger{% endif %}">{{ us.balance_display }}</td>
+                                <td>
+                                    <a href="{% url 'addOpd' us.id %}" class="btn btn-primary m-1" onclick="Loading(true)">
+                                        <i class="bi bi-pencil"></i>
+                                        <span>OPD</span>
+                                    </a>
+                                    <a href="{% url 'historyOpd' us.id %}" class="btn btn-secondary m-1" onclick="Loading(true)">
+                                        <i class="bi bi-clock-history"></i>
+                                        <!-- <span>History</span> -->
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 {% block script %}
+{% if messages %}
+    {% for message in messages %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            const mssTag = "{{message.tags}}";
+            const mssMsg = "{{message}}";
+            PopMessage(mssMsg, mssTag);
+        });
+    </script>
+    {% endfor %}
+{% endif %}
 <script type="text/javascript">
+    var table;
     $(document).ready(()=>{
         ActiveMenu('opd');
+        table = $('#tb').DataTable();
     });
+        
 </script>
 {% endblock %}

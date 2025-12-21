@@ -23,7 +23,7 @@ def requiredLogin(view_func):
     def wrapper(request: HttpRequest, *args, **kwargs):
         clientSession = request.COOKIES.get("session")
         clientIP = request.META.get('REMOTE_ADDR', '')
-        clientUA = request.META.get('HTTP_USER_AGENT', '')
+        # clientUA = request.META.get('HTTP_USER_AGENT', '')
 
         # ไม่มี cookie หรือ session key
         if not clientSession:
@@ -48,8 +48,8 @@ def requiredLogin(view_func):
         
         # 🧍 ตรวจสอบ IP / User-Agent ตรงกับตอนสร้าง session ไหม
         savedIP = data.get("ip", "")
-        savedUA = data.get("ua", "")
-        if savedIP != clientIP or savedUA != clientUA:
+        # savedUA = data.get("ua", "")
+        if savedIP != clientIP:
             # ป้องกัน cookie ถูกขโมยแล้วนำไปใช้จากเครื่องอื่น
             session.DeleteSessionData()
             response = HttpResponseRedirect('/login')
@@ -83,6 +83,12 @@ def requiredLogin(view_func):
         return response
         
     return wrapper
+
+def get_browser_family(user_agent: str):
+    import re
+    m = re.search(r'(Chrome|Firefox|Safari|Edg)/[0-9]+', user_agent)
+    return m.group(0) if m else 'unknown'
+
 
 def requiredSuperAdmin(view_func):
     def wrapper(request: HttpRequest, *args, **kwargs):

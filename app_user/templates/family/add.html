@@ -1,0 +1,267 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Family</title>{% endblock %}
+{% block css %}
+
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span class="">Family / </span><span class="fw-bold">Add</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-sm-12 col-lg-9 mx-auto">
+        <div class="card">
+            <form id="fm" method="post" class="card-body mb-3" novalidate>
+                <h3 class="display-6 fw-bold">Add Family</h3>
+                <p class="text-sm">create new Data</p>
+                {% csrf_token %}
+                <div class="col-12">
+                    <div class="row mb-3">
+                        <div class="col-md-5 col-sm-12">
+                            <label for="emp" class="form-label fw-bold text-dark-emphasis">Employee</label>
+                            <select id="emp" name="emp" class="form-select" required>
+                                <option value="">Please select</option>
+                                {% for us in dropdownUser %}
+                                <option value="{{us.id}}">({{us.code}}) {{us.fNameEN}} {{us.lNameEN}}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">Please select data</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="fFaName" class="form-label fw-bold text-dark-emphasis">Father</label>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-5 col-sm-12">
+                            <input type="text" id="fFaName" name="fFaName" class="form-control" placeholder="first name">
+                        </div>
+                        <div class="col-md-5 col-sm-12 mt-3 mt-lg-0">
+                            <input type="text" id="lFaName" name="lFaName" class="form-control" placeholder="last name">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="fMoName" class="form-label fw-bold text-dark-emphasis">Mother</label>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-5 col-sm-12">
+                            <input type="text" id="fMoName" name="fMoName" class="form-control" placeholder="first name">
+                        </div>
+                        <div class="col-md-5 col-sm-12 mt-3 mt-lg-0">
+                            <input type="text" id="lMoName" name="lMoName" class="form-control" placeholder="last name">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="fHName" class="form-label fw-bold text-dark-emphasis">Husband / Wife</label>
+                        </div>
+                    </div>
+                    <div class="row mb-5">
+                        <div class="col-md-5 col-sm-12">
+                            <input type="text" id="fHName" name="fHName" class="form-control" placeholder="first name">
+                        </div>
+                        <div class="col-md-5 col-sm-12 mt-3 mt-lg-0">
+                            <input type="text" id="lHName" name="lHName" class="form-control" placeholder="last name">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <!-- <label class="form-label fw-bold text-dark-emphasis">Children</label> -->
+                            <button id="addChildren" type="button" class="btn btn-success fs-5">
+                                <i class="bi bi-plus me-2"></i>
+                                <span>Add Children</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="childrenDetail"></div>
+                    <div class="row mb-3 mt-5 float-end">
+                        <div class="col-12">
+                            <a href="{% url 'indexFamily' %}" class="btn btn-light">Cancel</a>
+                            <button id="btnSubmit" type="button" class="btn btn-primary ms-2">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    $(document).ready(()=>{
+        ActiveMenu('family');
+        $('.form-select').select2({
+            theme: 'bootstrap-5',
+        });
+    });
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+    // $("#fm").submit(function(e){
+    //     Loading(true);
+    //     e.preventDefault();
+    //     e.stopPropagation();
+    //     if (!this.checkValidity()) {
+    //         Loading(false);
+    //         this.classList.add('was-validated');
+    //         return false;
+    //     }
+    //     this.classList.add('was-validated');
+    //     this.submit();
+    // });
+    $('#btnSubmit').click(async function(e){
+        e.preventDefault();
+        console.log('submit');
+        Loading(true);
+        const emp = $("#emp").val();
+        const fFaName = $("#fFaName").val();
+        const lFaName = $("#lFaName").val();
+        const fMoName = $("#fMoName").val();
+        const lMoName = $("#lMoName").val();
+        const fHName = $("#fHName").val();
+        const lHName = $("#lHName").val();
+        
+        if(!emp){
+            Loading(false);
+            $("#fm").addClass('was-validated');
+            return false;
+        }
+        const url = `${window.location.origin}/user/family/api/add/`;
+        const formData = new FormData();
+        formData.append("csrfmiddlewaretoken", getCSRFToken());
+        formData.append("emp", emp);
+        if(fFaName){
+            formData.append("fFaName", fFaName);
+        }
+        if(lFaName){
+            formData.append("lFaName", lFaName);
+        }
+        if(fMoName){
+            formData.append("fMoName", fMoName);
+        }
+        if(lMoName){
+            formData.append("lMoName", lMoName);
+        }
+        if(fHName){
+            formData.append("fHName", fHName);
+        }
+        if(lHName){
+            formData.append("lHName", lHName);
+        }
+        // childrenProfile array
+        $("input[name='childrenFName[]']").each(function(i){
+            const fName = $(this).val();
+            const lName = $("input[name='childrenLName[]']").eq(i).val();
+            
+            formData.append("childrenProfile[]", JSON.stringify({
+                fName: fName,
+                lName: lName
+            }));
+        });
+
+        const settings = {
+            url: url,
+            method: "POST",
+            processData: false,
+            contentType: false,
+            data: formData,
+            headers: { "X-CSRFToken": getCSRFToken() },
+        };
+        await $.ajax(settings).done(async (response) => {
+            Loading(false);
+            if(response.success == true){
+                PopMessage("Success", "success", false, `${window.location.origin}/user/family/`);
+            }else{
+                PopMessage(response.message, "error");
+            }
+        }).fail((xjr, status, error) => {
+            Loading(false);
+            PopMessage(error, "error");
+        });
+        // console.log(url);
+        // PopMessage("Success", "success", false, `${window.location.origin}/user/family/`);
+        
+    });
+    $('#addChildren').click(async function(e){
+        e.preventDefault();
+        console.log('click');
+        const childrenDetail = $('#childrenDetail');
+        if(!childrenDetail.has("#childrenLabel").length > 0){
+            const rowLabel = await createLabelRow();
+            childrenDetail.append(rowLabel);
+        }
+        const inputRowCount = (childrenDetail.children().length);
+        const childrenInput = await createInputRow(inputRowCount);
+        childrenDetail.append(childrenInput);
+    });
+    const createLabelRow = async () => {
+        const $div = $('<div>');
+
+        const $row = $div.clone();
+        $row.addClass('row');
+        $row.prop('id','childrenLabel');
+
+        const $col = $div.clone();
+        $col.addClass("col-12 mb-3");
+
+        const $label = $('<label>', {class:"fs-2 text-dark-emphasis", text:'Children'});
+        
+        $col.append($label);
+        $row.append($col);
+        return $row;
+    };
+    const createInputRow = async (rowCount) => {
+        const $div = $('<div>');
+        
+        const $row = $div.clone();
+        $row.prop("id", `cir-${rowCount}`);
+        $row.addClass('row mb-3');
+
+        const $colFName = $div.clone();
+        $colFName.addClass('col-md-5 col-sm-12');
+        const inputFName = $("<input>", {
+            type: "text",
+            name: "childrenFName[]",
+            class: "form-control",
+            placeholder: "first name",
+        });
+        $colFName.append(inputFName);
+
+        const $colLName = $div.clone();
+        $colLName.addClass('col-md-5 col-sm-12 mt-3 mt-lg-0');
+        const inputLName = $("<input>", {
+            type: "text",
+            name: "childrenLName[]",
+            class: "form-control",
+            placeholder: 'last name',
+        });
+        $colLName.append(inputLName);
+
+        const $colDelete = $div.clone();
+        $colDelete.addClass('col-md-2 col-sm-12');
+        const deleteBtn = $("<button>", {
+            type: "button",
+            class: "btn btn-danger",
+            onclick: `deleteChild(${rowCount});`,
+        });
+        deleteBtn.append(`<i class="bi bi-trash"></i>`);
+        $colDelete.append(deleteBtn);
+
+        $row.append($colFName);
+        $row.append($colLName);
+        $row.append($colDelete);
+        return $row;
+    };
+    const deleteChild = (rowCount) => {
+        $(`#cir-${rowCount}`).remove();
+        if(rowCount == 1){
+            $("#childrenLabel").remove();
+        }
+    };
+</script>
+{% endblock %}

@@ -5,6 +5,7 @@ from app_user.views import setting_user_views as setting__user_views
 from app_user.views import immigration_views as immigration_views
 from app_user.views import setting_opd_views as setting_opd_views
 from app_user.views import opd_views as opd_views
+from app_user.views import family_views as family_views
 
 
 
@@ -40,6 +41,14 @@ urlpatterns = [
     # -------------------- OPD System ---------------------
     # -----------------------------------------------------
     path('opd/', view=opd_views.index, name='indexOpd'),
+    path('opd/history/<str:id>/', view=opd_views.historyOpd, name='historyOpd'),
+    path('opd/list/', view=opd_views.listPageOpd, name='listOpd'),
+    path('opd/api/filter/', view=opd_views.filterSearchOpd, name='filterSearchOpd'),
+    path('opd/add/<str:id>/', view=opd_views.addOpd, name="addOpd"),
+    path('opd/api/add/', view=opd_views.addOpdJson, name='addOpdJson'),
+    path('opd/edit/<str:id>/', view=opd_views.editOpd, name="editOpd"),
+    path('opd/api/edit/', view=opd_views.editOpdJson, name='editOpdJson'),
+    path('opd/api/delete/<str:id>/', view=opd_views.deleteOpdJson, name='deleteOpdJson'),
     path('opdsetting/budget/', view=setting_opd_views.budgetOpd, name='buggetSettingOpd'),
     path('opdsetting/budget/add/', view=setting_opd_views.addBudgetOpd, name='addBudgetOpd'),
     path('opdsetting/budget/edit/', view=setting_opd_views.editBudgetOpd, name='editBudgetOpd'),
@@ -52,4 +61,13 @@ urlpatterns = [
     path('opdsetting/option/delete/<str:id>/', view=setting_opd_views.deleteOptionOpd, name='deleteOptionOpd'),
     path('opdsetting/option/api/filter/', view=setting_opd_views.filterOptionOpd, name='filterOptionOpd'),
     path('opdsetting/option/api/get/<str:id>/', view=setting_opd_views.getOptionOpd, name='getOptionOpd'),
+    # -----------------------------------------------------
+    # ------------------- Family System -------------------
+    # -----------------------------------------------------
+    path('family/', view=family_views.index, name='indexFamily'),
+    path('family/add/', view=family_views.add, name='addFamily'),
+    path('family/api/add/', view=family_views.addJson, name='addJsonFamily'),
+    path('family/edit/<str:id>/', view= family_views.edit,name="editFamily"),
+    path('family/api/edit/', view=family_views.editJson, name='editJsonFamily'),
+    path('family/api/delete/<str:id>', view=family_views.deleteJson, name='deleteJsonFamily'),
 ]

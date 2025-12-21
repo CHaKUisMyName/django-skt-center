@@ -136,6 +136,12 @@
                             <span class="fw-bold">GA System</span>
                         </a>
                         <ul id="user" class="parent-menu-collapse sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                            {% has_menu_user request.currentUser "Family" as can_view_family %}
+                            {% if can_view_family %}
+                            <li class="sidebar-item my-2">
+                                <a href="{% url 'indexFamily' %}" class="sidebar-link" data-active="family">Family</a>
+                            </li>
+                            {% endif %}
                             {% has_menu_user request.currentUser "Immigration" as can_view_immuser %}
                             {% if can_view_immuser %}
                             <li class="sidebar-item my-2">
@@ -143,11 +149,19 @@
                             </li>
                             {% endif %}
                             <li class="sidebar-item my-2">
-                                <a href="{% url 'indexOpd' %}" class="sidebar-link" data-active="opd">OPD</a>
+                                <a class="sidebar-link" href="{% url 'historyOpd' request.currentUser.id %}" data-active="histories">OPD</a>
                             </li>
+                            {% has_menu_user request.currentUser "Opd-Admin" as view_opd_admin %}
+                            {% if view_opd_admin %}
                             <li class="sidebar-item my-2">
-                                <a href="#opdsettings" data-bs-toggle="collapse" class="sidebar-link">OPD Settings</a>
-                                <ul id="opdsettings" class="sidebar-dropdown list-unstyled collapse parent-menu-collapse">
+                                <a href="#opd" data-bs-toggle="collapse" class="sidebar-link">OPD-Admin</a>
+                                <ul id="opd" class="sidebar-dropdown list-unstyled collapse parent-menu-collapse">
+                                    <li class="sidebar-item my-2">
+                                        <a href="{% url 'indexOpd' %}" class="sidebar-link ps-6" data-active="opd" onclick="Loading(true)">OPD</a>
+                                    </li>
+                                    <li class="sidebar-item my-2">
+                                        <a href="{% url 'listOpd' %}" class="sidebar-link ps-6" data-active="listopd" onclick="Loading(true)">Search Opd</a>
+                                    </li>
                                     <li class="sidebar-item my-2">
                                         <a href="{% url 'buggetSettingOpd' %}" class="sidebar-link ps-6" data-active="budgetsettingopd">Default Budget</a>
                                     </li>
@@ -156,7 +170,7 @@
                                     </li>
                                 </ul>
                             </li>
-                            
+                            {% endif %}
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'indexUser' %}" data-active="user">User</a>
                             </li>
@@ -225,7 +239,7 @@
                             <span class="fw-bold">Reminder</span>
                         </a>
                     </li>
-                    <!-- <li class="sidebar-item my-2 mx-3">
+                    <li class="sidebar-item my-2 mx-3">
                         <a data-bs-target="#mainsafety" data-bs-toggle="collapse" class="sidebar-link">
                             <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
                                 <i class="bi bi-shield-shaded"></i>
@@ -237,7 +251,7 @@
                                 <a class="sidebar-link" href="{% url 'indexGreenCard' %}" data-active="greenyellowcard">Green/Yellow Card</a>
                             </li>
                         </ul>
-                    </li> -->
+                    </li>
                     <li class="sidebar-item my-2 mx-3">
                         <a class="sidebar-link" href="http://192.168.1.214" target="_blank" data-active="sds">
                             <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
@@ -261,9 +275,6 @@
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'listVisitor' %}" data-active="vstlist">Search</a>
                             </li>
-                            <!-- <li class="sidebar-item my-2">
-                                <a class="sidebar-link" href="#" data-active="listvisitor">List Visitor</a>
-                            </li> -->
                             {% has_menu_vst request.currentUser "Option" as can_view_vstOption %}
                             {% if can_view_vstOption %}
                             <li class="sidebar-item my-2">
