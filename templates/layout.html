@@ -50,7 +50,22 @@
                     <span class="align-middle">SANYO-KASEI</span>
                   </a>
                   <ul class="sidebar-nav">
-                    <li class="sidebar-header">Page</li>
+                    <li class="px-3 my-2 mt-4">
+                        <div class="menu-search-wrapper">
+                            <i class="bi bi-search menu-search-icon"></i>
+
+                            <input type="search"
+                                id="menuSearch"
+                                class="menu-search-input"
+                                placeholder="Search menu..."
+                                autocomplete="off">
+
+                            <span class="menu-search-clear d-none" id="menuSearchClear">
+                                <i class="bi bi-x-circle-fill"></i>
+                            </span>
+                        </div>
+                    </li>
+                    <li class="sidebar-header pt-0">Page</li>
                     <li class="sidebar-item my-2 mx-3">
                         <a class="sidebar-link" href="{% url 'indexDashboard' %}" data-active="dashboard">
                             <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
@@ -406,42 +421,109 @@
     <script src="{% static 'js/tempus-dominus.js' %}"></script>
     <script src="https://cdnjs.com/libraries/Chart.js"></script>
     <script type="text/JavaScript">
-      function ActiveMenu(menu) {
-        // ลบ Active ออกจากทุกเมนูที่ไม่ตรงกับ data-active
-        $('.sidebar-link:not([data-active="' + menu + '"])').parent().removeClass('active');
-        // เพิ่ม Active ให้เมนูที่ถูกเลือก
-        let activeLink = $('.sidebar-link[data-active="' + menu + '"]');
-        activeLink.parent().addClass('active');
+        function ActiveMenu(menu) {
+            if ($('#menuSearch').val().trim() !== '') return;
+            // ลบ Active ออกจากทุกเมนูที่ไม่ตรงกับ data-active
+            $('.sidebar-link:not([data-active="' + menu + '"])').parent().removeClass('active');
+            // เพิ่ม Active ให้เมนูที่ถูกเลือก
+            let activeLink = $('.sidebar-link[data-active="' + menu + '"]');
+            activeLink.parent().addClass('active');
 
-        // -- active menu ที่มี menu ย่อย
-        if(activeLink.parents().hasClass('parent-menu-collapse')){
-          // -- show collapse และ active menu แม่
-          activeLink.parents('.parent-menu-collapse').addClass('show');
-          activeLink.parents('.parent-menu-collapse').parent().addClass('active');
-        }else{
-          // -- close collapse และ remove active
-          $('.parent-menu-collapse').removeClass('show');
-          $('.parent-menu-collapse').parent().removeClass('active');
+            // -- active menu ที่มี menu ย่อย
+            if(activeLink.parents().hasClass('parent-menu-collapse')){
+              // -- show collapse และ active menu แม่
+              activeLink.parents('.parent-menu-collapse').addClass('show');
+              activeLink.parents('.parent-menu-collapse').parent().addClass('active');
+            }else{
+              // -- close collapse และ remove active
+              $('.parent-menu-collapse').removeClass('show');
+              $('.parent-menu-collapse').parent().removeClass('active');
+            }
         }
-      }
-      function Loading(params) {
-        if(params){
-          $('.load-screen').removeClass('d-none');
-        }else{
-          $('.load-screen').addClass('d-none');
+        function Loading(params) {
+            if(params){
+            $('.load-screen').removeClass('d-none');
+            }else{
+            $('.load-screen').addClass('d-none');
+            }
         }
-      }
-      $("#loguot").click(function(){
-        Loading(true);
-      });
-      $(document).ready(function(){
-        const profileImg = '{{ request.currentUser.imgProfilePath }}';
-        if(profileImg && profileImg != "" && profileImg != "None"){
-            const profileImgURL = window.location.origin + '/media/'+ profileImg + '?t=' + new Date().getTime();
-            $('#prf-sm').attr('src', profileImgURL);
-            $('#prf-md').attr('src', profileImgURL);
-        }
-      });
+        $("#loguot").click(function(){
+            Loading(true);
+        });
+        $(document).ready(function(){
+            const profileImg = '{{ request.currentUser.imgProfilePath }}';
+            if(profileImg && profileImg != "" && profileImg != "None"){
+                const profileImgURL = window.location.origin + '/media/'+ profileImg + '?t=' + new Date().getTime();
+                $('#prf-sm').attr('src', profileImgURL);
+                $('#prf-md').attr('src', profileImgURL);
+            }
+        });
+        $('#menuSearch').on('input', function () {
+            let keyword = $(this).val().toLowerCase().trim();
+
+            $('.sidebar-nav > .sidebar-item').each(function () {
+                let item = $(this);
+                let parentLink = item.find('> .sidebar-link');
+                let parentText = parentLink.text().toLowerCase();
+                let subMenu = item.find('.parent-menu-collapse');
+                let hasSubMenu = subMenu.length > 0;
+
+                let childMatched = false;
+                item.find('.parent-menu-collapse .sidebar-link').each(function () {
+                    if ($(this).text().toLowerCase().includes(keyword)) {
+                        childMatched = true;
+                    }
+                });
+
+                // 🔄 clear search → show ทั้งหมด (ไม่แตะ active)
+                if (keyword === '') {
+                    if(subMenu.hasClass('show') && item.hasClass('active')){
+                        item.show();
+                        subMenu.addClass('show');
+                        subMenu.find('.sidebar-item').show();
+                    }else{
+                        item.show();
+                        subMenu.removeClass('show');
+                    }
+                    return;
+                }
+
+                // 🔍 match เมนูแม่ → show + เปิดลูกทั้งหมด
+                if (parentText.includes(keyword)) {
+                    item.show();
+                    if (hasSubMenu) {
+                        subMenu.addClass('show');
+                        subMenu.find('.sidebar-item').show();
+                    }
+                    return;
+                }
+
+                // 🔍 match เมนูลูก → show + เปิดเมนูแม่
+                if (childMatched) {
+                    item.show();
+                    subMenu.addClass('show');
+                    return;
+                }
+
+                // ❌ ไม่ match
+                item.hide();
+            });
+        });
+
+        const $menuSearch = $('#menuSearch');
+        const $menuSearchClear = $('#menuSearchClear');
+
+        $menuSearch.on('input', function () {
+            let hasValue = $(this).val().trim() !== '';
+            $menuSearchClear.toggleClass('d-none', !hasValue);
+        });
+
+        // click ❌ clear
+        $menuSearchClear.on('click', function () {
+            $menuSearch.val('').trigger('input').focus();
+        });
+
+
     </script>
     {% block script %}{% endblock %}
 </body>

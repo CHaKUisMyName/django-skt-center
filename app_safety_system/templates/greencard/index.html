@@ -120,9 +120,26 @@
         <div class="card">
             <div class="card-body">
                 <div class="row mb-3">
-                    <div class="col-12">
+                    <div class="col-8">
                         <span class="me-2">Data At :</span>
                         <span id="barChartTitle" class="display-6"></span>
+                    </div>
+                    <div class="col-4 text-end">
+                        <select id="filter-month" class="form-select" name="chartMonth">
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                            <option value="All">All</option>
+                        </select>
                     </div>
                 </div>
                 <div class="row mb-3">
@@ -322,10 +339,12 @@
             ActiveMenu("greenyellowcard");
             updateCountCurrrentMonth();
             const dateNow = new Date();
+            $("#filter-month").val(dateNow.getMonth() + 1);
             $("#countTitle").text(`Your Data : ${dateNow.getMonth() + 1}/${dateNow.getFullYear()}`);
-            $("#barChartTitle").text(`${dateNow.getMonth() + 1}/${dateNow.getFullYear()}`);
+            // $("#barChartTitle").text(`${dateNow.getMonth() + 1}/${dateNow.getFullYear()}`);
+            $("#barChartTitle").text(`${$("#filter-month").val()}/${dateNow.getFullYear()}`);
 
-            showCountOrgObj = await getCountOrgByAndMon();
+            showCountOrgObj = await getCountOrgByAndMon($("#filter-month").val());
             // console.log(showCountOrgObj);
             const ctx = document.getElementById('myChart');
             barChart = new Chart(ctx, {
@@ -419,7 +438,7 @@
                             if(response.success == true){
                                 PopMessage("Success", "success");
                                 updateCountCurrrentMonth();
-                                showCountOrgObj = await getCountOrgByAndMon();
+                                showCountOrgObj = await getCountOrgByAndMon($("#filter-month").val());
                                 barChart.data.datasets[0].data = showCountOrgObj.countGreen;
                                 barChart.data.datasets[1].data = showCountOrgObj.countYellow;
                                 barChart.update();
@@ -434,6 +453,15 @@
                 });
             }
         });
+        $("#filter-month").change(async function(){
+            const dateNow = new Date();
+            $("#barChartTitle").text(`${$(this).val()}/${dateNow.getFullYear()}`);
+            updateCountCurrrentMonth();
+            showCountOrgObj = await getCountOrgByAndMon($("#filter-month").val());
+            barChart.data.datasets[0].data = showCountOrgObj.countGreen;
+            barChart.data.datasets[1].data = showCountOrgObj.countYellow;
+            barChart.update();
+        })
         const getCount = async () => {
             let response;
             const settings = {
@@ -449,11 +477,11 @@
             });
             return response;
         }
-        const getCountOrgByAndMon = async () => {
+        const getCountOrgByAndMon = async (month) => {
             let response;
             const dateNow = new Date();
             const postData = JSON.stringify({
-                month: (dateNow.getMonth() + 1)
+                month: month ?? dateNow.getMonth() + 1,
             });
             const settings ={
                 url: window.location.origin + window.location.pathname + "api/countorg/",
@@ -641,7 +669,7 @@
                         if(response.success == true){
                             PopMessage("Success", "success");
                             updateCountCurrrentMonth();
-                            showCountOrgObj = await getCountOrgByAndMon();
+                            showCountOrgObj = await getCountOrgByAndMon($("#filter-month").val());
                             barChart.data.datasets[0].data = showCountOrgObj.countGreen;
                             barChart.data.datasets[1].data = showCountOrgObj.countYellow;
                             barChart.update();
@@ -814,7 +842,7 @@
                         if(response.success == true){
                             PopMessage("Success", "success");
                             updateCountCurrrentMonth();
-                            showCountOrgObj = await getCountOrgByAndMon();
+                            showCountOrgObj = await getCountOrgByAndMon($("#filter-month").val());
                             barChart.data.datasets[0].data = showCountOrgObj.countGreen;
                             barChart.data.datasets[1].data = showCountOrgObj.countYellow;
                             barChart.update();

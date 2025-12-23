@@ -515,7 +515,6 @@ def conutGreenYellowCurMonth(request: HttpRequest):
                     res['cGreen'] = res.get('cGreen', 0) + 1
                 elif card.type.value == GreenYellowType.YellowCard.value:
                     res['cYellow'] = res.get('cYellow', 0) + 1
-                # res['cGreen'] = res.get('cGreen', 0) + 1
         return JsonResponse({'success': True, 'data': res, 'message': 'Success'})
     except Exception as e:
         print(e)
@@ -530,19 +529,26 @@ def countALLOrgByMonAndYear(request: HttpRequest):
         month = body.get('month')
         if not month:
             return JsonResponse({'success': False, 'message': 'Month is required'})
+        
+        res = {}
         year = timezone.now().year
-        # ✅ คำนวณช่วงเวลาเริ่มต้นและสิ้นสุดของเดือนนั้น
-        start_date = datetime.datetime(year, int(month), 1, tzinfo=pytz.UTC)
-        if int(month) == 12:
+        if month == "All":
+            start_date = datetime.datetime(year, 1, 1, tzinfo=pytz.UTC)
             end_date = datetime.datetime(year + 1, 1, 1, tzinfo=pytz.UTC)
         else:
-            end_date = datetime.datetime(year, int(month) + 1, 1, tzinfo=pytz.UTC)
-        res = {}
+            # ✅ คำนวณช่วงเวลาเริ่มต้นและสิ้นสุดของเดือนนั้น
+            start_date = datetime.datetime(year, int(month), 1, tzinfo=pytz.UTC)
+            if int(month) == 12:
+                end_date = datetime.datetime(year + 1, 1, 1, tzinfo=pytz.UTC)
+            else:
+                end_date = datetime.datetime(year, int(month) + 1, 1, tzinfo=pytz.UTC)
         listData: List[GreenYellowCard] = GreenYellowCard.objects.filter(
             isActive = True, 
             issueDate__gte=start_date,
             issueDate__lt=end_date
             )
+        print(f"------------------ start_date: {start_date}, end_date: {end_date}")
+        print(f"------------------ countALLOrgByMonAndYear: {listData.count()}")
         # if not listData:
         #     return JsonResponse({'success': True, 'data': res, 'message': 'Success'})
         # -- หา department level
