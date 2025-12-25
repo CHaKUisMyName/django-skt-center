@@ -27,6 +27,10 @@
             <i class="bi bi-file-earmark-excel-fill"></i>
             export
         </button>
+        <button id="exportPopup" type="button" class="btn btn-success mb-3">
+            <i class="bi bi-file-earmark-excel-fill"></i>
+            exportPopup
+        </button>
     </div>
 </div>
 {% endif %}
@@ -96,6 +100,23 @@
                         <i class="bi bi-trash"></i>
                         <span class="ms-2">Delete</span>
                     </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% csrf_token %}
+<div id="exportDetail" class="card d-none">
+    <div class="card-body row mb-3">
+        <div class="col-12">
+            <div class="row mb-3">
+                <div class="col-sm-12 col-lg-6">
+                    <label for="sdateExp" class="form-label fw-bold text-dark-emphasis">Start Date</label>
+                    <input type="text" id="sdateExp" name="sdateExp" class="form-control">
+                </div>
+                <div class="col-sm-12 col-lg-6">
+                    <label for="edateExp" class="form-label fw-bold text-dark-emphasis">End Date</label>
+                    <input type="text" id="edateExp" name="edateExp" class="form-control">
                 </div>
             </div>
         </div>
@@ -303,33 +324,6 @@
             return false;
         }
         var dv = undefined;
-        $("#exp").click(function(e){
-            e.preventDefault();
-            Loading(true);
-            const nowYear = new Date().getFullYear();
-            const settings = {
-                url: window.location.origin + window.location.pathname + "api/excelyear/" + nowYear,
-                method: "GET",
-                timeout: 0,
-                async: false, // -- รอจนกว่า AJAX request จะเสร็จสิ้น
-            };
-            $.ajax(settings).done(async function (res) {
-                
-                if(res.success == true){
-                    // dv = res.data;
-                    await createExcel(res.data);
-                    // Loading(false);
-                }else{
-                    PopMessage(res.message, "error");
-                    Loading(false);
-                }
-                
-            }).fail((xjr, status, error) => {
-                Loading(false);
-                PopMessage(error, "error");
-                // calendar.refetchEvents();
-            });
-        });
         const createExcel = async (data) =>{
             
             const workbook = new ExcelJS.Workbook();
@@ -338,7 +332,9 @@
             });
 
             const col = [];
-            const dayAllYear = getDays(new Date());
+            // const dayAllYear = getDays(new Date());
+            const dayAllYear = getDaysByRange(data.sdate, data.edate);
+
             col.push({
                 header: "Date/Time",
                 key: "date",
@@ -468,6 +464,33 @@
             URL.revokeObjectURL(url);
         };
 
+        function getDaysByRange(startDate, endDate) {
+            const result = [];
+            const weekday = [
+                "Sunday",
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+            ];
+
+            let current = moment(startDate, "DD/MM/YYYY");
+            const end = moment(endDate, "DD/MM/YYYY");
+
+            while (current.isSameOrBefore(end, "day")) {
+                result.push({
+                    date: current.format("DD-MM-YYYY"),
+                    day: weekday[current.day()],
+                });
+                current.add(1, "day");
+            }
+
+            return result;
+        }
+
+
         function getDays(date) {
             var result = [];
             const weekday = [
@@ -503,8 +526,80 @@
             }
             return days;
         };
+        $('#exportPopup').click(function(e){
+            e.preventDefault();
+            Swal.fire({
+                title: `<p class="display-6">Exprot Car Schedule</p>`,
+                html: $("#exportDetail").html(),
+                showCloseButton: true,
+                showCancelButton: false,
+                showConfirmButton: true,
+                confirmButtonText: 'Export',   // 🔹 เปลี่ยนข้อความปุ่ม
+                customClass: {
+                    confirmButton: 'btn btn-primary me-2', // 🔹 ใช้ class bootstrap
+                    cancelButton: 'btn btn-secondary'
+                },
+                buttonsStyling: false, // 🔹 เพื่อให้ SweetAlert ไม่ override Bootstrap
+                focusConfirm: false,
+                width:'40rem',
+                didOpen: () => {
+                    const sDateEl = document.querySelector('.swal2-container #sdateExp');
+                    const eDateEl = document.querySelector('.swal2-container #edateExp');
+                    initialDatePk(sDateEl);
+                    initialDatePk(eDateEl);
+                },
+                preConfirm: () => {
+                    let valid = true;
+                    const sdateExpEl = $(".swal2-container #sdateExp");
+                    const edateExpEl = $(".swal2-container #edateExp");
+                    
+                    if(sdateExpEl.val() == ""){
+                        
+                        valid = false;
+                    }
+                    if(edateExpEl.val() == ""){
+                        
+                        valid = false;
+                    }
+                    if(sdateExpEl.val() > edateExpEl.val()){
+                        
+                        valid = false;
+                    }
+                    if (!valid){ return false };
+                    return {
+                        sdate: sdateExpEl.val(),
+                        edate: edateExpEl.val(),
+                    };
+                },
+            }).then(async (result) => {
+                if(result.isConfirmed){
+                    Loading(true);
+                    const data = result.value;
+                    const url = window.location.origin + window.location.pathname + "api/export/";
+                    $.ajax({
+                        url: url,
+                        type: "POST",
+                        data: JSON.stringify(data),
+                        contentType: "application/json",
+                        headers: { "X-CSRFToken": getCSRFToken() },
+                    }).done(async function (res) {
+                        if(res.success == true){
+                            await createExcel(res.data);
+                        }else{
+                            PopMessage(res.message, "error");
+                        }
+                        Loading(false);
 
-        
-        
+                    }).fail((xjr, status, error) => {
+                        Loading(false);
+                        PopMessage(error, "error");
+                    });
+                        
+                }
+            });
+        });
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
     </script>
 {% endblock %}

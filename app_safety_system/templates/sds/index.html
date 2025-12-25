@@ -1,0 +1,119 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>SDS System</title>{% endblock %}
+{% block css %}
+<style>
+    /* ให้ DataTables ใช้ขนาดคอลัมน์ที่เรากำหนดจริง */
+    table.dataTable {
+        table-layout: fixed !important;
+        width: 100% !important;
+    }
+
+    /* ทำให้ข้อความตัดบรรทัด */
+    table.dataTable td.text-wrap {
+        white-space: normal !important;
+        word-wrap: break-word;
+    }
+</style>
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span class="fw-bold">SDS System</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">Search Panel</h3>
+                    </div>  
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    {% csrf_token %}
+                    <div class="col-12">
+                        <div class="row">
+                            <div class="col-sm-12 col-lg-4">
+                                <input type="text" class="form-control" id="search_input" placeholder="Name, Code, Cas Number">
+                            </div>
+                            <div class="col-sm-12 col-lg-2">
+                                <select id="type" class="form-select">
+                                    <option></option>
+                                    <option value="prod">Product</option>
+                                    <option value="raw">Raw Material</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-12 col-lg-2">
+                                <select id="lang" class="form-select">
+                                    <option></option>
+                                    <option value="th">Thai</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-12 col-lg-4 text-end">
+                                <button type="button" class="btn btn-primary">Search</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">SDS</h3>
+                        <p class="text-sm mb-0">
+                            List of SDS Document
+                        </p>
+                    </div>
+                    <div class="ms-auto my-auto mt-lg-0 mt-4">
+                        <div class="ms-auto my-auto">
+                            <button id="add" type="button" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i>
+                                <span>Add SDS</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <thead>
+                                <tr></tr>
+                            </thead>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        ActiveMenu("sds");
+        $('#type').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Select doc type',
+            allowClear: true
+        });
+        $('#lang').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Select language',
+            allowClear: true,
+        });
+    });
+</script>
+{% endblock %}

@@ -7,7 +7,7 @@ from django.urls import reverse
 import pytz
 from django.contrib import messages
 from django.utils import timezone
-from datetime import datetime
+from datetime import datetime, timedelta
 from mongoengine.queryset.visitor import Q
 
 from app_car_schedule.models.car_schedule import CarSchedule, ViewPersonCarSchedule
@@ -16,7 +16,7 @@ from app_car_schedule.models.driver import Driver
 from app_user.models.user import User, UserStatus
 from app_user.utils import requiredLogin
 from base_models.basemodel import UserSnapshot
-from utilities.utility import dateStrAndTimeToDatetime
+from utilities.utility import DateStrToDate, dateStrAndTimeToDatetime
 
 tz = pytz.timezone("Asia/Bangkok")
 
@@ -387,6 +387,50 @@ def filterCarScheduleJson(request: HttpRequest):
         print(e)
         return JsonResponse({'success': False, 'message': str(e)})
     
+
+def exportByDateRange(request: HttpRequest):
+    try:
+        if not request.method == "POST":
+            return JsonResponse({'success': False, 'message': 'Method not allowed'})
+        body = json.loads(request.body.decode('utf-8'))  # อ่าน JSON body
+        year = body.get('year')
+        sdate_str = body.get('sdate')
+        edate_str = body.get('edate')
+
+        print(sdate_str, edate_str)
+        if not sdate_str:
+            return JsonResponse({'success': False, 'message': 'Date is required'})
+        if not edate_str:
+            return JsonResponse({'success': False, 'message': 'Date is required'})
+        # --- แปลงจาก string → datetime (naive)
+        sdate_dt = datetime.strptime(sdate_str, "%d/%m/%Y")
+        edate_dt = datetime.strptime(edate_str, "%d/%m/%Y")
+
+        sdate_dt = tz.localize(sdate_dt).astimezone(pytz.utc)
+        edate_dt = tz.localize(edate_dt + timedelta(days=1)).astimezone(pytz.utc)
+        print(sdate_dt, edate_dt)
+        if sdate_dt > edate_dt:
+            return JsonResponse({'success': False, 'message': 'Start date must be before end date.'})
+
+        drivers: List[Driver] = Driver.objects.filter(isActive=True)
+        schedules: List[CarSchedule] = CarSchedule.objects.filter(
+            isActive=True,
+            sDate__gte=sdate_dt,
+            sDate__lt=edate_dt
+        ).order_by('sDate')
+        context = {
+            "year": year,
+            "sdate": sdate_str,   # ✅ สำคัญ
+            "edate": edate_str,   # ✅ สำคัญ
+            "drivers": [driver.serialize() for driver in drivers],
+            "schedules": [schedule.serialize() for schedule in schedules],
+        }
+
+        return JsonResponse({'success': True, 'data': context, 'message': 'Success'})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'success': False, 'message': str(e)})
+
 
 def excelYear(request: HttpRequest, year: str):
     try:
