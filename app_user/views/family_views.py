@@ -65,6 +65,9 @@ def addJson(request: HttpRequest):
         childrenProfileStr = request.POST.getlist('childrenProfile[]')
         if not emp:
             return JsonResponse({'success': False, 'message': 'Employee is required'})
+        dupUser:UserFamily = UserFamily.objects.filter(employee = ObjectId(emp), isActive = True).first()
+        if dupUser:
+            return JsonResponse({'success': False, 'message': 'Duplicate Data.'})
         
         userFamily: UserFamily = UserFamily()
         userFamily.employee = ObjectId(emp)
