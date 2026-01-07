@@ -232,27 +232,29 @@ def addGreenCardJson(request: HttpRequest):
                 return JsonResponse({'success': False, 'message': 'Employee not found'})
             emailIssueTo = []
             if not emp.email:
-                # -- ถ้า email ไม่มีให้หา email manager ของ dept นั้นๆ
-                empOrg = findDeptUser(emp)
-                if empOrg and len(empOrg) > 0:
-                    managerPos = Position.objects.filter(isActive = True, nameEN = "Manager").first()
-                    if managerPos:
-                        for o in empOrg:
-                            if o['id']:
-                                us: User = User.objects.filter(
-                                    isActive = True,
-                                    roles__elemMatch = {
-                                        # -- $elemMatch จะเลือก เฉพาะ document ที่ roles มี element ใด element หนึ่งตรงกับเงื่อนไข
-                                        "isActive": True,
-                                        "orgId": ObjectId(o['id']),
-                                        "posId": ObjectId(managerPos.id)
-                                    },
-                                    email__nin= [None] # <-- filter email ที่ไม่ถูกต้อง
-                                ).only("email")
-                                for u in us:
-                                    emailIssueTo.append(u.email)
-                    greenCard.emailIssueTo = emailIssueTo
-                    print(f"------------------ emp mail: {emailIssueTo}")
+                # # -- ถ้า email ไม่มีให้หา email manager ของ dept นั้นๆ
+                # empOrg = findDeptUser(emp)
+                # if empOrg and len(empOrg) > 0:
+                #     managerPos = Position.objects.filter(isActive = True, nameEN = "Manager").first()
+                #     if managerPos:
+                #         for o in empOrg:
+                #             if o['id']:
+                #                 us: User = User.objects.filter(
+                #                     isActive = True,
+                #                     roles__elemMatch = {
+                #                         # -- $elemMatch จะเลือก เฉพาะ document ที่ roles มี element ใด element หนึ่งตรงกับเงื่อนไข
+                #                         "isActive": True,
+                #                         "orgId": ObjectId(o['id']),
+                #                         "posId": ObjectId(managerPos.id)
+                #                     },
+                #                     email__nin= [None] # <-- filter email ที่ไม่ถูกต้อง
+                #                 ).only("email")
+                #                 for u in us:
+                #                     emailIssueTo.append(u.email)
+                #     greenCard.emailIssueTo = emailIssueTo
+                #     print(f"------------------ emp mail: {emailIssueTo}")
+                greenCard.emailIssueTo = emailIssueTo
+                print(f"------------------ emp has mail: {emailIssueTo}")
             else:
                 emailIssueTo.append(emp.email)
                 greenCard.emailIssueTo = emailIssueTo
@@ -262,21 +264,23 @@ def addGreenCardJson(request: HttpRequest):
             emailIssueToOrg = []
             if org:
                 if org != "Foreigner":
-                    managerPos = Position.objects.filter(isActive = True, nameEN = "Manager").first()
-                    if managerPos:
-                        us: User = User.objects.filter(
-                            isActive = True,
-                            roles__elemMatch = {
-                                "isActive": True,
-                                "orgId": ObjectId(org),
-                                "posId": ObjectId(managerPos.id)
-                            },
-                            email__nin= [None] # <-- filter email ที่ไม่ถูกต้อง
-                        ).only("email")
-                        for u in us:
-                            emailIssueToOrg.append(u.email)
+                    # managerPos = Position.objects.filter(isActive = True, nameEN = "Manager").first()
+                    # if managerPos:
+                    #     us: User = User.objects.filter(
+                    #         isActive = True,
+                    #         roles__elemMatch = {
+                    #             "isActive": True,
+                    #             "orgId": ObjectId(org),
+                    #             "posId": ObjectId(managerPos.id)
+                    #         },
+                    #         email__nin= [None] # <-- filter email ที่ไม่ถูกต้อง
+                    #     ).only("email")
+                    #     for u in us:
+                    #         emailIssueToOrg.append(u.email)
+                    # greenCard.emailIssueTo = emailIssueToOrg
+                    # print(f"------------------ org mail: {emailIssueToOrg}")
                     greenCard.emailIssueTo = emailIssueToOrg
-                    print(f"------------------ org mail: {emailIssueToOrg}")
+                    print(f"------------------ org has mail: {emailIssueToOrg}")
                 else:
                     print(f"------------------ foreigner")
         elif IssueToType(issueToType).value == IssueToType.Vendor.value:
@@ -367,27 +371,29 @@ def addYellowCardJson(request: HttpRequest):
                 return JsonResponse({'success': False, 'message': 'Employee not found'})
             emailIssueTo = []
             if not emp.email:
-                # -- ถ้า email ไม่มีให้หา email manager ของ dept นั้นๆ
-                empOrg = findDeptUser(emp)
-                if empOrg and len(empOrg) > 0:
-                    managerPos = Position.objects.filter(isActive = True, nameEN = "Manager").first()
-                    if managerPos:
-                        for o in empOrg:
-                            if o['id']:
-                                us: User = User.objects.filter(
-                                    isActive = True,
-                                    roles__elemMatch = {
-                                        # -- $elemMatch จะเลือก เฉพาะ document ที่ roles มี element ใด element หนึ่งตรงกับเงื่อนไข
-                                        "isActive": True,
-                                        "orgId": ObjectId(o['id']),
-                                        "posId": ObjectId(managerPos.id)
-                                    },
-                                    email__nin= [None] # <-- filter email ที่ไม่ถูกต้อง
-                                ).only("email")
-                                for u in us:
-                                    emailIssueTo.append(u.email)
-                    yellowCard.emailIssueTo = emailIssueTo
-                    print(f"------------------ emp mail: {emailIssueTo}")
+                # # -- ถ้า email ไม่มีให้หา email manager ของ dept นั้นๆ
+                # empOrg = findDeptUser(emp)
+                # if empOrg and len(empOrg) > 0:
+                #     managerPos = Position.objects.filter(isActive = True, nameEN = "Manager").first()
+                #     if managerPos:
+                #         for o in empOrg:
+                #             if o['id']:
+                #                 us: User = User.objects.filter(
+                #                     isActive = True,
+                #                     roles__elemMatch = {
+                #                         # -- $elemMatch จะเลือก เฉพาะ document ที่ roles มี element ใด element หนึ่งตรงกับเงื่อนไข
+                #                         "isActive": True,
+                #                         "orgId": ObjectId(o['id']),
+                #                         "posId": ObjectId(managerPos.id)
+                #                     },
+                #                     email__nin= [None] # <-- filter email ที่ไม่ถูกต้อง
+                #                 ).only("email")
+                #                 for u in us:
+                #                     emailIssueTo.append(u.email)
+                #     yellowCard.emailIssueTo = emailIssueTo
+                #     print(f"------------------ emp mail: {emailIssueTo}")
+                yellowCard.emailIssueTo = emailIssueTo
+                print(f"------------------ emp has mail: {emailIssueTo}")
             else:
                 emailIssueTo.append(emp.email)
                 yellowCard.emailIssueTo = emailIssueTo
@@ -398,21 +404,23 @@ def addYellowCardJson(request: HttpRequest):
             emailIssueToOrg = []
             if org:
                 if org != "Foreigner":
-                    managerPos = Position.objects.filter(isActive = True, nameEN = "Manager").first()
-                    if managerPos:
-                        us: User = User.objects.filter(
-                            isActive = True,
-                            roles__elemMatch = {
-                                "isActive": True,
-                                "orgId": ObjectId(org),
-                                "posId": ObjectId(managerPos.id)
-                            },
-                            email__nin= [None] # <-- filter email ที่ไม่ถูกต้อง
-                        ).only("email")
-                        for u in us:
-                            emailIssueToOrg.append(u.email)
+                    # managerPos = Position.objects.filter(isActive = True, nameEN = "Manager").first()
+                    # if managerPos:
+                    #     us: User = User.objects.filter(
+                    #         isActive = True,
+                    #         roles__elemMatch = {
+                    #             "isActive": True,
+                    #             "orgId": ObjectId(org),
+                    #             "posId": ObjectId(managerPos.id)
+                    #         },
+                    #         email__nin= [None] # <-- filter email ที่ไม่ถูกต้อง
+                    #     ).only("email")
+                    #     for u in us:
+                    #         emailIssueToOrg.append(u.email)
+                    # yellowCard.emailIssueTo = emailIssueToOrg
+                    # print(f"------------------ org mail: {emailIssueToOrg}")
                     yellowCard.emailIssueTo = emailIssueToOrg
-                    print(f"------------------ org mail: {emailIssueToOrg}")
+                    print(f"------------------ org has mail: {emailIssueToOrg}")
                 else:
                     print(f"------------------ foreigner")
         elif IssueToType(providerToType).value == IssueToType.Vendor.value:

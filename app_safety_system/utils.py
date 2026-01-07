@@ -11,8 +11,9 @@ def sendMailGreenYellowCard(gyCard: GreenYellowCard):
             return False
         
         # to_email = [str(settings.MAIL_CHAKU)]
-        to_email = gyCard.emailIssueTo
-        cc = ['safety_skt@sanyo-chemical.group']
+        to_email = gyCard.emailIssueTo if len(gyCard.emailIssueTo) > 0 else ['safety_skt@sanyo-chemical.group']
+        cc = ['safety_skt@sanyo-chemical.group'] if len(gyCard.emailIssueTo) > 0 else []
+         # เตรียม context สำหรับ template
         gc = gyCard.serialize()
         context = {
             'gc': gc,
