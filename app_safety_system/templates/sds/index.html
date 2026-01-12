@@ -8,12 +8,47 @@
         table-layout: fixed !important;
         width: 100% !important;
     }
-
     /* ทำให้ข้อความตัดบรรทัด */
     table.dataTable td.text-wrap {
         white-space: normal !important;
         word-wrap: break-word;
     }
+    .dt-search {
+        display: none !important;
+    }
+
+    /* ให้ label ภายใน Swal ชิดซ้าย */
+    .swal2-html-container label, 
+    .swal2-html-container .select2-selection__rendered{
+        text-align: left !important;
+        display: block;  /* กัน margin/padding แปลกๆ */
+    }
+    .swal2-html-container .invalid-feedback {
+        text-align: left !important;
+    }
+    .btn-spinner {
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid rgba(255,255,255,.4);
+        border-top-color: #fff;
+        border-radius: 50%;
+        display: inline-block;
+        animation: spin 0.7s linear infinite;
+        vertical-align: middle;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .placeholder-select:has(option[value=""]:checked) {
+        color: #9e9e9e;
+    }
+    .placeholder-select option {
+        color: #000;
+    }
+
+
 </style>
 {% endblock %}
 {% block breadcrumb %}
@@ -33,29 +68,38 @@
                 </div>
             </div>
             <div class="card-body">
-                <div class="row mb-3">
+                <div class="row">
                     {% csrf_token %}
                     <div class="col-12">
                         <div class="row">
                             <div class="col-sm-12 col-lg-4">
-                                <input type="text" class="form-control" id="search_input" placeholder="Name, Code, Cas Number">
+                                <input type="text" class="form-control" id="search_input" placeholder="Name, Cas Number">
                             </div>
-                            <div class="col-sm-12 col-lg-2">
-                                <select id="type" class="form-select">
-                                    <option></option>
-                                    <option value="prod">Product</option>
-                                    <option value="raw">Raw Material</option>
+                            <div class="col-lg-2 col-sm-12">
+                                <select id="version" class="form-select placeholder-select">
+                                    <option value="" disabled selected hidden>doc version</option>
+                                    {% for sdsLang in lang %}
+                                        <option value="{{ sdsLang.value }}">{{ sdsLang.label }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
-                            <div class="col-sm-12 col-lg-2">
-                                <select id="lang" class="form-select">
-                                    <option></option>
-                                    <option value="th">Thai</option>
-                                    <option value="en">English</option>
-                                </select>
+                            <div class="col-sm-12 col-lg-4">
+                            {% for sdsType in sdsTypes %}
+                                <input type="checkbox" class="btn-check" id="{{ sdsType.label }}-{{ sdsType.value }}" name="checktype" autocomplete="off" value="{{ sdsType.value }}">
+                                <label class="rounded-5 btn-sm btn {% if sdsType.value == 1 %}btn-outline-success{% elif sdsType.value == 2 %}btn-outline-danger{% elif sdsType.value == 3 %}btn-outline-info{% endif %}" 
+                                for="{{ sdsType.label }}-{{ sdsType.value }}">{{ sdsType.label }}</label>
+                            {% endfor %}
                             </div>
-                            <div class="col-sm-12 col-lg-4 text-end">
-                                <button type="button" class="btn btn-primary">Search</button>
+                            
+                            <div class="col-sm-12 col-lg-2 text-end">
+                                <button id="clear" type="button" class="btn text-decoration-underline">
+                                    <span class="btn-spinner d-none"></span>
+                                    <span>Clear All</span>
+                                </button>
+                                <button id="search" type="button" class="btn btn-primary">
+                                    <span class="btn-spinner d-none"></span>
+                                    <span>Search</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -72,7 +116,7 @@
                     <div>
                         <h3 class="mb-0">SDS</h3>
                         <p class="text-sm mb-0">
-                            List of SDS Document
+                            Safety Data Sheet(SDS) EASY
                         </p>
                     </div>
                     <div class="ms-auto my-auto mt-lg-0 mt-4">
@@ -89,11 +133,81 @@
                 <div class="row mb-3">
                     <div class="col-12">
                         <div class="table-responsive">
-                            <thead>
-                                <tr></tr>
-                            </thead>
+                            <table id="sds_table" class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Cas No</th>
+                                        <th>Doc Type</th>
+                                        <th>Date Modified</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>Test</td>
+                                        <td>123456789</td>
+                                        <td>Product</td>
+                                        <td>2023-01-01</td>
+                                        <td><button class="btn btn-sm btn-outline-primary">View</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% csrf_token %}
+<div id="detail" class="card d-none">
+    <div class="card-body row mb-3">
+        <div class="col-12">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="name" class="form-label text-dark-emphasis fw-bold">Name</label>
+                    <input type="text" id="name" name="name" class="form-control" required>
+                    <div class="invalid-feedback">Please input data.</div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="doc" class="form-label text-dark-emphasis fw-bold">Document</label>
+                    <input type="file" id="doc" name="doc" accept="application/pdf" class="form-control" required>
+                    <div class="invalid-feedback">Please input .pdf file.</div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="casno" class="form-label text-dark-emphasis fw-bold">Cas Number</label>
+                    <input type="text" id="casno" name="casno" class="form-control">
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="doctype" class="form-label text-dark-emphasis fw-bold">Document Type</label>
+                    <select id="doctype" name="doctype" class="form-select" data-placeholder="select type" required>
+                        <option></option>
+                        {% for sdsType in sdsTypes %}
+                            <option value="{{ sdsType.value }}">{{ sdsType.label }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">Please select data.</div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="docversion" class="form-label fw-bold text-dark-emphasis">Document Version</label>
+                    <select id="docversion" name="docversion" class="form-select" data-placeholder="select version" required>
+                        <option value="" disabled selected hidden>doc version</option>
+                        {% for sdsLang in lang %}
+                            <option value="{{ sdsLang.value }}">{{ sdsLang.label }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">Please select data.</div>
                 </div>
             </div>
         </div>
@@ -102,18 +216,425 @@
 {% endblock %}
 {% block script %}
 <script type="text/javascript">
+    var table;
     $(document).ready(function(){
         ActiveMenu("sds");
-        $('#type').select2({
-            theme: 'bootstrap-5',
-            placeholder: 'Select doc type',
-            allowClear: true
-        });
-        $('#lang').select2({
-            theme: 'bootstrap-5',
-            placeholder: 'Select language',
-            allowClear: true,
+        // $('#version').select2({
+        //     theme: 'bootstrap-5',
+        //     placeholder: 'doc version',
+        //     allowClear: true,
+        // });
+        table = $('#sds_table').DataTable({
+            ajax: {
+                url: window.location.origin + "/sft/sds/api/filter/",
+                type: "POST",
+                contentType: "application/json",
+                headers: { "X-CSRFToken": getCSRFToken() },
+                data: function(d){
+                    let selectedTypes = [];
+                    $('input[name="checktype"]:checked').each(function() {
+                        selectedTypes.push(parseInt($(this).val()));
+                    });
+                    return JSON.stringify({
+                        searchInput: $('#search_input').val(),
+                        sdsTypes: selectedTypes,
+                        docVersion: $('#version').val(),
+                    });
+                },
+                dataSrc: function(json) {
+                    Loading(false);
+                    if (!json.success) return [];
+                    return json.data;
+                }
+            },
+            scrollX: true,          // ป้องกันตารางบีบแน่นเกินไป
+            autoWidth: false,       // ปิดการคำนวณความกว้างอัตโนมัติ
+            columnDefs: [
+                { width: "4%", targets: 0, className: "text-center align-middle" },  // #
+                { width: "35%", targets: 1, className: "text-wrap align-middle" },   // Name
+                { width: "25%", targets: 2, className: "text-left align-middle" }, // Cas No
+                { width: "15%", targets: 3, className: "text-left align-middle" }, // Doc Type
+                { width: "16%", targets: 4, className: "text-left align-middle" }, // Date Modified
+                { width: "15%", targets: 5, className: "text-center align-middle" }  // Action
+            ],
+            columns: [
+                { 
+                    data: 'data', 
+                    render: function(data, type, row, meta) {
+                        return meta.row + 1;
+                    }
+                },
+                { 
+                    data: 'data',
+                    render: function(data, type, row, meta) {
+                        el =`<p class="mb-0">${data.name}</p><p class="mb-0">(Ver. ${data.docVersion.label})</p>`;
+                        return el;
+                    }
+                },
+                { 
+                    data: 'data',
+                    render: function(data, type, row, meta) {
+                        return data.casNo;
+                    }
+                },
+                { 
+                    data: 'data',
+                    render: function(data, type, row, meta) {
+                        return data.type.label;
+                    }
+                },
+                { 
+                    data: 'data',
+                    render: function(data, type, row, meta) {
+                        updateDate = data.updateDate;
+                        createDate = data.createDate;
+                        let showDate = updateDate ? updateDate : createDate;
+                        if(showDate){
+                            const date = new Date(showDate);
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            return `${year}-${month}-${day}`;
+                        }
+                        return '-';
+                    }
+                },
+                { data: 'data',
+                  render: function(data, type, row) {
+                    // el = `<button class="btn btn-sm btn-outline-primary">View</button>`;
+                    el = `<a href="{{ mediaRoot }}${data.docPath}" target="_blank" class="btn btn-sm btn-outline-primary">View</a>`;
+                    
+                    if(row.canModify == true){
+                        el += ` <button class="btn btn-sm btn-info edit-btn" data-id="${data.id}"><i class="bi bi-pencil-square"></i></button>`;
+                        el += ` <button class="btn btn-sm btn-danger delete-btn" data-id="${data.id}"><i class="bi bi-trash"></i></button>`;
+                    }
+                    return el;
+                  }
+                }
+            ]
         });
     });
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+    $("#add").click(function(e){
+        e.preventDefault();
+        Swal.fire({
+            title: `<p class="display-6">SDS</p>`,
+            html: $("#detail").html(),
+            showCloseButton: true,
+            showCancelButton: true,
+            showConfirmButton: true,
+            confirmButtonText: 'Save',   // 🔹 เปลี่ยนข้อความปุ่ม
+            customClass: {
+                confirmButton: 'btn btn-primary me-2', // 🔹 ใช้ class bootstrap
+                cancelButton: 'btn btn-secondary'
+            },
+            buttonsStyling: false, // 🔹 เพื่อให้ SweetAlert ไม่ override Bootstrap
+            focusConfirm: false,
+            width:'40rem',
+            didOpen:() => {
+                $('.swal2-container #doctype, .swal2-container #docversion').select2({
+                    theme: 'bootstrap-5',
+                    placeholder: $(this).data('placeholder'),
+                    allowClear: true,
+                    dropdownParent: $('.swal2-container') // Ensures dropdown appears above the modal
+                });
+            },
+            preConfirm: () => {
+                let valid = true;
+                // const name = Swal.getPopup().querySelector('#name').value;
+                const nameEl = $(".swal2-container #name");
+                const casnoEl = $(".swal2-container #casno");
+                const docEl = $(".swal2-container #doc");
+                const doctypeEl = $(".swal2-container #doctype");
+                const docversionEl = $(".swal2-container #docversion");
+
+                nameEl.removeClass("is-invalid");
+                if(!nameEl.val()){
+                    nameEl.addClass("is-invalid");
+                    valid = false;
+                }
+                docEl.removeClass("is-invalid");
+                if(docEl[0].files.length == 0){
+                    docEl.addClass("is-invalid");
+                    valid = false;
+                }
+                if(docEl[0].files.length > 0){
+                    const file = docEl[0].files[0];
+                    const fileType = file.type;
+                    if(fileType != "application/pdf"){
+                        docEl.addClass("is-invalid");
+                        valid = false;
+                    }
+                }
+                doctypeEl.removeClass("is-invalid");
+                if(!doctypeEl.val()){
+                    doctypeEl.addClass("is-invalid");
+                    valid = false;
+                }
+                docversionEl.removeClass("is-invalid");
+                if(!docversionEl.val()){
+                    docversionEl.addClass("is-invalid");
+                    valid = false;
+                }
+                if(!valid){
+                    return false;
+                }
+                return {
+                    name: nameEl.val(),
+                    casno: casnoEl.val() && casnoEl.val().trim() !== "" ? casnoEl.val() : "N/A",
+                    doc: docEl[0].files[0],
+                    doctype: doctypeEl.val(),
+                    docversion: docversionEl.val()
+                };
+            },
+        }).then(async (result) => {
+            if(result.isConfirmed){
+                Loading(true);
+                const url = `${window.location.origin}${window.location.pathname}addsdsjson/`;
+                const data = result.value;
+                const formData = new FormData();
+                formData.append('name', data.name);
+                formData.append('casno', data.casno);
+                formData.append('doc', data.doc);
+                formData.append('doctype', data.doctype);
+                formData.append('docversion', data.docversion);
+
+
+                const settings = {
+                    method: 'POST',
+                    body: formData,
+                    headers: { "X-CSRFToken": getCSRFToken() },
+                };
+                try {
+                    const response = await fetch(url, settings);
+                    if (!response.ok) PopMessage("Server error", "error");
+                    const json = await response.json();
+                    if (json.success) {
+                        table.ajax.reload();
+                        PopMessage("Success", "success");
+                    } else {
+                        PopMessage(json.message, "error");
+                    }
+                } catch (err) {
+                    PopMessage("Network error", "error");
+                } finally {
+                    Loading(false);
+                }
+            }
+        });
+    });
+    $('#search').click((e) => {
+        e.preventDefault();
+        // Loading(true);
+        table.ajax.reload();
+    });
+    // Source - https://stackoverflow.com/a
+    // Posted by davidkonrad, modified by community. See post 'Timeline' for change history
+    // Retrieved 2026-01-09, License - CC BY-SA 3.0
+    $("#search_input").on("keyup search input paste cut", function() {
+        table.search(this.value).draw();
+    });  
+
+    $('#clear').click((e) =>{
+        e.preventDefault();
+        $('#search_input').val('').keyup();
+        $('input[name="checktype"]').prop('checked', false);
+        $('#version').val('');
+        // Loading(true);
+        table.ajax.reload();
+        
+    });
+    
+    $('#sds_table').on('preXhr.dt', function () {
+        // -- ก่อนที่ DataTables จะส่ง Ajax request ออกไป
+        setButtonLoading('#search', true);
+        setButtonLoading('#clear', true);
+    }).on('xhr.dt', function () {
+        // -- หลังจากที่ DataTables ได้รับ response กลับมาแล้ว
+        setButtonLoading('#search', false);
+        setButtonLoading('#clear', false);
+    });
+    $('#sds_table').on('click', '.edit-btn',function(e){
+        e.preventDefault();
+        const id = $(this).data('id');
+        Swal.fire({
+            title: `<p class="display-6">SDS</p>`,
+            html: $("#detail").html(),
+            showCloseButton: true,
+            showCancelButton: true,
+            showConfirmButton: true,
+            confirmButtonText: 'Save',   // 🔹 เปลี่ยนข้อความปุ่ม
+            customClass: {
+                confirmButton: 'btn btn-primary me-2', // 🔹 ใช้ class bootstrap
+                cancelButton: 'btn btn-secondary'
+            },
+            buttonsStyling: false, // 🔹 เพื่อให้ SweetAlert ไม่ override Bootstrap
+            focusConfirm: false,
+            width:'40rem',
+            didOpen:async () => {
+                const url = `${window.location.origin}/sft/sds/api/get/${id}/`;
+                console.log(url);
+                const settings = {
+                    method: 'GET',
+                    headers: { "X-CSRFToken": getCSRFToken() },
+                };
+            
+                try {
+                    const response = await fetch(url, settings);
+                    if (!response.ok) {
+                        PopMessage("Server error", "error");
+                        return;
+                    }
+                    const json = await response.json();
+                    if (json.success) {
+                        const data = json.data;
+                        console.log(data);
+                        $('.swal2-container #name').val(data.name);
+                        $('.swal2-container #casno').val(data.casNo !== "N/A" ? data.casNo : '');
+                        $('.swal2-container #doctype').val(data.type.value).trigger('change');
+                        $('.swal2-container #docversion').val(data.docVersion.value).trigger('change');
+                        
+                    } else {
+                        PopMessage(json.message, "error");
+                    }
+                } catch (err) {
+                    PopMessage("Network error", "error");
+                }
+                $('.swal2-container #doctype, .swal2-container #docversion').select2({
+                    theme: 'bootstrap-5',
+                    placeholder: $(this).data('placeholder'),
+                    allowClear: true,
+                    dropdownParent: $('.swal2-container') // Ensures dropdown appears above the modal
+                });
+                
+            },
+            preConfirm: () => {
+                let valid = true;
+                const nameEl = $(".swal2-container #name");
+                const casnoEl = $(".swal2-container #casno");
+                const docEl = $(".swal2-container #doc");
+                const doctypeEl = $(".swal2-container #doctype");
+                const docversionEl = $(".swal2-container #docversion");
+
+                nameEl.removeClass("is-invalid");
+                if(!nameEl.val()){
+                    nameEl.addClass("is-invalid");
+                    valid = false;
+                }
+                docEl.removeClass("is-invalid");
+                if(docEl[0].files.length > 0){
+                    const file = docEl[0].files[0];
+                    const fileType = file.type;
+                    if(fileType != "application/pdf"){
+                        docEl.addClass("is-invalid");
+                        valid = false;
+                    }
+                }
+                doctypeEl.removeClass("is-invalid");
+                if(!doctypeEl.val()){
+                    doctypeEl.addClass("is-invalid");
+                    valid = false;
+                }
+                docversionEl.removeClass("is-invalid");
+                if(!docversionEl.val()){
+                    docversionEl.addClass("is-invalid");
+                    valid = false;
+                }
+                if(!valid){
+                    return false;
+                }
+                return {
+                    id: id,
+                    name: nameEl.val(),
+                    casno: casnoEl.val() && casnoEl.val().trim() !== "" ? casnoEl.val() : "N/A",
+                    doc: docEl[0].files.length > 0 ? docEl[0].files[0] : null,
+                    doctype: doctypeEl.val(),
+                    docversion: docversionEl.val()
+                };
+            },
+        }).then(async (result) => {
+            if(result.isConfirmed){
+                Loading(true);
+                const url = `${window.location.origin}${window.location.pathname}editsdsjson/`;
+                const data = result.value;
+                const formData = new FormData();
+                formData.append('id', data.id);
+                formData.append('name', data.name);
+                formData.append('casno', data.casno);
+                if(data.doc){
+                    formData.append('doc', data.doc);
+                }
+                formData.append('doctype', data.doctype);
+                formData.append('docversion', data.docversion);
+
+                const settings = {
+                    method: 'POST',
+                    body: formData,
+                    headers: { "X-CSRFToken": getCSRFToken() },
+                };
+                try {
+                    const response = await fetch(url, settings);
+                    if (!response.ok) PopMessage("Server error", "error");
+                    const json = await response.json();
+                    if (json.success) {
+                        table.ajax.reload();
+                        PopMessage("Success", "success");
+                    } else {
+                        PopMessage(json.message, "error");
+                    }
+                } catch (err) {
+                    PopMessage("Network error", "error");
+                } finally {
+                    Loading(false);
+                }
+            }
+        });
+    });
+    $('#sds_table').on('click', '.delete-btn',function(e){
+        e.preventDefault();
+        const id = $(this).data('id');
+        Swal.fire({
+            title: "Do you want to delete ?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#f97316",
+            confirmButtonText: "Delete",
+            cancelButtonText: "Cancel"
+        }).then(async (result) => {
+            if(result.isConfirmed){
+                Loading(true);
+                const url = `${window.location.origin}${window.location.pathname}deletesdsjson/${id}/`;
+                const settings ={
+                    method: 'GET',
+                    headers: { "X-CSRFToken": getCSRFToken() },
+                };
+                try{
+                    const response = await fetch(url, settings);
+                    if(!response.ok) PopMessage("Server error", "error");
+                    const json = await response.json();
+                    if(json.success){
+                        table.ajax.reload();
+                        PopMessage("Success", "success");
+                    }else{
+                        PopMessage(json.message, "error");
+                    }
+                }catch(err){
+                    PopMessage("Network error", "error");
+                }finally{
+                    Loading(false);
+                }
+            }
+        });
+    });
+
+    function setButtonLoading(btn, loading) {
+        const $btn = $(btn);
+        $btn.prop('disabled', loading);
+        $btn.find('.btn-text').toggleClass('d-none', loading);
+        $btn.find('.btn-spinner').toggleClass('d-none', !loading);
+    }
+
 </script>
 {% endblock %}

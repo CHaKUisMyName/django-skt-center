@@ -24,16 +24,34 @@
             .body{
                 height: 100%;
             }
-            .bg-image{
-                /* background-image: url("{% static 'images/dragon-bg.jpg' %}"); */
+            /* .bg-image{
                 background-image: url("{% static 'images/bg01.jpg' %}");
-                /* background-image: url("https://www.sanyo-kasei.co.th/images/banner/banner_sanyo_3.jpg"); */
-                /* background-repeat: round; */
                 background-repeat: no-repeat;
-                background-size: cover;           /* เต็มจอ */
+                background-size: cover;
                 background-position: center center;
-                background-attachment: fixed;     /* ภาพไม่เลื่อนตาม scroll */
+                background-attachment: fixed;
+            } */
+            .bg-image {
+                position: relative;
+                min-height: 100vh;
+                overflow: hidden;
             }
+
+            .bg-image::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background-image: url("{% static 'images/bg01.jpg' %}");
+                background-repeat: no-repeat;
+                background-size: cover;
+                background-position: center center;
+                background-attachment: fixed;
+
+                filter: blur(3px);          /* ปรับระดับความเบลอ */
+                transform: scale(1.05);     /* กันขอบภาพแตกตอนเบลอ */
+                z-index: -1;
+            }
+
             .glass{
                 /* From https://css.glass */
                 background: rgba(255, 255, 255, 0.77);

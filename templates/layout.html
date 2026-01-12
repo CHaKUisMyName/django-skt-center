@@ -4,6 +4,7 @@
 {% load visitor_tag %}
 {% load car_schedule_tag %}
 {% load welcomeboard_tags %}
+{% load safety_tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -262,6 +263,18 @@
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'indexGreenCard' %}" data-active="greenyellowcard">Green/Yellow Card</a>
                             </li>
+                            {% has_menu_safety request.currentUser "SDS" as can_view_sds %}
+                            {% if can_view_sds %}
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="{% url 'indexSDS' %}" data-active="sds">SDS</a>
+                            </li>
+                            {% endif %}
+                            {% has_menu_safety request.currentUser "SettingSafety" as can_view_sftSetting %}
+                            {% if can_view_sftSetting %}
+                            <li class="sidebar-item my-2">
+                                <a class="sidebar-link" href="{% url 'indexSettingSafety' %}" data-active="settingsafety">Settings</a>
+                            </li>
+                            {% endif %}
                         </ul>
                     </li>
                     <li class="sidebar-item my-2 mx-3">
@@ -396,7 +409,7 @@
                     </ul>
                 </div>
             </nav>
-            <main class="content">
+            <main class="content p-0 pe-4 pt-3">
                 <div class="container-fluid p-0">
                     {% block content %}{% endblock %}
                 </div>
@@ -437,15 +450,17 @@
               $('.parent-menu-collapse').parent().removeClass('active');
             }
             // ⭐ scroll หลัง active
-    setTimeout(function () {
-        const el = activeLink.closest('.sidebar-item')[0];
-        if (el) {
-            el.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center'
-            });
-        }
-    }, 100);
+            setTimeout(function () {
+                
+                const el = activeLink.closest('.sidebar-item')[0];
+                if (el) {
+                    el.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
+            }, 100);
+            
         }
         function Loading(params) {
             if(params){

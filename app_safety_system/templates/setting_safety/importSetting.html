@@ -1,0 +1,86 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>Setting Safety</title>{% endblock %}
+{% block css %}
+    
+    <style>
+        /* แสดงขอบสีแดงสำหรับ validation error */
+        .is-invalid {
+            border-color: #dc3545 !important;
+        }
+
+    </style>
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span>Safety / </span><span class="fw-bold">Setting</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-sm-12 col-lg-10 mx-auto">
+        <div class="card">
+            <form id="fmAddAll" 
+            action="{% url 'importSettingSafety' %}" 
+            method="post" class="card-body mb-3 needs-validation" 
+            enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                <h3 class="display-6 fw-bold">Setting Safety</h3>
+                <p class="text-sm">Import setting Safety</p>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-dark-emphasis me-4">Excel Template :</label>
+                        <a href="{% url 'safetyExcelTemplate' %}" class="btn btn-primary">
+                            <i class="bi bi-file-earmark-excel"></i>
+                            <span>Template File</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-12 col-lg-8">
+                        <label class="form-label fw-bold text-dark-emphasis me-4">Import File</label>
+                        <input type="file" class="form-control" id="file" name="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
+                        <div class="invalid-feedback">Please select fire</div>
+                    </div>
+                </div>
+                <div class="row float-end">
+                    <div class="co-12">
+                        <a href="{% url 'indexSettingSafety' %}" class="btn btn-light">Cancel</a>
+                        <button type="submit" id="submitBtn" class="btn btn-primary ms-2">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    {% if messages %}
+        {% for message in messages %}
+        <script type="text/javascript">
+            $(document).ready(function(){
+                const mssTag = "{{message.tags}}";
+                const mssMsg = "{{message}}";
+                PopMessage(mssMsg, mssTag);
+            });
+        </script>
+        {% endfor %}
+    {% endif %}
+    <script type="text/javascript">
+        (function () {
+            'use strict';
+            document.querySelector('form').addEventListener('submit', function (event) {
+                Loading(true);
+                if (!this.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    Loading(false);
+                }
+                this.classList.add('was-validated');
+            }, false);
+        })();
+        $(document).ready(()=>{
+            ActiveMenu("settingsafety");
+        });
+    </script>
+{% endblock %}

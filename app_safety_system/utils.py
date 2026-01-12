@@ -1,7 +1,10 @@
+from bson import ObjectId
 from app_safety_system.models.greenyellow_card import GreenYellowCard, GreenYellowType
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
+
+from app_safety_system.models.safety_setting import SafetySetting
     
 def sendMailGreenYellowCard(gyCard: GreenYellowCard):
     try:
@@ -37,6 +40,23 @@ def sendMailGreenYellowCard(gyCard: GreenYellowCard):
         email.attach_alternative(html_content, "text/html")
         email.send()
         return True
+    except Exception as e:
+        print(e)
+        return False
+    
+def HasSftPermission(id: str, menu: str = None, checkAdmin: bool = False):
+    try:
+        result = False
+        safetySetting: SafetySetting = SafetySetting.objects.filter(user = ObjectId(id)).first()
+        if safetySetting:
+            if checkAdmin == True:
+                if safetySetting.isAdmin == True and safetySetting.isActive == True:
+                    result = True
+            else:
+                if safetySetting.isActive == True:
+                    if menu:
+                        result = any(m.name == menu for m in safetySetting.menus)
+        return result
     except Exception as e:
         print(e)
         return False

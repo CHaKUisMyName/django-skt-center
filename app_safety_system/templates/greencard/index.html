@@ -891,7 +891,7 @@
             $.each(users, function(index, value){
                 select.append($("<option>", {
                     value: value.id,
-                    text: `(${value.code}) ${value.fNameEN} ${value.lNameEN}`
+                    text: `(${value.code}) ${value.fNameEN} ${value.lNameEN} (${value.nickName ? value.nickName : '-'})`
                 }));
             });
             select.select2({
