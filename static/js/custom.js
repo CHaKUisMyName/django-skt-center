@@ -159,6 +159,7 @@ const createDropdown = (data, name, selectedId = null) => {
   });
   select.prop("required", true);
   select.prop("name", name);
+  select.append($("<option>"));
   $.each(data, (index, value) => {
     const option = $("<option>");
     option.val(value.id);

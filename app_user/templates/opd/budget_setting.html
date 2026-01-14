@@ -96,6 +96,43 @@
         </div>
     </div>
 </div>
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">Budget OPD Settings (Special Employee)</h3>
+                        <p class="text-sm mb-0">List Of Special Budget/Person OPD setting</p>
+                    </div>
+                    <div class="ms-auto my-auto mt-lg-0 mt-4">
+                        <div class="ms-auto my-auto">
+                            <button type="button" id="addSpec" class="btn btn-primary">
+                                <i class="bi bi-plus"></i>
+                                <span>Add Budget (Special Employee)</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="tbSpec" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Budget</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% csrf_token %}
 <div id="detail" class="card d-none">
     <div class="card-body row mb-3">
@@ -127,11 +164,48 @@
         </div>
     </div>
 </div>
+<div id="bdgSpec" class="d-none card">
+    <div class="card-body row mb-3">
+        <div class="col-12">
+            <div class="row mb-3">
+                <div class="col-sm-12 col-lg-6">
+                    <label for="emp" class="form-label fw-bold text-dark-emphasis">Employee</label> 
+                    <select class="form-select" id="emp" name="emp" required>
+                        <option value=""></option>
+                        {% for emp in employees %}
+                            <option value="{{ emp.id }}">({{ emp.code }}) {{ emp.fNameEN }} {{ emp.lNameEN }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">
+                        Please select an employee.
+                    </div>
+                </div>
+                <div class="col-sm-12 col-lg-6">
+                    <label for="specBudget" class="form-label fw-bold text-dark-emphasis">Special Budget</label>
+                    <input type="text" class="form-control" id="specBudget" name="specBudget" required oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');">
+                    <div class="invalid-feedback">
+                        Please enter a special budget.
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="note" class="form-label fw-bold text-dark-emphasis">Note</label>
+                    <textarea class="form-control" id="note" name="note" rows="3"></textarea>
+                    <div class="invalid-feedback">
+                        Please enter a note.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 {% block script %}
 <script type="text/javascript">
     var table;
     var tableFor;
+    var tableSpec;
     $(document).ready(()=>{
         ActiveMenu("budgetsettingopd");
         table = $('#tb').DataTable({
@@ -259,6 +333,58 @@
                 },
             ],
         });
+
+        tableSpec = $('#tbSpec').DataTable({
+            ajax:{
+                url: `${window.location.origin}/user/opdsetting/specialbudget/api/filter/`,
+                type: "GET",
+                contentType: "application/json",
+                dataSrc: function(json) {
+                    Loading(false);
+                    if (!json.success) return [];
+                    return json.data;
+                },
+            },
+            scrollX: true,          // ป้องกันตารางบีบแน่นเกินไป
+            autoWidth: false,       // ปิดการคำนวณความกว้างอัตโนมัติ
+            columnDefs: [
+                { width: "10%", targets: 0, className: "text-center align-middle" },  // #
+                { width: "20%", targets: 1,  className:"text-end"},  // name
+                { width: "20%", targets: 2,  className:"text-end"},   // budget
+                { width: "10%", targets: 3, className: "text-center align-middle" },  // action
+            ],
+            columns: [
+                {
+                    data: 'employee.code',
+                    render: function(data, type, row, meta){
+                        return data ? data : '-';
+                    }
+                },
+                {
+                    data: 'employee',
+                    render: function(data, type, row, meta){
+                        return `${data.fNameEN} ${data.lNameEN}`;
+                    
+                    }                        
+                },
+                {
+                    data: 'specialBudget',
+                    render: function(data, type, row, meta){
+                        let moneyFormat = new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(data);
+                        return moneyFormat;
+                    }
+                },
+                {
+                    data: 'id',
+                    render: function(data, type, row, meta){
+                        return `
+                        <button type="button" class="btn btn-info me-1" onclick="editSpecial('${data}')"><i class="bi bi-pencil"></i></button>
+                        <button type="button" class="btn btn-danger" onclick="deleteSpecial('${data}')"><i class="bi bi-trash3"></i></button>
+                        `;
+                    }
+                },
+            ],
+        });
     });
     $('#addThai').click(function(e){
         e.preventDefault();
@@ -268,9 +394,252 @@
         e.preventDefault();
         addBudget(2);
     });
+    $('#addSpec').click(function(e){
+        e.preventDefault();
+        Swal.fire({
+            title: `<p class="display-6">Budget Special OPD</p>`,
+            html: $("#bdgSpec").html(),
+            showCloseButton: true,
+            showCancelButton: true,
+            showConfirmButton: true,
+            confirmButtonText: 'Save',   // 🔹 เปลี่ยนข้อความปุ่ม
+            customClass: {
+                confirmButton: 'btn btn-primary me-2', // 🔹 ใช้ class bootstrap
+                cancelButton: 'btn btn-secondary'
+            },
+            buttonsStyling: false, // 🔹 เพื่อให้ SweetAlert ไม่ override Bootstrap
+            focusConfirm: false,
+            width:'50rem',
+            didOpen: () => {
+                $('.swal2-container #emp').select2({
+                    theme: 'bootstrap-5',
+                    placeholder: 'Select Employee',
+                    allowClear: true,
+                    dropdownParent: $('.swal2-container') // Ensures dropdown appears above the modal
+                });
+            },
+            preConfirm: () => {
+                let valid = true;
+                const empEl = document.querySelector('.swal2-container #emp');
+                const specBudgetEl = document.querySelector('.swal2-container #specBudget');
+                const noteEl = document.querySelector('.swal2-container #note');
+
+                empEl.classList.remove('is-invalid');
+                if(!empEl.value){
+                    empEl.classList.add('is-invalid');
+                    valid = false;
+                }
+                specBudgetEl.classList.remove('is-invalid');
+                if(!specBudgetEl.value){
+                    specBudgetEl.classList.add('is-invalid');
+                    valid = false;
+                }
+                noteEl.classList.remove('is-invalid');
+                if(!noteEl.value){
+                    noteEl.classList.add('is-invalid');
+                    valid = false;
+                }
+                if(!valid){
+                    return false;
+                }
+                return {
+                    empId: empEl.value,
+                    specBudget: specBudgetEl.value,
+                    note: noteEl.value,
+                }
+            },
+        }).then(async (result) => {
+            if(result.isConfirmed){
+                const data = result.value;
+                const url = `${window.location.origin}/user/opdsetting/specialbudget/add/`
+                console.log(url);
+                Loading(true);
+                // ✅ ใช้ FormData แทน JSON
+                const formData = new FormData();
+                formData.append("csrfmiddlewaretoken", getCSRFToken());
+                formData.append("empId", data.empId);
+                formData.append("specBudget", data.specBudget);
+                formData.append("note", data.note);
+                const settings = {
+                    url: url,
+                    method: "POST",
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    headers: { "X-CSRFToken": getCSRFToken() },
+                };
+                await $.ajax(settings).done(async (response) => {
+                    Loading(false);
+                    if(response.success == true){
+                        PopMessage("Success", "success");
+                    }else{
+                        PopMessage(response.message, "error");  
+                    }
+                    tableSpec.ajax.reload();
+                }).fail((xjr, status, error) => {
+                    Loading(false);
+                    PopMessage(error, "error");
+                });
+            }
+        });
+    });
     function getCSRFToken() {
         return document.querySelector('[name=csrfmiddlewaretoken]').value;
     }
+    const editSpecial = async (id) => {
+        console.log(id);
+        // -- get data --
+        const getData = await getSpecialBudgetOpd(id);
+        if(getData.success == false){
+            PopMessage(getData.message, "error");
+            return;
+        }
+        const dataSpecial = getData.data;
+        Swal.fire({
+            title: `<p class="display-6">Budget Special OPD</p>`,
+            html: $("#bdgSpec").html(),
+            showCloseButton: true,
+            showCancelButton: true,
+            showConfirmButton: true,
+            confirmButtonText: 'Save',   // 🔹 เปลี่ยนข้อความปุ่ม
+            customClass: {
+                confirmButton: 'btn btn-primary me-2', // 🔹 ใช้ class bootstrap
+                cancelButton: 'btn btn-secondary'
+            },
+            buttonsStyling: false, // 🔹 เพื่อให้ SweetAlert ไม่ override Bootstrap
+            focusConfirm: false,
+            width:'50rem',
+            didOpen: () => {
+                const empSelect = $('.swal2-container #emp');
+                empSelect.select2({
+                    theme: 'bootstrap-5',
+                    placeholder: 'Select Employee',
+                    allowClear: true,
+                    dropdownParent: $('.swal2-container') // Ensures dropdown appears above the modal
+                });
+                empSelect.val(dataSpecial.employee.id).trigger('change');
+                empSelect.addClass('disabled');
+                empSelect.prop('disabled', true);
+                $('.swal2-container #specBudget').val(dataSpecial.specialBudget);
+                $('.swal2-container #note').val(dataSpecial.note);
+            },
+            preConfirm: () => {
+                let valid = true;
+                const specBudgetEl = document.querySelector('.swal2-container #specBudget');
+                const noteEl = document.querySelector('.swal2-container #note');
+
+                specBudgetEl.classList.remove('is-invalid');
+                if(!specBudgetEl.value){
+                    specBudgetEl.classList.add('is-invalid');
+                    valid = false;
+                }
+                noteEl.classList.remove('is-invalid');
+                if(!noteEl.value){
+                    noteEl.classList.add('is-invalid');
+                    valid = false;
+                }
+                if(!valid){
+                    return false;
+                }
+                return {
+                    specBudget: specBudgetEl.value,
+                    note: noteEl.value,
+                }
+            },
+        }).then(async (result) => {
+            if(result.isConfirmed){
+                const data = result.value;
+                const url = `${window.location.origin}/user/opdsetting/specialbudget/edit/`
+                console.log(url);
+                Loading(true);
+                // ✅ ใช้ FormData แทน JSON
+                const formData = new FormData();
+                formData.append("csrfmiddlewaretoken", getCSRFToken());
+                formData.append("id", id);
+                formData.append("specBudget", data.specBudget);
+                formData.append("note", data.note);
+                const settings = {
+                    url: url,
+                    method: "POST",
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    headers: { "X-CSRFToken": getCSRFToken() },
+                };
+                await $.ajax(settings).done(async (response) => {
+                    Loading(false);
+                    if(response.success == true){
+                        PopMessage("Success", "success");
+                    }else{
+                        PopMessage(response.message, "error");  
+                    }
+                    tableSpec.ajax.reload();
+                }).fail((xjr, status, error) => {
+                    Loading(false);
+                    PopMessage(error, "error");
+                });
+            }
+        });
+    };
+    const deleteSpecial = async (id) => {
+        console.log(id);
+        Swal.fire({
+            title: "Do you want to delete ?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#f97316",
+            confirmButtonText: "Delete",
+            cancelButtonText: "Cancel"
+        }).then(async (result) => {
+            if(result.isConfirmed){
+                Loading(true);
+                const url = `${window.location.origin}/user/opdsetting/specialbudget/delete/${id}/`;
+                const settings = {
+                    url: url,
+                    method: "DELETE",
+                    headers: { "X-CSRFToken": getCSRFToken() },
+                };
+                await $.ajax(settings).done(async (response) => {
+                    Loading(false);
+                    if(response.success == true){
+                        PopMessage("Success", "success");
+                    }else{
+                        PopMessage(response.message, "error");
+                    }
+                    tableSpec.ajax.reload();
+                }).fail((xjr, status, error) => {
+                    Loading(false);
+                    PopMessage(error, "error");
+                });
+            }
+        });
+    };
+    const getSpecialBudgetOpd = async (id) =>{
+        let result = false;
+        const url = `${window.location.origin}/user/opdsetting/specialbudget/api/get/${id}/`
+        const settings = {
+            url: url,
+            method: "GET",
+            headers: { "X-CSRFToken": getCSRFToken() },
+        };
+        await $.ajax(settings).done(function (response) {
+            if (response.success == true) {
+                result = response.data;
+            }else if(response.success == false){
+                console.log(response);
+                result = false;
+            }
+            result = response;
+        }).fail(function (xjr, status, error) {
+            console.log(error);
+            const erData = {
+                success: false,
+                message: error,
+            };
+            result = erData;
+        });
+        return result;
+    };
     const getBudgetOpd = async (id) =>{
         let result = false;
         const url = `${window.location.origin}${window.location.pathname}api/get/${id}/`

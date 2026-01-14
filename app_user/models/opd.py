@@ -40,6 +40,32 @@ class BudgetOpd(BaseClass):
             "updateBy": self.updateBy.serialize() if self.updateBy else None,
         }
     
+class SpecialBudgetOpd(BaseClass):
+    id = me.ObjectIdField(primary_key= True, default= lambda: ObjectId())
+    employee = me.ReferenceField(User)
+    specialBudget = me.FloatField(null= True, required= False, default = None)
+    status = me.BooleanField(null= True, required= False, default = None)
+    isActive = me.BooleanField()
+    note = me.StringField(null= True, required= False, default = None)
+
+    meta = {
+        'collection': 'opdSpecialBudget',
+    }
+
+    def serialize(self):
+        return {
+            "id": str(self.id),
+            "employee": self.employee.serialize() if self.employee else None,
+            "specialBudget": self.specialBudget,
+            "status": self.status,
+            "isActive": self.isActive,
+            "note": self.note,
+            "createDate": self.createDate.astimezone(datetime.timezone.utc).isoformat() if self.createDate else None,
+            "createBy": self.createBy.serialize() if self.createBy else None,
+            "updateDate": self.updateDate.astimezone(datetime.timezone.utc).isoformat() if self.updateDate else None,
+            "updateBy": self.updateBy.serialize() if self.updateBy else None,
+        }
+    
 class OptionOpd(BaseClass):
     id = me.ObjectIdField(primary_key= True, default= lambda: ObjectId())
     name = me.StringField(null= True, required= False, default = None)

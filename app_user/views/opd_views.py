@@ -11,7 +11,7 @@ import pytz
 
 from app_organization.models.organization import Organization
 from app_user.models.family import FamilyProfile, FamilyType, UserFamily
-from app_user.models.opd import BudgetEmpType, BudgetOpd, DisbursementOpd, OPDRecord, OpdType, OptionOpd
+from app_user.models.opd import BudgetEmpType, BudgetOpd, DisbursementOpd, OPDRecord, OpdType, OptionOpd, SpecialBudgetOpd
 from app_user.models.user import EmpNation, User, UserStatus, UserType
 from app_user.utils import HasUsPermission, requiredLogin
 from base_models.basemodel import UserSnapshot
@@ -57,6 +57,10 @@ def index(request: HttpRequest):
             if findOpdRecord and len(findOpdRecord) > 0:
                 for opd in findOpdRecord:
                     actual += opd.totalAmount if opd.totalAmount else 0
+
+            specialBudget: SpecialBudgetOpd = SpecialBudgetOpd.objects.filter(isActive = True, employee = us).first()
+            if specialBudget and specialBudget.specialBudget:
+                budget = specialBudget.specialBudget
             balance = budget - actual
             userObj = {
                 'id': str(us.id),
@@ -135,7 +139,9 @@ def historyOpd(request: HttpRequest, id: str):
         {'relation': 'Spouse', 'amount': f"{totalSpouse:,.2f}"},
         {'relation': 'Children', 'amount': f"{totalChildren:,.2f}"},
     ]
-
+    specialBudget: SpecialBudgetOpd = SpecialBudgetOpd.objects.filter(isActive = True, employee = employee).first()
+    if specialBudget and specialBudget.specialBudget:
+        budget.budget = specialBudget.specialBudget
     balance_value = (budget.budget - actual) if budget else None
     context = {
         'year': year,
@@ -269,7 +275,9 @@ def addOpd(request: HttpRequest, id: str):
                     'amount': f"{disb.amount:,.2f}" if disb.amount else 0,
                     'person': f"{employee.fNameEN} {employee.lNameEN}" if disb.type == OpdType.Employee else f"{disb.familyMember.fName} {disb.familyMember.lName}" if disb.familyMember else '-',
                 })
-
+    specialBudget = SpecialBudgetOpd.objects.filter(isActive = True, employee = employee).first()
+    if specialBudget and specialBudget.specialBudget:
+        budget.budget = specialBudget.specialBudget
     balance_value = (budget.budget - actual) if budget else None
     context = {
         'year': year,
@@ -453,7 +461,9 @@ def editOpd(request: HttpRequest, id: str):
                     'amount': f"{disb.amount:,.2f}" if disb.amount else 0,
                     'person': f"{employee.fNameEN} {employee.lNameEN}" if disb.type == OpdType.Employee else f"{disb.familyMember.fName} {disb.familyMember.lName}" if disb.familyMember else '-',
                 })
-
+    specialBudget = SpecialBudgetOpd.objects.filter(isActive = True, employee = employee).first()
+    if specialBudget and specialBudget.specialBudget:
+        budget.budget = specialBudget.specialBudget
     balance_value = (budget.budget - actual) if budget else None
     context = {
         'employee': employee,

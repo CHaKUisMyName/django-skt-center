@@ -307,7 +307,9 @@
                     console.log(value);
                     createTableRole(pos, orgs, value.posId, value.orgId);
                     $('.form-select').select2({
-                        theme: 'bootstrap-5'
+                        theme: 'bootstrap-5',
+                        placeholder: 'Select an option',
+                        allowClear: true,
                     });
                 }
             });
