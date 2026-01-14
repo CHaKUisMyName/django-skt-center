@@ -32,7 +32,10 @@ class SdsVersion(Enum):
 
 class SdsDocument(BaseClass):
     id = me.ObjectIdField(primary_key=True, default=lambda: ObjectId())
+    # -- skt name fields --
     name = me.StringField(null=True, required=False, default=None)
+    # -- chemical name fields --
+    chemicalName = me.StringField(null=True, required=False, default=None)
     docPath = me.StringField(null=True, required=False, default=None)
     casNo = me.StringField(null=True, required=False, default=None)
     type = me.EnumField(SdsType)
@@ -46,7 +49,8 @@ class SdsDocument(BaseClass):
     def serialize(self):
         return {
             "id": str(self.id),
-            "name": self.name,
+            "name": self.name, # -- skt name --
+            "chemicalName": self.chemicalName, # -- chemical name --
             "docPath": self.docPath,
             "casNo": self.casNo,
             "type": self.type.serialize() if self.type else None,

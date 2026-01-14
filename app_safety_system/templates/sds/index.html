@@ -136,24 +136,15 @@
                             <table id="sds_table" class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>#</th>
-                                        <th>Name</th>
+                                        <th>SKT Name</th>
+                                        <th>Chemical Name</th>
                                         <th>Cas No</th>
                                         <th>Doc Type</th>
                                         <th>Date Modified</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>Test</td>
-                                        <td>123456789</td>
-                                        <td>Product</td>
-                                        <td>2023-01-01</td>
-                                        <td><button class="btn btn-sm btn-outline-primary">View</button></td>
-                                    </tr>
-                                </tbody>
+                                <tbody></tbody>
                             </table>
                         </div>
                     </div>
@@ -168,8 +159,15 @@
         <div class="col-12">
             <div class="row mb-3">
                 <div class="col-12">
-                    <label for="name" class="form-label text-dark-emphasis fw-bold">Name</label>
+                    <label for="name" class="form-label text-dark-emphasis fw-bold">SKT Name</label>
                     <input type="text" id="name" name="name" class="form-control" required>
+                    <div class="invalid-feedback">Please input data.</div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-12">
+                    <label for="chemicalName" class="form-label text-dark-emphasis fw-bold">Chemical Name</label>
+                    <input type="text" id="chemicalName" name="chemicalName" class="form-control" required>
                     <div class="invalid-feedback">Please input data.</div>
                 </div>
             </div>
@@ -250,24 +248,25 @@
             scrollX: true,          // ป้องกันตารางบีบแน่นเกินไป
             autoWidth: false,       // ปิดการคำนวณความกว้างอัตโนมัติ
             columnDefs: [
-                { width: "4%", targets: 0, className: "text-center align-middle" },  // #
-                { width: "35%", targets: 1, className: "text-wrap align-middle" },   // Name
+                { width: "35%", targets: 0, className: "text-wrap align-middle" },   // SKT Name
+                { width: "35%", targets: 1, className: "text-wrap align-middle" },   // Chemical Name
                 { width: "25%", targets: 2, className: "text-left align-middle" }, // Cas No
                 { width: "15%", targets: 3, className: "text-left align-middle" }, // Doc Type
                 { width: "16%", targets: 4, className: "text-left align-middle" }, // Date Modified
-                { width: "15%", targets: 5, className: "text-center align-middle" }  // Action
+                { width: "19%", targets: 5, className: "text-center align-middle" }  // Action
             ],
             columns: [
                 { 
-                    data: 'data', 
+                    data: 'data',
                     render: function(data, type, row, meta) {
-                        return meta.row + 1;
+                        el =`<p class="mb-0">${data.name}</p><p class="mb-0">(Ver. ${data.docVersion.label})</p>`;
+                        return el;
                     }
                 },
                 { 
                     data: 'data',
                     render: function(data, type, row, meta) {
-                        el =`<p class="mb-0">${data.name}</p><p class="mb-0">(Ver. ${data.docVersion.label})</p>`;
+                        el = `<p class="mb-0">${data.chemicalName ? data.chemicalName : '-'}</p>`;
                         return el;
                     }
                 },
@@ -344,7 +343,8 @@
             preConfirm: () => {
                 let valid = true;
                 // const name = Swal.getPopup().querySelector('#name').value;
-                const nameEl = $(".swal2-container #name");
+                const nameEl = $(".swal2-container #name"); // -- skt name
+                const chemicalNameEl = $(".swal2-container #chemicalName"); // -- chemical name
                 const casnoEl = $(".swal2-container #casno");
                 const docEl = $(".swal2-container #doc");
                 const doctypeEl = $(".swal2-container #doctype");
@@ -353,6 +353,11 @@
                 nameEl.removeClass("is-invalid");
                 if(!nameEl.val()){
                     nameEl.addClass("is-invalid");
+                    valid = false;
+                }
+                chemicalNameEl.removeClass("is-invalid");
+                if(!chemicalNameEl.val()){
+                    chemicalNameEl.addClass("is-invalid");
                     valid = false;
                 }
                 docEl.removeClass("is-invalid");
@@ -382,7 +387,8 @@
                     return false;
                 }
                 return {
-                    name: nameEl.val(),
+                    name: nameEl.val(),// -- skt name
+                    chemicalName: chemicalNameEl.val(), // -- chemical name
                     casno: casnoEl.val() && casnoEl.val().trim() !== "" ? casnoEl.val() : "N/A",
                     doc: docEl[0].files[0],
                     doctype: doctypeEl.val(),
@@ -395,7 +401,8 @@
                 const url = `${window.location.origin}${window.location.pathname}addsdsjson/`;
                 const data = result.value;
                 const formData = new FormData();
-                formData.append('name', data.name);
+                formData.append('name', data.name);// -- skt name
+                formData.append('chemicalName', data.chemicalName); // -- chemical name
                 formData.append('casno', data.casno);
                 formData.append('doc', data.doc);
                 formData.append('doctype', data.doctype);
@@ -491,7 +498,8 @@
                     if (json.success) {
                         const data = json.data;
                         console.log(data);
-                        $('.swal2-container #name').val(data.name);
+                        $('.swal2-container #name').val(data.name); // -- skt name
+                        $('.swal2-container #chemicalName').val(data.chemicalName); // -- chemical name
                         $('.swal2-container #casno').val(data.casNo !== "N/A" ? data.casNo : '');
                         $('.swal2-container #doctype').val(data.type.value).trigger('change');
                         $('.swal2-container #docversion').val(data.docVersion.value).trigger('change');
@@ -512,7 +520,8 @@
             },
             preConfirm: () => {
                 let valid = true;
-                const nameEl = $(".swal2-container #name");
+                const nameEl = $(".swal2-container #name"); // -- skt name
+                const chemicalNameEl = $(".swal2-container #chemicalName"); // -- chemical name
                 const casnoEl = $(".swal2-container #casno");
                 const docEl = $(".swal2-container #doc");
                 const doctypeEl = $(".swal2-container #doctype");
@@ -521,6 +530,11 @@
                 nameEl.removeClass("is-invalid");
                 if(!nameEl.val()){
                     nameEl.addClass("is-invalid");
+                    valid = false;
+                }
+                chemicalNameEl.removeClass("is-invalid");
+                if(!chemicalNameEl.val()){
+                    chemicalNameEl.addClass("is-invalid");
                     valid = false;
                 }
                 docEl.removeClass("is-invalid");
@@ -547,7 +561,8 @@
                 }
                 return {
                     id: id,
-                    name: nameEl.val(),
+                    name: nameEl.val(),// -- skt name
+                    chemicalName: chemicalNameEl.val(), // -- chemical name
                     casno: casnoEl.val() && casnoEl.val().trim() !== "" ? casnoEl.val() : "N/A",
                     doc: docEl[0].files.length > 0 ? docEl[0].files[0] : null,
                     doctype: doctypeEl.val(),
@@ -561,7 +576,8 @@
                 const data = result.value;
                 const formData = new FormData();
                 formData.append('id', data.id);
-                formData.append('name', data.name);
+                formData.append('name', data.name);// -- skt name
+                formData.append('chemicalName', data.chemicalName); // -- chemical name
                 formData.append('casno', data.casno);
                 if(data.doc){
                     formData.append('doc', data.doc);

@@ -65,6 +65,7 @@ def filterSDSJson(request: HttpRequest):
                 __raw__={
                     '$or': [
                         {'name': {'$regex': re.escape(searchInput), '$options': 'i'}},
+                        {'chemicalName': {'$regex': re.escape(searchInput), '$options': 'i'}},
                         {'casNo': {'$regex': re.escape(searchInput), '$options': 'i'}}
                     ]
                 }
@@ -103,12 +104,13 @@ def addSDSJson(request: HttpRequest):
         if not request.currentUser.isAdmin:
             if hasPermission == False:
                 return JsonResponse({'success': False, 'message': 'Not Permission'})
-        name = request.POST.get("name")
+        name = request.POST.get("name") # -- skt name
+        chemicalName = request.POST.get("chemicalName") # -- chemical name
         doc = request.FILES.get("doc")
         doctype = request.POST.get("doctype")
         casNo = request.POST.get("casno")
         docversion = request.POST.get("docversion")
-        if not name or not doc or not doctype or not docversion:
+        if not name or not chemicalName or not doc or not doctype or not docversion:
             return JsonResponse({"success": False, "message": "Missing required fields."})
         
         if doc.content_type != "application/pdf":
@@ -123,7 +125,8 @@ def addSDSJson(request: HttpRequest):
             return JsonResponse({"success": False, "message": "Failed to upload document."})
         
         sdsDocument = SdsDocument()
-        sdsDocument.name = name
+        sdsDocument.name = name # -- skt name --
+        sdsDocument.chemicalName = chemicalName # -- chemical name --
         sdsDocument.casNo = casNo
         sdsDocument.docPath = file_path
         sdsDocument.isActive = True
@@ -152,14 +155,15 @@ def editSDSJson(request: HttpRequest):
         if hasPermission == False:
             return JsonResponse({'success': False, 'message': 'Not Permission'})
     id = request.POST.get("id")
-    name = request.POST.get("name")
+    name = request.POST.get("name") # -- skt name
+    chemicalName = request.POST.get("chemicalName") # -- chemical name
     doc = request.FILES.get("doc")
     doctype = request.POST.get("doctype")
     docversion = request.POST.get("docversion")
     casNo = request.POST.get("casno")
     if not id or not ObjectId.is_valid(id):
         return JsonResponse({"success": False, "message": "Invalid SDS ID."})
-    if not name or not doctype or not docversion:
+    if not name or not chemicalName or not doctype or not docversion:
         return JsonResponse({"success": False, "message": "Missing required fields."})
     try:
         sdsDocument: SdsDocument = SdsDocument.objects(id=ObjectId(id)).first()
@@ -182,7 +186,8 @@ def editSDSJson(request: HttpRequest):
                 os.remove(old_path)
 
             sdsDocument.docPath = new_path
-        sdsDocument.name = name
+        sdsDocument.name = name # -- skt name --
+        sdsDocument.chemicalName = chemicalName # -- chemical name --
         sdsDocument.casNo = casNo
         sdsDocument.type = SdsType(int(doctype))
         sdsDocument.docVersion = SdsVersion(int(docversion))
