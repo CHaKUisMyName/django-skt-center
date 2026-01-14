@@ -23,6 +23,7 @@ from app_user.models.user import EmpNation, RoleUser, User, UserStatus, UserType
 from app_user.models.user_setting import UserSetting
 from app_user.utils import HasUsPermission, requiredLogin
 from app_user.views.immigration_views import deleteImmigrationByUser
+from app_user.views.setting_opd_views import deleteSpecialBudgetOpdByUser
 from app_visitor.views.setting_visitor_views import deleteVstSettingByUser
 from app_welcome_board.views import deleteWbSettingByUser
 from base_models.basemodel import UserSnapshot
@@ -578,6 +579,8 @@ def diableUserNestSystem(requester: User, user: User):
     deleteWbSettingByUser(requester= requester, user = user)
     # -- delete immigration
     deleteImmigrationByUser(requester= requester, user = user)
+    # -- delete special budget opd
+    deleteSpecialBudgetOpdByUser(requester= requester, user = user)
     
 # ---------------------------------------------------------------------------------
 # ------------------------------ user login ---------------------------------------

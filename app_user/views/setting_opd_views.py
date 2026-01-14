@@ -309,6 +309,17 @@ def deleteSpecialBudgetOpd(request: HttpRequest, id: str):
         print(e)
         return JsonResponse({'success': False, 'message': str(e)})
     
+def deleteSpecialBudgetOpdByUser(requester: User, user: User):
+    specialBudgetOpd: SpecialBudgetOpd = SpecialBudgetOpd.objects.filter(employee = user.id).first()
+    if specialBudgetOpd:
+        specialBudgetOpd.isActive = False
+        specialBudgetOpd.updateDate = timezone.now()
+        if requester:
+            uUpdate = UserSnapshot().UserToSnapshot(requester)
+            if uUpdate:
+                specialBudgetOpd.updateBy = uUpdate
+        specialBudgetOpd.save()
+    
 # ------------------------------------
 # ----------- Option OPD -------------
 # ------------------------------------
