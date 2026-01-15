@@ -279,7 +279,15 @@
                 { 
                     data: 'data',
                     render: function(data, type, row, meta) {
-                        return data.type.label;
+                        // return data.type.label;
+                        if(data.type.value == 1){
+                            return `<span class="rounded-5 btn-sm btn btn-success">${data.type.label}</span>`;
+                        }else if(data.type.value == 2){
+                            return `<span class="rounded-5 btn-sm btn btn-danger">${data.type.label}</span>`;
+                        }else if(data.type.value == 3){
+                            return `<span class="rounded-5 btn-sm btn btn-info">${data.type.label}</span>`;
+                        }
+                        return '-';
                     }
                 },
                 { 
