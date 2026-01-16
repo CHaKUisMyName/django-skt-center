@@ -86,7 +86,8 @@
                             <div class="col-sm-12 col-lg-4">
                             {% for sdsType in sdsTypes %}
                                 <input type="checkbox" class="btn-check" id="{{ sdsType.label }}-{{ sdsType.value }}" name="checktype" autocomplete="off" value="{{ sdsType.value }}">
-                                <label class="rounded-5 btn-sm btn {% if sdsType.value == 1 %}btn-outline-success{% elif sdsType.value == 2 %}btn-outline-danger{% elif sdsType.value == 3 %}btn-outline-info{% endif %}" 
+                                <label 
+                                class="rounded-5 btn-sm btn {% if sdsType.value == 1 %}btn-outline-success{% elif sdsType.value == 2 %}btn-outline-danger{% elif sdsType.value == 3 %}btn-outline-info{% elif sdsType.value == 4 %}btn-outline-warning{% endif %}" 
                                 for="{{ sdsType.label }}-{{ sdsType.value }}">{{ sdsType.label }}</label>
                             {% endfor %}
                             </div>
@@ -95,10 +96,6 @@
                                 <button id="clear" type="button" class="btn text-decoration-underline">
                                     <span class="btn-spinner d-none"></span>
                                     <span>Clear All</span>
-                                </button>
-                                <button id="search" type="button" class="btn btn-primary">
-                                    <span class="btn-spinner d-none"></span>
-                                    <span>Search</span>
                                 </button>
                             </div>
                         </div>
@@ -250,8 +247,8 @@
             columnDefs: [
                 { width: "35%", targets: 0, className: "text-wrap align-middle" },   // SKT Name
                 { width: "35%", targets: 1, className: "text-wrap align-middle" },   // Chemical Name
-                { width: "25%", targets: 2, className: "text-left align-middle" }, // Cas No
-                { width: "15%", targets: 3, className: "text-left align-middle" }, // Doc Type
+                { width: "23%", targets: 2, className: "text-left align-middle" }, // Cas No
+                { width: "17%", targets: 3, className: "text-left align-middle" }, // Doc Type
                 { width: "16%", targets: 4, className: "text-left align-middle" }, // Date Modified
                 { width: "19%", targets: 5, className: "text-center align-middle" }  // Action
             ],
@@ -286,6 +283,8 @@
                             return `<span class="rounded-5 btn-sm btn btn-danger">${data.type.label}</span>`;
                         }else if(data.type.value == 3){
                             return `<span class="rounded-5 btn-sm btn btn-info">${data.type.label}</span>`;
+                        }else if(data.type.value == 4){
+                            return `<span class="rounded-5 btn-sm btn btn-warning">${data.type.label}</span>`;
                         }
                         return '-';
                     }
@@ -440,8 +439,7 @@
             }
         });
     });
-    $('#search').click((e) => {
-        e.preventDefault();
+    $('input[name="checktype"], #version').change(function() {
         // Loading(true);
         table.ajax.reload();
     });

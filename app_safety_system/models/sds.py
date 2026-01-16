@@ -6,13 +6,19 @@ import datetime
 from base_models.basemodel import BaseClass
 
 class SdsType(Enum):
-    Product = 1
-    RawMaterial = 2
-    Reagent = 3
+    Product = (1, "Product")
+    RawMaterial = (2, "Raw Material")
+    Reagent = (3, "Reagent")
+    ResaleProduct = (4, "Resale Product")
+    def __new__(cls, value, label):
+        obj = object.__new__(cls)
+        obj._value_ = value
+        obj.label = label
+        return obj
     def serialize(self):
         return {
             "value": self.value,
-            "label": self.name
+            "label": self.label
         }
 
 class SdsVersion(Enum):
