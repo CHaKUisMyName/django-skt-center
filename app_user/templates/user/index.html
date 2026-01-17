@@ -54,7 +54,10 @@
                             <tr>
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{ user.code|default:'-' }}</td>
-                                <td>{{ user.fNameEN }} {{ user.lNameEN }} {% if user.isAdmin == True %}<span class="ms-1 badge text-bg-success text-white">Super Admin</span>{% endif %}</td>
+                                <td>
+                                    {{ user.fNameEN }} {{ user.lNameEN }} {% if user.nickName %} ({{ user.nickName }}){% endif %}
+                                    {% if user.isAdmin == True %}<span class="ms-1 badge text-bg-success text-white">Super Admin</span>{% endif %}
+                                </td>
                                 <td>
                                     {% if user.roles|length %}
                                         {% for role in user.roles %}

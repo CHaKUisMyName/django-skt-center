@@ -409,7 +409,7 @@
                     </ul>
                 </div>
             </nav>
-            <main class="content p-0 pe-4 pt-3">
+            <main class="content p-0 ps-2 pe-4 pt-3">
                 <div class="container-fluid p-0">
                     {% block content %}{% endblock %}
                 </div>
@@ -430,6 +430,7 @@
     <script src="{% static 'js/dataTables.bootstrap5.js' %}"></script>
     <script src="{% static 'js/tempus-dominus.js' %}"></script>
     <script src="https://cdnjs.com/libraries/Chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <script type="text/JavaScript">
         function ActiveMenu(menu) {
             if ($('#menuSearch').val().trim() !== '') return;
