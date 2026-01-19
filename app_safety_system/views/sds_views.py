@@ -27,11 +27,18 @@ uploadDir = 'sds_documents/'
 def index(request: HttpRequest):
     sdsTypes = [sds_type.serialize() for sds_type in SdsType]
     lang = [sds_lang.serialize() for sds_lang in SdsVersion]
+
+    canModify = True  # Placeholder for permission check
+    hasPermission = HasSftPermission(id = str(request.currentUser.id), menu= "SDS", checkAdmin = False)
+    if not request.currentUser.isAdmin:
+        if hasPermission == False:
+            canModify = False
     
     context = {
         "sdsTypes": sdsTypes,
         "lang": lang,
         'mediaRoot': settings.MEDIA_URL,
+        'canModify': canModify
     }
     return render(request, 'sds/index.html', context)
 
