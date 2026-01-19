@@ -263,12 +263,9 @@
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'indexGreenCard' %}" data-active="greenyellowcard">Green/Yellow Card</a>
                             </li>
-                            {% has_menu_safety request.currentUser "SDS" as can_view_sds %}
-                            {% if can_view_sds %}
                             <li class="sidebar-item my-2">
                                 <a class="sidebar-link" href="{% url 'indexSDS' %}" data-active="sds">SDS</a>
                             </li>
-                            {% endif %}
                             {% has_menu_safety request.currentUser "SettingSafety" as can_view_sftSetting %}
                             {% if can_view_sftSetting %}
                             <li class="sidebar-item my-2">
@@ -277,14 +274,14 @@
                             {% endif %}
                         </ul>
                     </li>
-                    <li class="sidebar-item my-2 mx-3">
+                    <!-- <li class="sidebar-item my-2 mx-3">
                         <a class="sidebar-link" href="http://192.168.1.214" target="_blank" data-active="sds_old">
                             <div class="p-2 bg-white icon-link shadow-lg rounded-2 me-2">
                                 <i class="bi bi-file-earmark-text-fill"></i>
                             </div>
                             <span class="fw-bold">SDS</span>
                         </a>
-                    </li>
+                    </li> -->
                     
                     <li class="sidebar-item my-2 mx-3">
                         <a data-bs-target="#visitor" data-bs-toggle="collapse" class="sidebar-link">
