@@ -12,4 +12,6 @@ urlpatterns = [
     path('show', view= visitor_views.show, name= 'showVisitor'),
     path('list', view= visitor_views.listPage, name= 'listVisitor'),
     path('api/get/<str:id>', view= visitor_views.getVisitorJson, name= 'getVisitorJson'),
+    path('api/filter/', view= visitor_views.fileterVisitorsJson, name= 'filterVisitorsJson'),
+
 ]

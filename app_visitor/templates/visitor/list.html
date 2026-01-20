@@ -16,6 +16,55 @@
             <div class="card-header pb-0 border-0">
                 <div class="d-lg-flex">
                     <div>
+                        <h3 class="mb-0">Search Panel</h3>
+                    </div>  
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% csrf_token %}
+                    <div class="col-12">
+                        <div class="row mb-3">
+                            <div class="col-sm-12 col-lg-3">
+                                <label for="sdate" class="form-label fw-bold text-dark-emphasis">Start Date</label>
+                                <input type="text" id="sdate" name="sdate" class="form-control">
+                            </div>
+                            <div class="col-sm-12 col-lg-3">
+                                <label for="edate" class="form-label fw-bold text-dark-emphasis">End Date</label>
+                                <input type="text" id="edate" name="edate" class="form-control">
+                            </div>
+                            <div class="col-sm-12 col-lg-3">
+                                <label for="room" class="form-label fw-bold text-dark-emphasis">Room</label>
+                                <select id="room" name="room" class="form-select" data-placeholder="select room">
+                                    <option></option>
+                                    {% for room in rooms %}
+                                        <option value="{{ room.id }}">{{ room.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-sm-12 col-lg-3 text-end">
+                                <button id="clear" type="button" class="mt-4 btn text-decoration-underline">
+                                    <span class="btn-spinner d-none"></span>
+                                    <span>Clear All</span>
+                                </button>
+                                <button id="search" type="button" class="mt-4 btn btn-primary">
+                                    <span class="btn-spinner d-none"></span>
+                                    <span>Search</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
                         <h3 class="mb-0">List Visitor</h3>
                         <p class="text-sm mb-0">
                             List of Visitor
@@ -38,7 +87,6 @@
                             <table id="tb" class="table">
                                 <thead>
                                     <tr>
-                                        <th>#</th>
                                         <th>Start Date</th>
                                         <th>End Date</th>
                                         <th>Room</th>
@@ -47,33 +95,7 @@
                                         <th>Action</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    {% for visitor in visitors %}
-                                    <tr>
-                                        <td>{{ forloop.counter }}</td>
-                                        <td>{{ visitor.sDate_local }}</td>
-                                        <td>{{ visitor.eDate_local }}</td>
-                                        <td>{{ visitor.room.name|default:"-" }}</td>
-                                        <td>{{ visitor.sktMember|default:"-" }}</td>
-                                        <td>{{ visitor.createBy.fullNameEN|default:"-" }}</td>
-                                        <td>
-                                            <div>
-                                                <button type="button" class="btn btn-secondary m-1 btnView" data-vstid="{{ visitor.id }}">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                                {% if request.currentUser.isAdmin == True or isSettingAdmin == True or visitor.createBy.userId == request.currentUser.id or visitor.updateBy.userId == request.currentUser.id %}
-                                                <a href="{% url 'editVisitor' visitor.id %}" class="btn btn-info m-1">
-                                                    <i class="bi bi-pencil"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-danger delete m-1" data-vstid="{{ visitor.id }}">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
+                                <tbody></tbody>
                             </table>
                         </div>
                     </div>
@@ -99,7 +121,7 @@
                     <span class="fw-bold">Start Date</span>
                 </div>
                 <div class="col-lg-8 col-sm-12 text-lg-end text-start">
-                    <span id="sdate"></span>
+                    <span id="startdate"></span>
                 </div>
             </div>
             <hr>
@@ -108,7 +130,7 @@
                     <span class="fw-bold">End Date</span>
                 </div>
                 <div class="col-lg-8 col-sm-12 text-lg-end text-start">
-                    <span id="edate"></span>
+                    <span id="enddate"></span>
                 </div>
             </div>
             <hr>
@@ -117,7 +139,7 @@
                     <span class="fw-bold">Location</span>
                 </div>
                 <div class="col-lg-8 col-sm-12 text-lg-end text-start">
-                    <span id="room"></span>
+                    <span id="roomDetail"></span>
                 </div>
             </div>
             <hr>
@@ -172,17 +194,137 @@
 {% block script %}
     
     <script type="text/javascript">
+        var table;
         $(document).ready(() => {
             ActiveMenu("vstlist");
-            $('#tb').DataTable({
+            initialDatePk(document.getElementById("sdate"));
+            initialDatePk(document.getElementById("edate"));
+            table = $('#tb').DataTable({
+                ajax: {
+                    url: window.location.origin + "/vst/api/filter/",
+                    type: "POST",
+                    contentType: "application/json",
+                    headers: { "X-CSRFToken": getCSRFToken() },
+                    data: function(d){
+                        let sdate = $('#sdate').val();
+                        let edate = $('#edate').val();
+                        let room = $('#room').val();
+                        return JSON.stringify({
+                            sdate: sdate,
+                            edate: edate,
+                            room: room,
+                            });
+                    },
+                    dataSrc: function(json) {
+                        Loading(false);
+                        if (!json.success) return [];
+                        return json.data;
+                    }
+                },
+                scrollX: true,          // ป้องกันตารางบีบแน่นเกินไป
+                autoWidth: false,       // ปิดการคำนวณความกว้างอัตโนมัติ
                 columnDefs: [
-                    // { width: '10%', targets: 0 },
-                ]
+                    { width: "15%", targets: 0, className: "text-left align-middle" },   // Start Date
+                    { width: "15%", targets: 1, className: "text-left align-middle" },   // End Date
+                    { width: "15%", targets: 2, className: "text-left align-middle" },   // Room
+                    { width: "15%", targets: 3, className: "text-left align-middle" },   // SKT Member
+                    { width: "15%", targets: 4, className: "text-left align-middle" },   // Book By
+                    { width: "15%", targets: 5, className: "text-center align-middle" }  // Action
+                ],
+                columns: [
+                    { 
+                        data: 'data',
+                        render: function(data, type, row, meta) {
+                            const date = new Date(data.sDate);
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const hour = String(date.getHours()).padStart(2, '0');
+                            const minute = String(date.getMinutes()).padStart(2, '0');
+                            return `${year}-${month}-${day} ${hour}:${minute}`;
+                        }
+                    },
+                    { 
+                        data: 'data',
+                        render: function(data, type, row, meta) {
+                            const date = new Date(data.eDate);
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const hour = String(date.getHours()).padStart(2, '0');
+                            const minute = String(date.getMinutes()).padStart(2, '0');
+                            return `${year}-${month}-${day} ${hour}:${minute}`;
+                        }
+                    },
+                    { 
+                        data: 'data',
+                        render: function(data, type, row, meta) {
+                            return data.room.name;
+                        }
+                    },
+                    { 
+                        data: 'data',
+                        render: function(data, type, row, meta) {
+                            return data.sktMember ? data.sktMember : "-";
+                        }
+                    },
+                    { 
+                        data: 'data',
+                        render: function(data, type, row, meta) {
+                            return data.createBy.fullNameEN;
+                        }
+                    },
+                    { 
+                        data: 'data',
+                        render: function(data, type, row) {
+                            el = `
+                            <button type="button" class="btn btn-secondary btn-sm m-1 btnView" onclick="viewDetail('${data.id}')">
+                                <i class="bi bi-eye"></i>
+                            </button>`;
+                            if(row.canModify == true){
+                                let url = `{% url 'editVisitor' 0%}`.replace("0", data.id);
+                                el += `
+                                <a href="${url}" class="btn btn-info btn-sm m-1">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <button type="button" class="btn btn-danger btn-sm m-1 btnDelete" onclick="deleteVisitor('${data.id}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>`;
+                            }
+                            return el;
+                        }
+                    },
+                ],   
             });
         });
-        $('.delete').click(function(e){
+        $('#search').click(function(e){
             e.preventDefault();
+            Loading(true);
+            const sdate = $('#sdate').val();
+            const edate = $('#edate').val();
+            console.log(sdate, edate);
+            const sdateTime = dateStrToDateTime(sdate);
+            const edateTime = dateStrToDateTime(edate);
+            console.log(sdateTime, edateTime);
+            if(sdate && edate){
+                if(sdateTime > edateTime){
+                    alert('start must be less than end');
+                    Loading(false);
+                    return;
+                }
+            }
             
+            table.ajax.reload();
+        });
+        $('#clear').click(function(e){
+            e.preventDefault();
+            Loading(true);
+            $('#sdate').val('');
+            $('#edate').val('');
+            $('#room').val('');
+            table.ajax.reload();
+        });
+        const deleteVisitor = async (id) =>{
             Swal.fire({
                 title: "Do you want to delete ?",
                 icon: "warning",
@@ -192,7 +334,7 @@
                 cancelButtonText: "Cancel"
             }).then((result) => {
                 if(result.isConfirmed){
-                    const vstid = $(this).data('vstid');
+                    const vstid = id;
                     Loading(true);
                     const settings = {
                         url: window.location.origin  + "/vst/delete/" + vstid,
@@ -214,11 +356,9 @@
                 }
             });
             
-        });
-        $('.btnView').click(async function(e){
-            e.preventDefault();
-
-            const vstid = $(this).data('vstid');
+        };
+        const viewDetail = async (id) => {
+            const vstid = id;
             const url = window.location.origin + "/vst/api/get/" + vstid;
             const apiData = await getAPIData(url);
             console.log(apiData);
@@ -238,12 +378,13 @@
                 });
             }
             
-        });
+        };
         const initialDetailToHTML = async (info) =>{
+            console.log(strUTCDateToStrThaiDate(info.sDate));
             $("#topic").text(info.topic);
-            $("#sdate").text(strUTCDateToStrThaiDate(info.sDate));
-            $("#edate").text(strUTCDateToStrThaiDate(info.eDate));
-            $("#room").text(info.room.name);
+            $("#startdate").text(strUTCDateToStrThaiDate(info.sDate));
+            $("#enddate").text(strUTCDateToStrThaiDate(info.eDate));
+            $("#roomDetail").text(info.room.name);
             $("#gcom").text(info.guestCompany ? info.guestCompany : "-");
             $("#gname").text(info.guestMember ? info.guestMember : "-");
             $("#member").text(info.sktMember ? info.sktMember : "-");
@@ -260,6 +401,15 @@
                 });
             }else{
                 $("#ops").append(`<span>-</span>`);
+            }
+        }
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+        const dateStrToDateTime = (str) => {
+            if(str){
+                const parts = str.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                return new Date(parts[3], parts[2]-1, parts[1]);
             }
         }
     </script>

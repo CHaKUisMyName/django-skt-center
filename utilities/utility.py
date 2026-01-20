@@ -4,6 +4,7 @@ from openpyxl.utils import get_column_letter
 import pytz
 from datetime import datetime
 
+from app_organization.models.organization import Organization
 from app_system_setting.models import SystemApp, SystemMenu
 from app_user.models.user import User, UserStatus
 
@@ -91,3 +92,55 @@ def dateStrAndTimeToDatetime(date: str, time: str):
     except Exception as e:
         print(e)
         return None
+    
+def  getParentLevel(org: Organization, targetLevel: str):
+    parent: Organization = org.parent
+    while parent:
+        # ตรวจสอบว่าระดับของ parent คือ Department หรือไม่
+        if parent.level and parent.level.nameEN == targetLevel:
+            return parent.serialize_organization()  # หรือ return parent.serialize_organization() ถ้าอยากได้ข้อมูลครบ
+        parent = parent.parent
+    return None  # ถ้าไม่มี parent ที่เป็น Department
+
+def getChildLevel(org: Organization, targetLevel: str):
+    results = []
+    # หา child ทั้งหมดที่ parent = org
+    children = Organization.objects.filter(isActive = True,parent=org)
+    for child in children:
+        if child.level and child.level.nameEN == targetLevel:
+            # print(child.serialize_organization()['levelNameEN'])
+            results.append(child.serialize_organization())
+        # หาในระดับลึกต่อ (เช่น Factory → Department → Section)
+        results.extend(getChildLevel(child, targetLevel))
+    return results
+    
+def findDeptUser(cur: User):
+    roles = []
+    roleOthers = []
+    roleDepts = []
+    if not cur.roles:
+        return roles
+    
+    for r in cur.roles:
+        if r.isActive == True:
+            if r.orgId.level.nameEN == "Department":
+                roleDepts.append(r.orgId.serialize_organization())
+            elif r.orgId.level.nameEN == "Managing Director":
+                roleOthers.extend(getChildLevel(r.orgId, "Department"))
+            elif r.orgId.level.nameEN == "Division":
+                roleOthers.extend(getChildLevel(r.orgId, "Department"))
+            else:
+                roleOthers.append(getParentLevel(r.orgId, "Department"))
+
+    if roleDepts:
+        for d in roleDepts:
+            if d not in roles:
+                print('add dept')
+                roles.append(d)
+
+    if roleOthers:
+        for r in roleOthers:
+            if r not in roles:
+                print('add other')
+                roles.append(r)
+    return roles

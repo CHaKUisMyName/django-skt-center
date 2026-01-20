@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime, time
+import json
 from bson import ObjectId
 import pytz
 from typing import List
@@ -19,6 +20,7 @@ from app_visitor.models.option import Option
 from app_visitor.models.room import Room
 from app_visitor.models.visitor import Visitor
 from app_visitor.models.visitor_setting import VisitorSetting
+from app_visitor.utils import HasVstPermission
 from base_models.basemodel import UserSnapshot
 
 mail_it = settings.MAIL_IT
@@ -87,7 +89,6 @@ def add(request: HttpRequest):
                 sDate = datetime.strptime(sDate, "%d/%m/%Y %H:%M")
                 sDate = tz.localize(sDate)
                 sDate = sDate.astimezone(pytz.utc)
-                print(f"Sdate : {sDate} {sDate.tzinfo}")
             else:
                 messages.error(request, "Start Job Date is required")
                 return response
@@ -97,7 +98,6 @@ def add(request: HttpRequest):
                 eDate = datetime.strptime(eDate, "%d/%m/%Y %H:%M")
                 eDate = tz.localize(eDate)
                 eDate = eDate.astimezone(pytz.utc)
-                print(f"Edate : {eDate} {eDate.tzinfo}")
             else:
                 messages.error(request, "End Job Date is required")
                 return response
@@ -188,7 +188,6 @@ def edit(request: HttpRequest, id: str):
                 sDate = datetime.strptime(sDate, "%d/%m/%Y %H:%M")
                 sDate = tz.localize(sDate)
                 sDate = sDate.astimezone(pytz.utc)
-                print(f"Sdate : {sDate} {sDate.tzinfo}")
             else:
                 messages.error(request, "Start Job Date is required")
                 return response
@@ -198,7 +197,6 @@ def edit(request: HttpRequest, id: str):
                 eDate = datetime.strptime(eDate, "%d/%m/%Y %H:%M")
                 eDate = tz.localize(eDate)
                 eDate = eDate.astimezone(pytz.utc)
-                print(f"Edate : {eDate} {eDate.tzinfo}")
             else:
                 messages.error(request, "End Job Date is required")
                 return response
@@ -324,13 +322,61 @@ def show(request: HttpRequest):
 
 @requiredLogin
 def listPage(request: HttpRequest):
-    visitors = Visitor.objects.filter(isActive=True)
+    rooms: List[Room] = Room.objects.filter(isActive = True)
     checkCurUserSettingAdmin = VisitorSetting.objects.filter(user = request.currentUser.id, isAdmin = True, isActive = True).first()
     isSettingAdmin = False
     if checkCurUserSettingAdmin:
         isSettingAdmin = True
     context = {
-        "visitors": visitors,
         "isSettingAdmin": isSettingAdmin,
+        "rooms": rooms,
     }
     return render(request, 'visitor/list.html', context)
+
+@requiredLogin
+def fileterVisitorsJson(request: HttpRequest):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "Method not allowed."})
+    try:
+        body = json.loads(request.body.decode('utf-8'))
+        sdate = body.get("sdate")
+        edate = body.get("edate")
+        room = body.get("room")
+        if sdate:
+            sdate = datetime.strptime(sdate, "%d/%m/%Y")
+            sdate = datetime.combine(sdate.date(), time.min)   # 00:00:00
+            sdate = tz.localize(sdate).astimezone(pytz.utc)
+
+        if edate:
+            edate = datetime.strptime(edate, "%d/%m/%Y")
+            edate = datetime.combine(edate.date(), time.max)   # 23:59:59.999999
+            edate = tz.localize(edate).astimezone(pytz.utc)
+        
+        filterParams = {}
+        if room:
+            filterParams['room'] = ObjectId(room)
+        if sdate and edate:
+            filterParams['sDate__gte'] = sdate
+            filterParams['eDate__lte'] = edate
+
+        listData: List[Visitor] = Visitor.objects.filter(
+            isActive=True,
+            **filterParams
+        ).order_by('sDate')
+        visitors = []
+        for visitor in listData:
+            if request.currentUser.isAdmin or str(visitor.createBy.userId) == str(request.currentUser.id) or (visitor.updateBy and str(visitor.updateBy.userId) == str(request.currentUser.id)):
+                canModify = True
+            else:
+                canModify = False
+            
+            visitors.append({
+                "canModify": canModify,
+                "data": visitor.serialize()
+            })            
+        
+        return JsonResponse({"success": True, "data": visitors, 'message': 'Success'})
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)})
+    
+        
