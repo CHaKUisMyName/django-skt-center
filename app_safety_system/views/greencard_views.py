@@ -76,9 +76,7 @@ def index(request: HttpRequest):
                     card.updateDate = timezone.now()
                     card.save()
 
-    profileIMG = request.build_absolute_uri(
-        f"{settings.MEDIA_URL}{request.currentUser.imgProfilePath}"
-    )
+    profileIMG = request.build_absolute_uri(f"{settings.MEDIA_URL}{request.currentUser.imgProfilePath}") if request.currentUser.imgProfilePath else None
     # print(profileIMG)
     context = {
         "issueTypes": issueTypes,

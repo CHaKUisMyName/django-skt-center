@@ -108,11 +108,15 @@
             <div class="card-header pt-3 pb-0 border-0">
                 <h5 id="countTitle" class="card-title mb-0">Your Data of : 0/0</h5>
             </div>
-            <div class="card-body row">
-                <div class="col-6">
+            <div class="card-body row" style="height: 276px;">
+                <div class="col-6 align-content-center">
                     <div class="row">
                         <div class="col-12 text-center">
+                            {% if profileIMG %}
                             <img src="{{profileIMG}}" class="img-fluid rounded-5 w-75">
+                            {% else %}
+                            <i class="bi bi-person-fill" style="font-size: 7rem;"></i>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
