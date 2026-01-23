@@ -83,26 +83,13 @@
         </div>
     </div>
 </div>
-<div class="row mb-3">
+<!-- <div class="row mb-3">
     <div class="col-sm-12 col-md-4">
         <div class="card">
             <div class="card-header pt-3 pb-0 border-0">
-                <!-- <div class="card-actions float-end">
-                    <div class="dropdown position-relative">
-						<a href="#" data-bs-toggle="dropdown" aria-expanded="true">
-                             <i class="bi bi-three-dots text-dark-emphasis fs-3"></i>
-						</a>
-						<div class="dropdown-menu dropdown-menu-end">
-							<a class="dropdown-item" href="#">Filter</a>
-						</div>
-					</div>
-                </div> -->
-                <!-- <span class="h1 card-title mb-0">Your Data : </span>
-                <span>Sebtember 2025</span> -->
                 <h5 id="countTitle" class="card-title mb-0">Your Data : 0/0</h5>
             </div>
             <div class="card-body text-center">
-                <!-- <p class="display-1">Chart</p> -->
                  <div class="row">
                     <div class="col-6 border-end">
                         <h1 id="countGreen" class="fw-bold text-success fa-4x">0</h1>
@@ -111,6 +98,49 @@
                         <h1 id="countYellow" class="fw-bold text-warning fa-4x">0</h1>
                     </div>
                  </div>
+            </div>
+        </div>
+    </div>
+</div> -->
+<div class="row mb-3">
+    <div class="col-sm-12 col-lg-6">
+        <div class="card">
+            <div class="card-header pt-3 pb-0 border-0">
+                <h5 id="countTitle" class="card-title mb-0">Your Data of : 0/0</h5>
+            </div>
+            <div class="card-body row">
+                <div class="col-6">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <img src="{{profileIMG}}" class="img-fluid rounded-5 w-75">
+                        </div>
+                    </div>
+                </div>
+                <div class="align-content-center col-6 text-center">
+                    <div class="row">
+                        <div class="col-12">
+                            <h1 id="countGreen" class="fw-bold text-success fa-4x">0</h1>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <h1 id="countYellow" class="fw-bold text-warning fa-4x">0</h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-12 col-lg-6">
+        <div class="card">
+            <div class="card-header pt-3 pb-0 border-0">
+                <h5 class="card-title mb-0">Month Summary</h5>
+            </div>
+            <div class="card-body row align-content-center card-body d-flex justify-content-center row" style="height: 276px;">
+                <div class="col-12" style="width: 250px;">
+                    <canvas id="pieChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -340,7 +370,7 @@
             updateCountCurrrentMonth();
             const dateNow = new Date();
             $("#filter-month").val(dateNow.getMonth() + 1);
-            $("#countTitle").text(`Your Data : ${dateNow.getMonth() + 1}/${dateNow.getFullYear()}`);
+            $("#countTitle").text(`Your Data of : ${dateNow.getMonth() + 1}/${dateNow.getFullYear()}`);
             // $("#barChartTitle").text(`${dateNow.getMonth() + 1}/${dateNow.getFullYear()}`);
             $("#barChartTitle").text(`${$("#filter-month").val()}/${dateNow.getFullYear()}`);
 
@@ -452,6 +482,7 @@
                     }
                 });
             }
+            drawPieChart();
         });
         $("#filter-month").change(async function(){
             const dateNow = new Date();
@@ -1003,6 +1034,47 @@
         }
         function getCSRFToken() {
             return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+        const drawPieChart = () => {
+            const ctx = document.getElementById('pieChart');
+            const pieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Green', 'Yellow'],
+                    datasets: [{
+                        data: [222, 19], // ค่าของแต่ละชิ้น
+                        backgroundColor: [
+                            '#28a745',
+                            '#ffc107'
+                        ],
+                        borderWidth: 1
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                        },
+                        datalabels: {
+                            color: '#fff',
+                            font: {
+                                weight: 'bold',
+                                size: 14
+                            },
+                            formatter: (value, ctx) => {
+                                const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                // You can display both value and percentage
+                                return `${value} (${percentage}%)`;
+                            }
+                        }
+                    },
+                },
+                plugins: [ChartDataLabels] // 👈 สำคัญ
+            });
+            return pieChart;
         }
     </script>
 {% endblock %}

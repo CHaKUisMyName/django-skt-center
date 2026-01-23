@@ -75,13 +75,18 @@ def index(request: HttpRequest):
                     card.deptNameEN = tempRolesName[0]
                     card.updateDate = timezone.now()
                     card.save()
-    
+
+    profileIMG = request.build_absolute_uri(
+        f"{settings.MEDIA_URL}{request.currentUser.imgProfilePath}"
+    )
+    # print(profileIMG)
     context = {
         "issueTypes": issueTypes,
         "yellowCardTypes": yellowCardTypes,
         "selectRoles": roles,
         "isEmpThai": isEmpThai,
-        "changeDept": changeDept
+        "changeDept": changeDept,
+        'profileIMG': profileIMG
     }
     return render(request, 'greencard/index.html', context)
 
