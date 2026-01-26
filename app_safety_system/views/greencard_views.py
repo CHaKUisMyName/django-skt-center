@@ -10,6 +10,7 @@ from django.core.files.storage import FileSystemStorage
 import os
 from django.utils import timezone
 import pytz
+from django.db.models import Count, Q
 
 from app_organization.models.level import Level
 from app_organization.models.organization import Organization
@@ -558,8 +559,6 @@ def countALLOrgByMonAndYear(request: HttpRequest):
             issueDate__gte=start_date,
             issueDate__lt=end_date
             )
-        print(f"------------------ start_date: {start_date}, end_date: {end_date}")
-        print(f"------------------ countALLOrgByMonAndYear: {listData.count()}")
         # if not listData:
         #     return JsonResponse({'success': True, 'data': res, 'message': 'Success'})
         # -- หา department level
@@ -630,4 +629,46 @@ def userChangeDept(request: HttpRequest):
         return JsonResponse({'success': True, 'message': 'Success'})
     except Exception as e:
         print(e)
+        return JsonResponse({'success': False, 'message': str(e)})
+    
+@requiredLogin
+def countGreenYellowByMonth(request: HttpRequest):
+    try:
+        if not request.method == "POST":
+            return JsonResponse({'success': False, 'message': 'Method not allowed'})
+        result = {}
+        body = json.loads(request.body.decode('utf-8'))  # อ่าน JSON body
+        month = body.get('month')
+        year = body.get('year')
+        if not month:
+            return JsonResponse({'success': False, 'message': 'Month is required'})
+        if not year:
+            return JsonResponse({'success': False, 'message': 'Year is required'})
+        start_date = datetime.datetime(int(year), int(month), 1, tzinfo=pytz.UTC)
+        if int(month) == 12:
+            end_date = datetime.datetime(int(year) + 1, 1, 1, tzinfo=pytz.UTC)
+        else:
+            end_date = datetime.datetime(int(year), int(month) + 1, 1, tzinfo=pytz.UTC)
+        green_count = GreenYellowCard.objects(
+            isActive=True,
+            issueDate__gte=start_date,
+            issueDate__lt=end_date,
+            type=GreenYellowType.GreenCard.value
+        ).count()
+
+        yellow_count = GreenYellowCard.objects(
+            isActive=True,
+            issueDate__gte=start_date,
+            issueDate__lt=end_date,
+            type=GreenYellowType.YellowCard.value
+        ).count()
+
+        result = {
+            "green_count": green_count if green_count else 0,
+            "yellow_count": yellow_count if yellow_count else 0
+        }
+
+        
+        return JsonResponse({'success': True, 'data': result, 'message': 'Success'})
+    except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)})

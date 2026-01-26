@@ -19,6 +19,20 @@
     .swal2-html-container .invalid-feedback {
         text-align: left !important;
     }
+    .gradient-card {
+        background: linear-gradient(135deg, #1cbb8c, #fcb92b);
+        border-radius: 16px;
+        padding-bottom: 15px;
+        border: none;
+    }
+
+    .inner-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 24px;
+        margin: 0 16px 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    }
 </style>
 {% endblock %}
 {% block breadcrumb %}
@@ -66,7 +80,7 @@
         <div class="row mb-3">
             <div class="col-sm-12 col-md-6"></div>
             <div class="col-sm-12 col-md-6">
-                <div id="search" class="card text-bg-secondary cursor-pointer">
+                <div id="search" class="card bg-dark-subtle cursor-pointer">
                     <div class="card-body">
                         <p>Page</p>
                         <div class="row">
@@ -105,15 +119,55 @@
 <div class="row mb-3">
     <div class="col-sm-12 col-lg-6">
         <div class="card">
+            <div class="card-body text-white d-flex justify-content-between align-items-start">
+                <h4 class="mb-0 fw-bold">Monthly Overview : <span id="sumTitle"></span></h4>
+            </div>
+            <div class="row pb-3">
+                <div class="col-6">
+                    <div class="inner-card">
+                        <div class="row">
+                            <div class="col">
+                                <i class="bi bi-postcard-fill fs-1 me-2"></i>
+                                <span class="">Green Card</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col text-center">
+                                <h1 id="sumGLabel" class="text-success fw-bold display-4">0</h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="inner-card">
+                        <div class="row">
+                            <div class="col">
+                                <i class="bi bi-postcard-fill fs-1 me-2"></i>
+                                <span class="">Yellow Card</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col text-center">
+                                <h1 id="sumYLabel" class="text-warning fw-bold display-4">0</h1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <div class="col-sm-12 col-lg-6">
+        <div class="card">
             <div class="card-header pt-3 pb-0 border-0">
                 <h5 id="countTitle" class="card-title mb-0">Your Data of : 0/0</h5>
             </div>
-            <div class="card-body row" style="height: 276px;">
+            <div class="card-body row">
                 <div class="col-6 align-content-center">
                     <div class="row">
                         <div class="col-12 text-center">
                             {% if profileIMG %}
-                            <img src="{{profileIMG}}" class="img-fluid rounded-5 w-75">
+                            <img src="{{profileIMG}}" class="img-fluid rounded-5 w-50">
                             {% else %}
                             <i class="bi bi-person-fill" style="font-size: 7rem;"></i>
                             {% endif %}
@@ -136,18 +190,7 @@
             </div>
         </div>
     </div>
-    <!-- <div class="col-sm-12 col-lg-6">
-        <div class="card">
-            <div class="card-header pt-3 pb-0 border-0">
-                <h5 class="card-title mb-0">Month Summary</h5>
-            </div>
-            <div class="card-body row align-content-center card-body d-flex justify-content-center row" style="height: 276px;">
-                <div class="col-12" style="width: 250px;">
-                    <canvas id="pieChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div> -->
+    
 </div>
 <div class="row mb-3">
     <div class="col-sm-12 col-md-12 mx-auto">
@@ -486,7 +529,7 @@
                     }
                 });
             }
-            // drawPieChart();
+            await updateSummary();
         });
         $("#filter-month").change(async function(){
             const dateNow = new Date();
@@ -708,6 +751,7 @@
                             barChart.data.datasets[0].data = showCountOrgObj.countGreen;
                             barChart.data.datasets[1].data = showCountOrgObj.countYellow;
                             barChart.update();
+                            await updateSummary();
                         }else{
                             PopMessage(response.message, "error");
                         }
@@ -881,6 +925,7 @@
                             barChart.data.datasets[0].data = showCountOrgObj.countGreen;
                             barChart.data.datasets[1].data = showCountOrgObj.countYellow;
                             barChart.update();
+                            await updateSummary();
                         }else{
                             PopMessage(response.message, "error");
                         }
@@ -1039,46 +1084,39 @@
         function getCSRFToken() {
             return document.querySelector('[name=csrfmiddlewaretoken]').value;
         }
-        const drawPieChart = () => {
-            const ctx = document.getElementById('pieChart');
-            const pieChart = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ['Green', 'Yellow'],
-                    datasets: [{
-                        data: [222, 19], // ค่าของแต่ละชิ้น
-                        backgroundColor: [
-                            '#28a745',
-                            '#ffc107'
-                        ],
-                        borderWidth: 1
-                    }],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                        },
-                        datalabels: {
-                            color: '#fff',
-                            font: {
-                                weight: 'bold',
-                                size: 14
-                            },
-                            formatter: (value, ctx) => {
-                                const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                                const percentage = Math.round((value / total) * 100);
-                                // You can display both value and percentage
-                                return `${value} (${percentage}%)`;
-                            }
-                        }
-                    },
-                },
-                plugins: [ChartDataLabels] // 👈 สำคัญ
+
+        const getSummaryData = async () => {
+            let response;
+            const dateNow = new Date();
+            const postData = JSON.stringify({
+                month: dateNow.getMonth() + 1,
+                year: dateNow.getFullYear(),
             });
-            return pieChart;
+            const settings ={
+                url: window.location.origin + window.location.pathname + "api/countmonth/",
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken()
+                },
+                data: postData,
+            };
+            await $.ajax(settings).done((result)=>{
+                response = result.success == true ? result.data : null;
+            }).fail((xjr, status, error) => {
+                console.log(error);
+            });
+            console.log(response);
+            return response;
+        }
+        const updateSummary = async () => {
+            const showSummaryObj = await getSummaryData();
+            const dateNow = new Date();
+            $("#sumTitle").text(`${dateNow.getMonth() + 1}/${dateNow.getFullYear()}`);
+            if(showSummaryObj){
+                $("#sumGLabel").text(showSummaryObj.green_count?? "0");
+                $("#sumYLabel").text(showSummaryObj.yellow_count?? "0");
+            }
         }
     </script>
 {% endblock %}
