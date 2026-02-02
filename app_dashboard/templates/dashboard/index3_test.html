@@ -1,0 +1,101 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>DashBoard index</title>{% endblock %}
+{% block css %}
+    <style>
+  .body-map {
+    position: relative;
+    width: 200px;
+    margin: 20px auto;
+  }
+
+  .body-map img {
+    width: 100%;
+    display: block;
+  }
+
+  .part {
+    position: absolute;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+
+  .part:hover {
+    outline: 2px solid red;
+    background: rgba(255,0,0,0.2);
+  }
+
+  /* กำหนดตำแหน่งคร่าวๆ */
+  .head { top: 0; left: 70px; width: 60px; height: 50px; }
+  .body { top: 50px; left: 60px; width: 80px; height: 80px; }
+
+  .arm-left { top: 60px; left: 20px; width: 40px; height: 80px; }
+  .arm-right { top: 60px; left: 140px; width: 40px; height: 80px; }
+
+  .leg-left { top: 130px; left: 60px; width: 40px; height: 90px; }
+  .leg-right { top: 130px; left: 100px; width: 40px; height: 90px; }
+
+  .selected {
+    outline: 2px solid green !important;
+    background: rgba(0, 200, 0, 0.25);
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="card row">
+    <div class="card-body col-12 m-auto">
+        <!-- <img src="https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?q=80&w=1972&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="img-fluid rounded" alt="..."> -->
+        <!-- <img src="https://images.unsplash.com/photo-1602052577122-f73b9710adba?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" class="img-fluid rounded" alt="..."> -->
+        <img src="{% static 'images/factory.JPG' %}" class="img-fluid rounded" alt="...">
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="body-map">
+                <img src="https://img.freepik.com/free-vector/human-anatody-white-background_1308-68254.jpg?semt=ais_hybrid&w=740&q=80"> <!-- เปลี่ยนเป็นรูปของคุณ -->
+                
+                    <div class="part head" data-part="หัว"></div>
+                    <div class="part body" data-part="ลำตัว"></div>
+                    <div class="part arm-left" data-part="แขนซ้าย"></div>
+                    <div class="part arm-right" data-part="แขนขวา"></div>
+                    <div class="part leg-left" data-part="ขาซ้าย"></div>
+                    <div class="part leg-right" data-part="ขาขวา"></div>
+                </div>
+
+                <input type="hidden" id="nearMissPart" name="nearMissPart">
+
+                <p>เลือกแล้ว: <span id="result">-</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    {% if messages %}
+        {% for message in messages %}
+        <script type="text/javascript">
+            $(document).ready(function(){
+                const mssTag = "{{message.tags}}";
+                const mssMsg = "{{message}}";
+                PopMessage(mssMsg, mssTag);
+            });
+        </script>
+        {% endfor %}
+    {% endif %}
+    <script type="text/javascript">
+        $(document).ready(()=>{
+            ActiveMenu("dashboard");
+            $('.part').click(function() {
+                $('.part').removeClass('selected');
+                $(this).addClass('selected');
+
+                let part = $(this).data('part');
+                $('#nearMissPart').val(part);
+                $('#result').text(part);
+            });
+        });
+    </script>
+{% endblock %}

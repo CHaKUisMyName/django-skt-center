@@ -24,6 +24,7 @@ from utilities.utility import DateStrToDate, findDeptUser, printLogData
 
 MAX_UPLOAD_SIZE = 50 * 1024 * 1024  # 50 MB
 uploadDir = 'greenyellowcard'
+th_tz = pytz.timezone("Asia/Bangkok")
 
 @requiredLogin
 def index(request: HttpRequest):
@@ -518,11 +519,12 @@ def conutGreenYellowCurMonth(request: HttpRequest):
         listData: List[GreenYellowCard] = GreenYellowCard.objects.filter(isActive = True, issuer__userId = curUser.id)
         if not listData:
             return JsonResponse({'success': True, 'data': res, 'message': 'Success'})
+        
         res['month'] = timezone.now().month
         res['year'] = timezone.now().year
         for card in listData:
-            if card.issueDate.month == timezone.now().month and card.issueDate.year == timezone.now().year:
-                
+            local_date = card.issueDate.astimezone(th_tz)
+            if local_date.month == timezone.now().month and local_date.year == timezone.now().year:
                 if card.type.value == GreenYellowType.GreenCard.value:
                     res['cGreen'] = res.get('cGreen', 0) + 1
                 elif card.type.value == GreenYellowType.YellowCard.value:

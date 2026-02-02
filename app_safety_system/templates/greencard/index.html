@@ -177,13 +177,13 @@
                 <div class="align-content-center col-6 text-center">
                     <div class="row">
                         <div class="col-12">
-                            <h1 id="countGreen" class="fw-bold text-success fa-4x">0</h1>
+                            <h1 id="countGreenEmp" class="fw-bold text-success fa-4x">0</h1>
                         </div>
                     </div>
                     <hr>
                     <div class="row">
                         <div class="col-12">
-                            <h1 id="countYellow" class="fw-bold text-warning fa-4x">0</h1>
+                            <h1 id="countYellowEmp" class="fw-bold text-warning fa-4x">0</h1>
                         </div>
                     </div>
                 </div>
@@ -579,9 +579,10 @@
         }
         const updateCountCurrrentMonth = async () => {
             const showCountObj = await getCount();
+            console.log(showCountObj);
             if(showCountObj){
-                $("#countGreen").text(showCountObj.cGreen?? "0");
-                $("#countYellow").text(showCountObj.cYellow?? "0");
+                $("#countGreenEmp").text(showCountObj.cGreen?? "0");
+                $("#countYellowEmp").text(showCountObj.cYellow?? "0");
             }
         }
 
@@ -1106,7 +1107,6 @@
             }).fail((xjr, status, error) => {
                 console.log(error);
             });
-            console.log(response);
             return response;
         }
         const updateSummary = async () => {
