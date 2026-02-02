@@ -135,12 +135,12 @@ def findDeptUser(cur: User):
     if roleDepts:
         for d in roleDepts:
             if d not in roles:
-                print('add dept')
+                # print('add dept')
                 roles.append(d)
 
     if roleOthers:
         for r in roleOthers:
             if r not in roles:
-                print('add other')
+                # print('add other')
                 roles.append(r)
     return roles

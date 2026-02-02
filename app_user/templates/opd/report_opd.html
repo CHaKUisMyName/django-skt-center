@@ -1,0 +1,318 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>OPD</title>{% endblock %}
+{% block css %}
+<style>
+    .card-summary{
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-summary::before{
+        content: "";
+        position: absolute;
+        inset: 0;
+        /* background-image: url('https://images.unsplash.com/photo-1675851143055-23ae996bb212?q=80&w=2513&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); */
+        background-image: url("{% static 'images/phamar.jpg' %}");
+        background-size: cover;
+        background-position: bottom;
+        background-repeat: no-repeat;
+        filter: blur(1.5px);          /* ปรับระดับเบลอ */
+        transform: scale(1.1);      /* กันขอบเบลอขาด */
+        z-index: 0;
+    }
+    /* เนื้อหาข้างใน */
+    .card-summary > *{
+        position: relative;
+        z-index: 1;
+    }
+</style>
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span class="fw-bold">Repot OPD</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-sm-12 col-lg-6">
+        <div class="card card-summary">
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-8">
+                        <p class="fw-bold h3 mb-1 text-white">Total Budget</p>
+                    </div>
+                    
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <p class="display-5 fw-semibold m-0 text-white">{{summaryFormat}}</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <p class="fs-4 fw-semibold m-0 text-white">THB</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-12 col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-8">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <!-- <i class="bi bi-person-fill fs-1"></i> -->
+                                 <p class="fw-bold mb-4">Budget Thai employee</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p class="m-0 fs-2 fw-bold">{{ budgetTH }}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p class="m-0 fs-4">THB/Person</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <img src="{% static 'images/thailand.png' %}" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-12 col-lg-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-8">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <!-- <i class="bi bi-person-fill fs-1"></i> -->
+                                 <p class="fw-bold mb-4">Budget Foreigner employee</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p class="m-0 fs-2 fw-bold">{{ budgetFore }}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p class="m-0 fs-4">THB/Person</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <img src="{% static 'images/earth.png' %}" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+    {% csrf_token %}
+    <div class="col-sm-12 col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-12 col-lg-6">
+                        <p class="mb-0 fs-3 fw-bold">SKT OPD Data</p>
+                    </div>
+                    <div class="col-sm-12 col-lg-6 text-end">
+                        <button class="btn btn-primary" onclick="exportExcel()">
+                            <i class="bi bi-download"></i>
+                            <span>Excel</span>
+                        </button>
+
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <canvas id="donutChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-12 col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-9">
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <p class="fs-4 fw-bold m-0">Summary Credit Month</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <p class="fw-bold m-0 fs-1">{{ sumCreditAmount }}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <p class="m-0">THB</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="align-content-center col-3">
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <i class="bi bi-credit-card-2-front fs-1 btn bg-secondary text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+{% if messages %}
+    {% for message in messages %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            const mssTag = "{{message.tags}}";
+            const mssMsg = "{{message}}";
+            PopMessage(mssMsg, mssTag);
+        });
+    </script>
+    {% endfor %}
+{% endif %}
+<script type="text/javascript">
+    var pieData;
+    $(document).ready(async ()=>{
+        ActiveMenu('reportopd');
+        pieData = await getPieChartData("{{summary}}");;
+        const labels = ['Employee', 'Family', 'Balance'];
+        const total = pieData.reduce((a, b) => a + b, 0);
+        const ctx = document.getElementById('donutChart');
+        const donut = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: pieData,
+                    backgroundColor: [
+                        'rgb(200, 0, 0)',
+                        'rgb(255, 165, 0)',
+                        'rgb(164, 164, 164)'
+                    ],
+                }]
+            },
+            options: {
+                responsive: true,
+                aspectRatio: 2,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            // 👉 แสดง label + จำนวน + %
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                return data.labels.map((label, i) => {
+                                    const value = data.datasets[0].data[i];
+                                    const percent = ((value / total) * 100).toFixed(1);
+                                    return {
+                                        text: `${label} : ${formatCurrency(value)} (${percent}%)`,
+                                        fillStyle: data.datasets[0].backgroundColor[i],
+                                        index: i
+                                    };
+                                });
+                            }
+                        }
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        textAlign: 'center',
+                        font: {
+                            weight: 'bold',
+                            size: 13
+                        },
+                        formatter: (value, ctx) => {
+                            const label = ctx.chart.data.labels[ctx.dataIndex];
+                            const percent = ((value / total) * 100).toFixed(1);
+                            return `${label}\n${formatCurrency(value)}\n(${percent}%)`;
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+        
+    });
+    const getPieChartData = async (budget) => {
+        let response;
+        console.log(window.location.origin + window.location.pathname + "api/piechart/");
+        const settings = {
+            url: window.location.origin + window.location.pathname + "api/piechart/",
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken()
+            },
+            data: JSON.stringify({
+                budget: budget
+            })
+        };
+        await $.ajax(settings).done((result)=>{
+            response = result.success == true ? result.data : [0,0,0];
+        }).fail((xjr, status, error) => {
+            console.log(error);
+            response = [0,0,0];
+        });
+        console.log(response);
+        return response;
+    }
+    const formatCurrency = (value) => {
+        return new Intl.NumberFormat('th-TH', {
+            style: 'currency',
+            currency: 'THB',
+            minimumFractionDigits: 2
+        }).format(value);
+    };
+
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+    async function exportExcel() {
+        Loading(true);
+
+        try {
+            const response = await fetch("{% url 'exportReportOPD' %}", {
+                method: "GET",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            });
+
+            if (!response.ok) throw new Error("Download failed");
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "opd-report.xlsx";
+            document.body.appendChild(a);
+            a.click();
+
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.log(err.message);
+        } finally {
+            Loading(false); // ✅ ปิด loading ได้ชัวร์
+        }
+    }
+
+</script>
+{% endblock %}

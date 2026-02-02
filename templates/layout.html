@@ -176,6 +176,9 @@
                                         <a href="{% url 'listOpd' %}" class="sidebar-link ps-6" data-active="listopd" onclick="Loading(true)">Search Opd</a>
                                     </li>
                                     <li class="sidebar-item my-2">
+                                        <a class="sidebar-link ps-6" href="{% url 'indexReportOpd' %}" data-active="reportopd">Report OPD</a>
+                                    </li>
+                                    <li class="sidebar-item my-2">
                                         <a href="{% url 'buggetSettingOpd' %}" class="sidebar-link ps-6" data-active="budgetsettingopd">Default Budget</a>
                                     </li>
                                     <li class="sidebar-item my-2">
@@ -394,7 +397,7 @@
                             <a class="nav-link dropdown-toggle d-none d-sm-inline-block" href="#" data-bs-toggle="dropdown">
                                 <!-- <i class="bi bi-person"></i> -->
                                  <img id="prf-md" src="{% static 'images/profile-icon.png' %}" class="avatar img-fluid rounded me-2" alt="...">
-                                <span>{{ request.currentUser.email }}</span>
+                                <span>{{ request.currentUser.fNameEN }} {{ request.currentUser.lNameEN }}</span>
                             </a>
 							<div class="dropdown-menu dropdown-menu-end">
 								<a class="dropdown-item" href="{% url 'editUser' request.currentUser.id %}"><i class="align-middle me-1" data-feather="user"></i> Profile</a>

@@ -6,6 +6,9 @@ from app_user.views import immigration_views as immigration_views
 from app_user.views import setting_opd_views as setting_opd_views
 from app_user.views import opd_views as opd_views
 from app_user.views import family_views as family_views
+from app_user.views import report_opd_views as report_opd_views
+
+
 
 
 
@@ -66,6 +69,12 @@ urlpatterns = [
     path('opdsetting/option/delete/<str:id>/', view=setting_opd_views.deleteOptionOpd, name='deleteOptionOpd'),
     path('opdsetting/option/api/filter/', view=setting_opd_views.filterOptionOpd, name='filterOptionOpd'),
     path('opdsetting/option/api/get/<str:id>/', view=setting_opd_views.getOptionOpd, name='getOptionOpd'),
+    # ------------------------------------------------------------
+    # -------------------- Report OPD System ---------------------
+    # ------------------------------------------------------------
+    path('report/opd/', view=report_opd_views.index, name='indexReportOpd'),
+    path('report/opd/api/piechart/', view=report_opd_views.pieChart, name='pieChart'),
+    path('report/opd/export/', view=report_opd_views.exportReportOPD, name='exportReportOPD'),
     # -----------------------------------------------------
     # ------------------- Family System -------------------
     # -----------------------------------------------------
