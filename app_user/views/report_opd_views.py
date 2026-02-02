@@ -29,8 +29,10 @@ def index(request: HttpRequest):
         budgetTH: BudgetOpd = BudgetOpd.objects.filter(isActive = True, type = BudgetEmpType.Thai, status = True).first()
         budgetFore: BudgetOpd = BudgetOpd.objects.filter(isActive = True, type = BudgetEmpType.Foreigner, status = True).first()
         summary = summaryBudget(budgetTH, budgetFore)
-        start_date = datetime.datetime(timezone.now().year, 1, 1, tzinfo=pytz.UTC)
-        end_date = datetime.datetime(timezone.now().year + 1, 1, 1, tzinfo=pytz.UTC)
+
+        cur_date = timezone.now()
+        start_date = datetime.datetime(cur_date.year, cur_date.month, 1, tzinfo=pytz.UTC)
+        end_date = datetime.datetime(cur_date.year + 1, cur_date.month, 1, tzinfo=pytz.UTC)
 
         creditOption: OptionOpd = OptionOpd.objects.filter(name = "Credit").first()
         findRecordCreditOption: List[OPDRecord] = OPDRecord.objects.filter(
@@ -49,6 +51,7 @@ def index(request: HttpRequest):
             'summary': summary,
             'summaryFormat': f"{summary:,.2f}",
             'sumCreditAmount': f"{sumCreditAmount:,.2f}",
+            "curMonth": f"{cur_date.month}/{cur_date.year}",
             'budgetTH': f"{budgetTH.budget:,.2f}" if budgetTH else 0,
             'budgetFore': f"{budgetFore.budget:,.2f}" if budgetFore else 0
         }
@@ -454,6 +457,19 @@ def createExcelReportOPD(users, opEmp, opFm, optionKeyEmp, optionKeyFm):
 
             if balance <= 0:
                 bal_cell.font = styles.Font(bold=True, size=16, color='FF0000')
+
+        # ---------- STAMP DATE ROW ----------
+        curDate = timezone.now()
+        # -- to dd/mm/yyyy
+        dateStr = curDate.strftime("%d/%m/%Y")
+        cell_stamp_label = ws.cell(row=2, column=ws.max_column-1)
+        cell_stamp_label.value = "Stamp Date"
+        cell_stamp_label.font = styles.Font(bold=True, size=16)
+
+        cell_stamp_date = ws.cell(row=2, column=ws.max_column)
+        cell_stamp_date.value = dateStr
+        cell_stamp_date.font = styles.Font(size=16)
+
 
         # ---------- SUMMARY ROW ----------
         summary_row = ws.max_row + 1
