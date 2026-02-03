@@ -16,5 +16,6 @@ urlpatterns = [
     path('gy/api/countorg/', view= greencard_views.countALLOrgByMonAndYear, name= 'countALLOrgByMonAndYear'),
     path('gy/changedept/', view= greencard_views.userChangeDept, name= 'userChangeDept'),
     path('gy/api/countmonth/', view= greencard_views.countGreenYellowByMonth, name= 'countGreenYellowByMonth'),
+    path('gy/api/getbyid/<str:id>/', view= greencard_views.getGreenYellowByIdJson, name= 'getGreenYellowByIdJson'),
 
 ]

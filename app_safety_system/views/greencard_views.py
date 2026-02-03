@@ -103,14 +103,33 @@ def search(request: HttpRequest):
         {"value": t.value, "label": f"{t.labels['th']} / {t.labels['en']}"} 
         for t in YellowCardType
     ]
-
     context = {
         "cardTypes": cardTypes,
         "users": users,
         "orgs": orgs,
-        "yellowCardTypes": yellowCardTypes
+        "yellowCardTypes": yellowCardTypes,
     }
     return render(request, 'greencard/search.html', context)
+
+@requiredLogin
+def getGreenYellowByIdJson(request: HttpRequest, id: str):
+    try:
+        result = {}
+        if not request.method == "GET":
+            return JsonResponse({'success': False, 'message': 'Method not allowed'})
+        if not id:
+            return JsonResponse({'success': False, 'message': 'Id is required'})
+        id = ObjectId(id)
+        gy: GreenYellowCard = GreenYellowCard.objects.filter(id = id).first()
+        if not gy:
+            return JsonResponse({'success': False, 'message': 'Data not found'})
+        gy.imagePath = request.build_absolute_uri(f"{settings.MEDIA_URL}{gy.imagePath}") if gy.imagePath else ""
+        result = gy.serialize()
+        return JsonResponse({'success': True, 'data': result, 'message': 'Success'})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'success': False, 'message': str(e)})
+    
 
 @requiredLogin
 def filterGreenYellowCardJson(request: HttpRequest):
@@ -139,17 +158,7 @@ def filterGreenYellowCardJson(request: HttpRequest):
             if user and user != "None":
                 greenYellowCards = greenYellowCards.filter(issuer__userId=ObjectId(user))
             if org and org != "None":
-                org_id = ObjectId(org)
-                orgList = []
-                child: List[Organization] = Organization.objects.filter(parent=org_id).all()
-                if child:
-                    for c in child:
-                        # org_id = c.id
-                        orgList.append(c.id)
-                orgList.append(org_id)
-                # ✅ แปลงเป็น Organization objects
-                org_objects = Organization.objects(id__in=orgList)
-                greenYellowCards = greenYellowCards.filter(issuer__roles__orgId__in = org_objects)
+                greenYellowCards = greenYellowCards.filter(deptId = org)
 
                 # greenYellowCards = greenYellowCards.filter(issuer__roles__orgId=org_id)
             if yellowCardTypes and yellowCardTypes != "None":
@@ -329,10 +338,10 @@ def addGreenCardJson(request: HttpRequest):
             greenCard.imagePath = file_path
         greenCard.save()
 
-        hasSendMail = sendMailGreenYellowCard(greenCard)
-        if hasSendMail == True:
-            greenCard.hasSendMail = True
-            greenCard.save()
+        # hasSendMail = sendMailGreenYellowCard(greenCard)
+        # if hasSendMail == True:
+        #     greenCard.hasSendMail = True
+        #     greenCard.save()
 
         return JsonResponse({'success': True, 'message': 'Success'})
         
@@ -469,10 +478,10 @@ def addYellowCardJson(request: HttpRequest):
             yellowCard.imagePath = file_path
         yellowCard.save()
 
-        hasSendmail = sendMailGreenYellowCard(yellowCard)
-        if hasSendmail == True:
-            yellowCard.hasSendMail = True
-            yellowCard.save()
+        # hasSendmail = sendMailGreenYellowCard(yellowCard)
+        # if hasSendmail == True:
+        #     yellowCard.hasSendMail = True
+        #     yellowCard.save()
         
         return JsonResponse({'success': True, 'message': 'Success'})
 

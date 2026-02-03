@@ -15,6 +15,18 @@
         white-space: normal !important;
         word-wrap: break-word;
     }
+
+    /* ให้ label ภายใน Swal ชิดซ้าย */
+    .swal2-html-container label, 
+    .swal2-html-container dd, 
+    .swal2-html-container dt, 
+    .swal2-html-container .select2-selection__rendered{
+        text-align: left !important;
+        display: block;  /* กัน margin/padding แปลกๆ */
+    }
+    .swal2-html-container .invalid-feedback {
+        text-align: left !important;
+    }
 </style>
 {% endblock %}
 {% block breadcrumb %}
@@ -155,6 +167,51 @@
         </div>
     </div>
 </div>
+<div id="detailCard" class="card d-none">
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-sm-12">
+                <!-- <ul class="list-group list-group-flush">
+                    <li class="list-group-item">An item</li>
+                    <li class="list-group-item">A second item</li>
+                    <li class="list-group-item">A third item</li>
+                    <li class="list-group-item">A fourth item</li>
+                    <li class="list-group-item">And a fifth one</li>
+                </ul> -->
+                <dl class="row">
+                    <dt class="col-sm-3">Issue Date</dt>
+                    <dd class="col-sm-9">
+                        <p id="detail-iss-date"></p>
+                    </dd>
+                    <hr>
+                    <dt class="col-sm-3">Issuer</dt>
+                    <dd class="col-sm-9">
+                        <p id="detail-iss-name">(20230) Chanon anekphong</p>
+                        <p id="detail-iss-dept">Information Technology</p>
+                    </dd>
+                    <hr>
+                    <dt class="col-sm-3">Issue To</dt>
+                    <dd class="col-sm-9">
+                        <p id="detail-iss-to-type">Employee (Type)</p>
+                        <p id="detail-iss-to">(0000) Test test</p>
+                    </dd>
+                    <hr>
+                    <dt class="col-sm-3">Detail</dt>
+                    <dd id="detail-mss" class="col-sm-9"></dd>
+                </dl>
+                <div id="detail-img" class="row">
+                    <div class="col-12">
+                        <img 
+                        id="detail-img-src"
+                        class="img-fluid"
+                        style="width: 400px;height: 400;object-fit: contain;"
+                        src="">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 {% block script %}
     <script src="{% static 'js/popper.min.js' %}"></script>
@@ -283,6 +340,7 @@
                         data: 'id',
                         render: function(data, type, row, meta) {
                             return `
+                            <button class="btn btn-sm btn-secondary m-1" onclick="detailGY('${data}')"><i class="bi bi-eye"></i></button>
                             <button class="btn btn-sm btn-danger m-1" onclick="deleteGY('${data}')"><i class="bi bi-trash"></i></button>
                             `;
                         }
@@ -463,6 +521,74 @@
             const year = date.getFullYear();
             return `${day}/${month}/${year}`;
         }
+
+        const getGYbyId = async (id) => {
+            let response;
+            const url = `${window.location.origin}/sft/gy/api/getbyid/${id}`;
+            console.log(url);
+            const settings = {
+                url: url,
+                method: "GET",
+            };
+            await $.ajax(settings).done((result)=>{
+            response = result.success == true ? result.data : null;
+            }).fail((xjr, status, error) => {
+                console.log(error);
+                response = null;
+            });
+            console.log(response);
+            return response;
+        }
+
+        const detailGY = async (id) => {
+            const gyData = await getGYbyId(id);
+            Swal.fire({
+                title: `<p class="display-6">Card Detail</p>`,
+                html: $("#detailCard").html(),
+                showCloseButton: true,
+                showCancelButton: false,
+                showConfirmButton: false,
+                confirmButtonText: 'Save',   // 🔹 เปลี่ยนข้อความปุ่ม
+                customClass: {
+                    confirmButton: 'btn btn-primary me-2', // 🔹 ใช้ class bootstrap
+                    cancelButton: 'btn btn-secondary'
+                },
+                buttonsStyling: false, // 🔹 เพื่อให้ SweetAlert ไม่ override Bootstrap
+                focusConfirm: false,
+                width:'45rem',
+                willOpen: () => {
+                    const overlay = document.querySelector('.swal2-container');
+                    if (overlay) {
+                    overlay.style.backgroundColor = 'rgb(197 229 199 / 60%)';
+                    }
+                },
+                didOpen: () => {
+                    $(".swal2-container #detail-iss-date").text(gyData.issueDate ? gyData.issueDate: "-");
+                    $(".swal2-container #detail-iss-name").text(gyData.issuer ? gyData.issuer: "-");
+                    $(".swal2-container #detail-iss-dept").text(gyData.deptNameEN ? gyData.deptNameEN: "-");
+                    let issueTpeStr = "-";
+                    if(gyData.type){
+                        if(gyData.type.value == 1){
+                            issueTpeStr = gyData.issueToType.label ? gyData.issueToType.label+"(Type)": "-"
+                        }else{
+                            let yCardTypeStr = "";
+                            yCardTypeStr = `${gyData.issueToType.label} (Type) ${gyData.yellowCardType.label}`;
+                            issueTpeStr = gyData.issueToType.label ? yCardTypeStr: "-"
+                        }
+                    }
+                    $(".swal2-container #detail-iss-to-type").text(issueTpeStr ? issueTpeStr: "-");
+                    $(".swal2-container #detail-iss-to").text(gyData.issueTo ? gyData.issueTo: "-");
+                    $(".swal2-container #detail-mss").text(gyData.detail ? gyData.detail: "-");
+                    if(gyData.imagePath != "-"){
+                        $(".swal2-container #detail-img").removeClass("d-none");
+                        $(".swal2-container #detail-img-src").attr("src", gyData.imagePath);
+                    }else{
+                        $(".swal2-container #detail-img").addClass("d-none");
+                        $(".swal2-container #detail-img-src").attr("src", "");
+                    }
+                },
+            });
+        };
 
     </script>
 {% endblock %}
