@@ -97,7 +97,13 @@ def search(request: HttpRequest):
     ]
     listUserData: List[User] = User.objects.filter(isActive = True, status = UserStatus.Hire.value).order_by('code')
     users = [ user.serialize() for user in listUserData]
-    listOrgData: List[Organization] = Organization.objects.filter(isActive = True).order_by('level')
+    deptLevel = Level.objects.filter(isActive = True, nameEN = "Department").first()
+    
+    if deptLevel:
+        listOrgData = Organization.objects.filter(isActive = True, level = deptLevel).order_by('level')
+    else:
+        listOrgData: List[Organization] = Organization.objects.filter(isActive = True).order_by('level')
+        
     orgs = [ org.serialize_organization() for org in listOrgData]
     yellowCardTypes = [
         {"value": t.value, "label": f"{t.labels['th']} / {t.labels['en']}"} 
