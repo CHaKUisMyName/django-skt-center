@@ -1,0 +1,394 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>4RKY System</title>{% endblock %}
+{% block css %}
+
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span class="fw-bold">4RKY System</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row align-items-end mb-1">
+                    <div class="col-lg-9 col-sm-12">
+                        <div class="row mb-4">
+                            <div class="col-12 text-center">
+                                <h1>แบบฟอร์มการประเมินหยังรู้อันตรายและปัญหาในการทํางาน</h1>
+                                <h1>4RKY (Hazard and Problem) Rediction Analysis Sheet</h1>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered mb-0">
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <div class="row">
+                                                        <div class="col-lg-2 col-sm-12 align-content-center">
+                                                            <label class="form-label fw-bold m-0 text-dark-emphasis">บริษัท/ทีม:</label>
+                                                        </div>
+                                                        <div class="col-lg-5 col-sm-12">
+                                                            <input type="text" class="form-control" />
+                                                        </div>
+                                                        <div class="col-lg-2 col-sm-12 align-content-center">
+                                                            <label class="form-label fw-bold m-0 text-dark-emphasis">วันที่/Date :</label>
+                                                        </div>
+                                                        <div class="col-lg-3 col-sm-12">
+                                                            <input type="text" class="form-control" />
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <div class="row">
+                                                        <div class="col-lg-2 col-sm-12 align-content-center">
+                                                            <label class="form-label fw-bold m-0 text-dark-emphasis">ชื่องานที่ทํา:</label>
+                                                        </div>
+                                                        <div class="col-lg-10 col-sm-12">
+                                                            <input type="text" class="form-control" />
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <div class="row">
+                                                        <div class="col-lg-2 col-sm-12 align-content-center">
+                                                            <label class="form-label fw-bold m-0 text-dark-emphasis">สถานที่ทํางาน:</label>
+                                                        </div>
+                                                        <div class="col-lg-10 col-sm-12">
+                                                            <input type="text" class="form-control" />
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-sm-12">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    <span class="h4">สมาชิกกลุ่มร่วมทํา KY</span>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    <input type="text" class="form-control" />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input type="text" class="form-control" />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input type="text" class="form-control" />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <input type="text" class="form-control" />
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-1">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table class="table table-bordered mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td class="py-4" colspan="4">
+                                            <div class="row mb-3">
+                                                <div class="col-lg-1 col-sm-12">
+                                                    <span class="fw-bold text-dark-emphasis">รอบที่ 1</span>
+                                                </div>
+                                                <div class="col-lg-11 col-sm-12">
+                                                    <span class="fw-bold text-dark-emphasis">ค้นหาอันตรายหรือปัญหา พร้อมสาเหตุ</span>
+                                                    <span class="text-dark-emphasis">(ทําการค้นหาอันตราย/ปัญหาที่อาจจะเกิดขึ้นจากเหตุการณ์และ ปัญหาที่เป็นไปได้ที่อาจจะเกิดขึ้นและหาสาเหตุนั้นเกิดมาจากอะไร)</span>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-1 col-sm-12">
+                                                    <span class="fw-bold text-dark-emphasis">รอบที่ 2</span>
+                                                </div>
+                                                <div class="col-lg-11 col-sm-12">
+                                                    <span class="fw-bold text-dark-emphasis">ค้นหาสาเหตุของอันตราย/ปัญหา</span>
+                                                    <span class="text-dark-emphasis">(เลือกหัวข้อที่อันตราย/ปัญหาที่สําคัญที่สุดและต้องแก้ไขโดยด่วน)</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4">
+                                            <div class="row">
+                                                <div class="col-4">
+                                                    <span class="fw-bold text-dark-emphasis">
+                                                        ปัญหาหรืออันตรายเกี่ยวข้องกับ Relate to
+                                                    </span>
+                                                </div>
+                                                <div class="col-8 text-end">
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                                                        <label class="form-check-label" for="inlineCheckbox1">ความปลอดภัย (Safety)</label>
+                                                    </div>
+                                                    <div class="form-check form-check-inline ms-7">
+                                                        <input class="form-check-input" type="checkbox" id="inlineCheckbox2" value="option2">
+                                                        <label class="form-check-label" for="inlineCheckbox2">คุณภาพ (Quality)</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 10%;">
+                                            <span class="fw-bold text-dark-emphasis">หัวข้อ</span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold text-dark-emphasis">ค้นหาอันตรายหรือปัญหา พร้อมระบุสาเหตุ</span>
+                                        </td>
+                                        <td style="width: 15%;">
+                                            <span class="fw-bold text-dark-emphasis">เลือกหัวข้อที่สําคัญที่สุด</span>
+                                        </td>
+                                        <td style="width: 15%;">
+                                            <button type="button" class="btn btn-sm btn-success ms-2">
+                                                <i class="bi bi-plus-circle-fill"></i>
+                                                <span>เพิ่มหัวข้อ</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="text-end">
+                                                <span>1</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control" />
+                                        </td>
+                                        <td>
+                                            <div class="row">
+                                                <div class="col-12 text-center">
+                                                    <input class="form-check-input" type="checkbox" value="" id="checkDefault">
+                                                </div>
+                                            </div>
+                                            
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-danger ms-2">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-1">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table class="table table-bordered mb-0">
+                                <tr>
+                                    <td class="py-4" colspan="4">
+                                        <div class="row mb-3">
+                                            <div class="col-lg-1 col-sm-12">
+                                                <span class="fw-bold text-dark-emphasis">รอบที่ 3</span>
+                                            </div>
+                                            <div class="col-lg-11 col-sm-12">
+                                                <span class="fw-bold text-dark-emphasis">กําหนดและคิดหาวิธีการแก้ไขปรับปรุง</span>
+                                                <span class="text-dark-emphasis">(ท่านจะทําอย่างไรให้ปลอดภัยเมื่อท่านอยู่ในสถานการณ์นั้นที่เป็นรูปธรรม)</span>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-lg-1 col-sm-12">
+                                                <span class="fw-bold text-dark-emphasis">รอบที่ 4</span>
+                                            </div>
+                                            <div class="col-lg-11 col-sm-12">
+                                                <span class="fw-bold text-dark-emphasis">เลือกวิธีหรือมาตรการที่ดีที่สุดโดยใส่เครื่องหมายถูก (√) ไว้ที่หน้าของหัวข้อที่ดีที่สุด</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 10%;">
+                                        <span class="fw-bold text-dark-emphasis">เลือกข้อ</span>
+                                    </td>
+                                    <td style="width: 10%;">
+                                        <span class="fw-bold text-dark-emphasis">ใส่วิธีที่ดีที่สุด</span>
+                                    </td>
+                                    <td style="width: 65%;">
+                                        <span class="fw-bold text-dark-emphasis">มาตรการหรือวิธีการแก้ไขปรับปรุงที่เป็นรูปธรรม</span>
+                                    </td>
+                                    <td style="width: 15%;">
+                                        <button type="button" class="btn btn-sm btn-success ms-2">
+                                            <i class="bi bi-plus-circle-fill"></i>
+                                            <span>เพิ่มหัวข้อ</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <select class="form-select">
+                                            <option selected>1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <div class="row">
+                                            <div class="col-12 text-center">
+                                                <input class="form-check-input" type="checkbox" value="" id="checkDefault">
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" />
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-danger ms-2">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-1">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table class="table table-bordered mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td style="width: 20%;">
+                                            <span class="fw-bold text-dark-emphasis">
+                                                มาตรการสําคัญที่สุดที่ได้ดําเนินการ/จัดให้มี*
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <textarea class="form-control" rows="3"></textarea>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-1">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table class="table table-bordered mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td style="width: 20%;">
+                                            <span class="fw-bold text-dark-emphasis">
+                                                ข้อควรจํา มาตรการ
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <textarea class="form-control" rows="3"></textarea>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-1">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table class="table table-bordered mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td style="width: 20%;">
+                                            <span class="fw-bold text-dark-emphasis">
+                                                คําสัญญา/ปฏิญาณ (หัวเรืองที่ทํา Pointing and Calling ร่วมกัน)
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <textarea class="form-control" rows="3"></textarea>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-5">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table class="table table-bordered mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td style="width: 20%;">
+                                            <span class="fw-bold text-dark-emphasis">
+                                                หากมีรูปภาพหรือแบบแปลน โปรดแนบเพืออธิบายเพิ่มเติมการประเมินหยังรู้อันตราย (KY)
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <input class="form-control" type="file" id="formFile">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label for="exampleFormControlTextarea1" class="form-label fw-bold text-dark-emphasis">ข้อคิดเห็นของผู้จัดการหรือผู้ประสานงาน</label>
+                        <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label for="exampleFormControlTextarea1" class="form-label fw-bold text-dark-emphasis">ข้อคิดเห็นของแผนก Safety หรือส่วนที่เกี่ยวข้อง</label>
+                        <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-12 text-center">
+                        <button type="button" class="btn btn-secondary btn-lg me-2">
+                            <span>Cancel</span>
+                        </button>
+                        <button type="button" class="btn btn-primary btn-lg">
+                            <span>Save</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    <script type="text/javascript">
+        $(document).ready(()=>{
+            ActiveMenu("4rky");
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,215 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% block title %}<title>4RKY System</title>{% endblock %}
+{% block css %}
+<style>
+    /* ให้ DataTables ใช้ขนาดคอลัมน์ที่เรากำหนดจริง */
+    table.dataTable {
+        table-layout: fixed !important;
+        width: 100% !important;
+    }
+
+    /* ทำให้ข้อความตัดบรรทัด */
+    table.dataTable td.text-wrap {
+        white-space: normal !important;
+        word-wrap: break-word;
+    }
+    .dropdown-toggle::after {
+        content: none;
+    }
+</style>
+{% endblock %}
+{% block breadcrumb %}
+<div>
+    <span class="fw-bold">4RKY System</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="d-lg-flex">
+                    <div>
+                        <h3 class="mb-0">Search Panel</h3>
+                    </div>  
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label for="search_input" class="form-label">Search:</label>
+                        <input type="text" id="search_input" class="form-control" placeholder="Enter search term">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0 border-0">
+                <div class="row">
+                    <div class="col-lg-4 col-sm-12">
+                        <h3 class="mb-0">List 4RKY</h3>
+                        <p class="text-sm mb-0">
+                            Report 4RKY
+                        </p>
+                    </div>
+                    <div class="col-lg-4 col-sm-12 text-center">
+                        <button type="button" class="btn btn-secondary">
+                            <i class="bi bi-pencil-square"></i>
+                            <span>Selected (12) Action</span>
+                        </button>
+                    </div>
+                    <div class="col-lg-4 col-sm-12 text-lg-end text-center mt-sm-2 mt-lg-0">
+                        <a href="{% url 'add4rky' %}" class="btn btn-primary" onclick="Loading(false);">
+                            <i class="bi bi-plus-circle-fill"></i>
+                            <span>Add 4RKY</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="">
+                            <table id="tb" class="table cell-border nowrap" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <div class="row">
+                                                <div class="col-12 text-center">
+                                                    <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                                                </div>
+                                            </div>
+                                        </th>
+                                        <th>Work Detail</th>
+                                        <th>Date</th>
+                                        <th>Company/Team</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="row">
+                                                <div class="col-12 text-center">
+                                                    <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <h5>Work Detail 1</h5>
+                                            <p>TP2-Fr3-ControlRoom</p>
+                                            <p>(20230) CHaKU</p>
+                                        </td>
+                                        <td>2026-01-21</td>
+                                        <td>Company A</td>
+                                        <td>Safety</td>
+                                        <td>
+                                            <span class="badge bg-success-subtle text-success px-2 py-1 rounded-pill fs-12">Approved</span>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-secondary px-2 py-1 rounded-pill fs-12 me-1">
+                                                <i class="bi bi-eye-fill"></i>                                            
+                                            </button>
+                                            <button type="button" class="btn btn-danger px-2 py-1 rounded-pill fs-12 ms-1">
+                                                <i class="bi bi-trash"></i>                                            
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="row">
+                                                <div class="col-12 text-center">
+                                                    <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <h5>Work Detail 2</h5>
+                                            <p>TP1-Fr3-ControlRoom</p>
+                                            <p>(20230) CHaKU</p>
+                                        </td>
+                                        <td>2026-01-31</td>
+                                        <td>Company B</td>
+                                        <td>Quality</td>
+                                        <td>
+                                            <span class="badge bg-warning-subtle text-warning px-2 py-1 rounded-pill fs-12">Waiting</span>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-secondary px-2 py-1 rounded-pill fs-12 me-1">
+                                                <i class="bi bi-eye-fill"></i>                                            
+                                            </button>
+                                            <button type="button" class="btn btn-danger px-2 py-1 rounded-pill fs-12 ms-1">
+                                                <i class="bi bi-trash"></i>                                            
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="row">
+                                                <div class="col-12 text-center">
+                                                    <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <h5>Work Detail 3</h5>
+                                            <p>Office</p>
+                                            <p>(20230) CHaKU</p>
+                                        </td>
+                                        <td>2026-02-31</td>
+                                        <td>Company B</td>
+                                        <td>Safety, Quality</td>
+                                        <td>
+                                            <span class="badge bg-danger-subtle text-danger px-2 py-1 rounded-pill fs-12">Rejected</span>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-secondary px-2 py-1 rounded-pill fs-12 me-1">
+                                                <i class="bi bi-eye-fill"></i>                                            
+                                            </button>
+                                            <button type="button" class="btn btn-danger px-2 py-1 rounded-pill fs-12 ms-1">
+                                                <i class="bi bi-trash"></i>                                            
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+    <script type="text/javascript">
+        $(document).ready(()=>{
+            ActiveMenu("4rky");
+            $('#tb').DataTable({
+                responsive: true,
+                scrollX: true,
+                autoWidth: false,
+                columnDefs: [
+                    { width: "5%", targets: 0, className: "text-center align-middle", "orderable": false },
+                    { width: "35%", targets: 1, className: "text-wrap align-middle" },
+                    { width: "10%", targets: 2, className: "text-left align-middle" },
+                    { width: "20%", targets: 3, className: "text-left align-middle" },
+                    { width: "10%", targets: 4, className: "text-center align-middle" },
+                    { width: "10%", targets: 5, className: "text-center align-middle" },
+                    { width: "10%", targets: 6, className: "text-center align-middle" },
+                ],
+            });
+            
+
+        });
+
+        
+    </script>
+{% endblock %}

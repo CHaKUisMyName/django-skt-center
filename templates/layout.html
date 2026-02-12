@@ -36,7 +36,53 @@
     <link rel="stylesheet"
           href="{% static 'css/select2-bootstrap-5-theme.min.css' %}" />
     <link href="{% static 'css/sweetalert2.min.css' %}" rel="stylesheet">
-    
+    <style>
+        /* background gradient */
+        html, body {
+            min-height: 100%;
+        }
+
+        body {
+            background: linear-gradient(135deg,
+                #ffffff 0%,
+                #ebfff7 40%,
+                #b5f6dc 100%
+                /* #ffb47f 100% */
+            );
+            background-attachment: fixed;
+        }
+
+        .wrapper,
+        .main,
+        .content,
+        .container-fluid {
+            background: transparent !important;
+        }
+
+
+        .main,
+        .sidebar,
+        .sidebar-content,
+        .wrapper,
+        .content,
+        .container-fluid {
+            background: transparent !important;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            border-radius: 16px;
+        }
+        .card .card-header,
+        .card .card-body {
+            background: transparent;
+        }
+        /* end background gradient */
+    </style>
     {% block css %}{% endblock %}
     {% block title %}<title>SKT Center</title>{% endblock %}
 </head>
